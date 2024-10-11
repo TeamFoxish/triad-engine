@@ -7,14 +7,15 @@ project("Engine")
   
   includedirs({ "source" })
   includedirs({ "libs/**/include" })
+  includedirs({ "source/imgui" })
   
   filter("configurations:Debug*")
     libdirs({ "libs/**/debug" })
-	links({ "assimp-vc143-mtd" })
+	links({ "assimp-vc143-mtd", "freetyped" })
   
   filter("configurations:Release*")
     libdirs({ "libs/**/release" })
-	links({ "assimp-vc143-mt" })
+	links({ "assimp-vc143-mt", "freetype" })
   
   filter {  }
   
