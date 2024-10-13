@@ -5,7 +5,12 @@
 namespace Math {
 	using namespace DirectX::SimpleMath;
 
-	constexpr float Pi = 3.1415926535f;
+	using Sphere = DirectX::BoundingSphere;
+	using Box = DirectX::BoundingBox;
+	using OrientedBox = DirectX::BoundingOrientedBox;
+	using Frustum = DirectX::BoundingFrustum;
+
+	constexpr float Pi = DirectX::XM_PI;
 
 	template<typename T>
 	inline T Min(T a, T b)
