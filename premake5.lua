@@ -10,7 +10,7 @@ workspace("Triad")
     architecture "x86_64"
 
   filter("configurations:Debug*")
-    defines({ "DEBUG" })
+    defines({ "DEBUG", "JSON_DIAGNOSTICS" })
     symbols("On")
   
   filter("configurations:Release*")

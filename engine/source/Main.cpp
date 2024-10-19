@@ -2,19 +2,31 @@
 
 #include <iostream>
 
+#include "runtime/RuntimeIface.h"
+#include "config/ConfigSystem.h"
+
+#ifdef EDITOR
+#include "editor/init/EditorConfigurator.h"
+#include "editor/runtime/EditorRuntime.h"
+using AppConfigurator = EditorConfigurator;
+using AppRuntime = EditorRuntime;
+#else
+#include "init/EngineConfigurator.h"
+#include "runtime/EngineRuntime.h"
+using AppConfigurator = EngineConfigurator;
+using AppRuntime = EngineRuntime;
+#endif
+
 //#define TEMP_CFG_VAR_TEST
 #ifdef TEMP_CFG_VAR_TEST
 
 #include "config/ConfigVar.h"
 #include "config/ConfigSystem.h"
 
-static ConfigVar<int> cfgVarInt("/Engine/Version", 1);
-static ConfigVar<float> cfgVarFloat("/Project/FloatTest", 1.0f);
-static ConfigVar<bool> cfgVarBool("/Project/BoolTest", false);
-static ConfigVar<const char*> cfgVarEngineName("/Engine/EngineName", "DefaultEngineName");
-static ConfigVar<const char*> cfgVarProjectName("/Project/ProjectName", "DefaultProjectName");
-static ConfigVar<std::vector<const char*>> cfgVarNames("/Project/CoolNames", {});
-static ConfigVar<std::vector<int>> cfgVarNumbers("/Project/CoolNumbers", {});
+static ConfigVar<std::string_view> cfgVarEngineName("/Engine/Name", "DefaultEngineName");
+static ConfigVar<std::string_view> cfgVarProjectName("/Project/Name", "DefaultProjectName");
+static ConfigVar<std::vector<std::string_view>> cfgVarNames("/Engine/CoolNames", {});
+static ConfigVar<std::vector<int>> cfgVarNumbers("/Engine/ArrayTest", {});
 
 #endif // TEMP_CFG_VAR_TEST
 
@@ -40,15 +52,25 @@ int main(int argc, char* argv[])
 
 #ifdef TEMP_CFG_VAR_TEST
 	setlocale(LC_ALL, "");
-	ConfigSystem cfgSys("config/project.cfg");
-	std::cout << cfgVarInt << '\n';
-	std::cout << cfgVarEngineName << '\n';
-	std::cout << cfgVarProjectName << '\n';
-	std::cout << cfgVarFloat << '\n';
-	std::cout << cfgVarBool << '\n';
+	ConfigSystem cfgSys;
+	cfgSys.Init("config/engine.cfg");
+	cfgSys.Override("config/project.cfg");
+	std::cout << cfgVarEngineName.GetRef() << '\n';
+	std::cout << cfgVarProjectName.GetRef() << '\n';
 	std::cout << cfgVarNames.GetRef()[0] << '\n';
 	std::cout << cfgVarNumbers.GetRef()[0] << '\n';
-#endif
+	return 0;
+#else
+
+	setlocale(LC_ALL, ""); // TODO: remove when logging is done
+	ConfigSystem cfgSys;
+	std::unique_ptr<AppRuntime> appRuntime;
+	{
+		AppConfigurator configurator;
+		if (!configurator.CreateRuntime(argc, argv, appRuntime)) {
+			return EXIT_FAILURE;
+		}
+	}
 
 	Game game;
 	bool success = game.Initialize("TriadEngine", 800, 800);
@@ -59,4 +81,5 @@ int main(int argc, char* argv[])
 	game.Shutdown();
 
 	return 0;
+#endif
 }

@@ -15,9 +15,9 @@ const T& ConfigVar<T>::QueryVal() const
 	if (isCached) {
 		return cachedVal;
 	}
-	std::optional<ConfigSystem*> cfgSys = ConfigSystem::Instance();
+	ConfigSystem* cfgSys = ConfigSystem::Instance();
 	assert(cfgSys);
-	cachedVal = (*cfgSys)->GetValue(path, cachedVal);
+	cachedVal = cfgSys->GetValue(path, cachedVal);
 	isCached = true;
 	return cachedVal;
 }
@@ -29,4 +29,4 @@ const T& ConfigVar<T>::QueryVal() const
 ALLOW_CFG_VAR_TYPE(bool);
 ALLOW_CFG_VAR_TYPE(int);
 ALLOW_CFG_VAR_TYPE(float);
-ALLOW_CFG_VAR_TYPE(const char*);
+ALLOW_CFG_VAR_TYPE(std::string_view);
