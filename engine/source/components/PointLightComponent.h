@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/Component.h"
+#include "game/Component.h"
 #include "render/Lights.h"
 
 class PointLightComponent : public Component {

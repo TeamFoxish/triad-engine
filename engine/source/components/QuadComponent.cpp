@@ -1,7 +1,7 @@
 #include "QuadComponent.h"
 
-#include "core/Game.h"
-#include "core/Compositer.h"
+#include "game/Game.h"
+#include "game/Component.h"
 #include "render/GeometryData.h"
 #include "render/Shader.h"
 #include "render/Renderer.h"

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/Component.h"
+#include "game/Component.h"
 #include <cstdint>
 #include <memory>
 

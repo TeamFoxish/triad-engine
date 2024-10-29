@@ -1,6 +1,6 @@
 #include "DirectionalLightComponent.h"
 
-#include "core/Game.h"
+#include "game/Game.h"
 
 #include "render/RenderSystem.h"
 

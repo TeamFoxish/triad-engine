@@ -2,7 +2,7 @@
 
 #include <memory>
 #include <vector>
-#include "core/Math.h"
+#include "math/Math.h"
 
 struct GeometryData;
 

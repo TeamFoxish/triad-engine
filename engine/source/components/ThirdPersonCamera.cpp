@@ -1,7 +1,7 @@
 #include "ThirdPersonCamera.h"
 
 #include "CompositeComponent.h"
-#include "core/Game.h"
+#include "game/Game.h"
 #include "input/InputDevice.h"
 #include <iostream>
 #include <cmath>

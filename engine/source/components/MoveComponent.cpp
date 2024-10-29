@@ -1,6 +1,6 @@
 #include "MoveComponent.h"
 
-#include "core/Compositer.h"
+#include "game/Component.h"
 
 MoveComponent::MoveComponent(Game* game, Compositer* compositer)
 	: Component(game, compositer)

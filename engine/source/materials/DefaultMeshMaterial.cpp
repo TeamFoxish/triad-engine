@@ -1,6 +1,6 @@
 #include "DefaultMeshMaterial.h"
 
-#include "core/Compositer.h"
+#include "game/Component.h"
 
 DefaultMeshMaterial::DefaultMeshMaterial(std::shared_ptr<Shader> shader)
 	: Material(shader)

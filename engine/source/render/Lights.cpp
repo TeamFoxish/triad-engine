@@ -1,9 +1,9 @@
 #include "Lights.h"
 
 #include "Renderer.h"
-#include "core/Game.h"
-#include "core/Component.h"
-#include "core/Compositer.h"
+#include "game/Game.h"
+#include "game/Component.h"
+#include "game/Component.h"
 
 #include "render/RenderSystem.h"
 

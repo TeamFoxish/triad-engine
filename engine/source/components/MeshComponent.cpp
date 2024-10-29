@@ -1,6 +1,6 @@
 #include "MeshComponent.h"
 
-#include "core/Game.h"
+#include "game/Game.h"
 #include "render/Renderer.h"
 #include "render/RenderUtils.h"
 #include "render/Shader.h"

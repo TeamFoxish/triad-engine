@@ -1,7 +1,7 @@
 #pragma once
 
 #include "render/DrawComponent.h"
-#include "core/Math.h"
+#include "math/Math.h"
 
 
 class QuadComponent : public DrawComponent {

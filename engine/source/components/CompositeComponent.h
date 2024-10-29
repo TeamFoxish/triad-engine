@@ -1,7 +1,7 @@
 #pragma once
 
-#include "core/Component.h"
-#include "core/Compositer.h"
+#include "game/Component.h"
+#include "game/Component.h"
 
 #include <vector>
 #include <initializer_list>

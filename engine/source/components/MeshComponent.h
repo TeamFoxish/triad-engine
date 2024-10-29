@@ -3,7 +3,7 @@
 #include "render/DrawComponent.h"
 #include "render/Mesh.h"
 #include "render/Texture.h"
-#include "core/Math.h"
+#include "math/Math.h"
 
 class CompositeComponent;
 

@@ -1,7 +1,7 @@
 #include "CameraComponent.h"
 
 #include "render/Renderer.h"
-#include "core/Game.h"
+#include "game/Game.h"
 
 #include "render/RenderSystem.h"
 

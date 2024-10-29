@@ -1,6 +1,6 @@
 #include "Component.h"
 
-#include "core/Compositer.h"
+#include "game/Component.h"
 
 #include "Game.h"
 

@@ -1,6 +1,6 @@
 #include "PlayerBall.h"
 
-#include "core/Game.h"
+#include "game/Game.h"
 #include "components/MeshComponent.h"
 #include "components/ThirdPersonCamera.h"
 #include "render/Renderer.h"

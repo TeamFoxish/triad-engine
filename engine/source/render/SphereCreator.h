@@ -1,7 +1,7 @@
 #pragma once
 
 #include <unordered_map>
-#include "core/Math.h"
+#include "math/Math.h"
 #include <cmath>
 #include <vector>
 

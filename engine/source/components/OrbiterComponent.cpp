@@ -1,6 +1,6 @@
 #include "OrbiterComponent.h"
 
-#include "core/Compositer.h"
+#include "game/Component.h"
 #include <cmath>
 #include <iostream>
 

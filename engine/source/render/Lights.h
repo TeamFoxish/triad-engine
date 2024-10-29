@@ -1,7 +1,7 @@
 #pragma once
 
-#include "core/Component.h"
-#include "core/Math.h"
+#include "game/Component.h"
+#include "math/Math.h"
 
 #include "materials/DefaultMeshMaterial.h" // TODO: TEMP E2
 

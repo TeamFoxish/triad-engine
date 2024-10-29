@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Math.h"
+#include "math/Math.h"
 #include <initializer_list>
 
 template<typename CHILD_T>

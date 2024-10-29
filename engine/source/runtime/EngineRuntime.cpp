@@ -7,7 +7,7 @@
 
 #include "input/InputDevice.h"
 
-#include "core/Game.h"
+#include "game/Game.h"
 
 ConfigVar<std::string_view> cfgProjectName("/Project/Name", "DefaultProjectName");
 
