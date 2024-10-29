@@ -2,8 +2,10 @@
 
 #include "core/Game.h"
 
+#include "render/RenderSystem.h"
+
 DirectionalLightComponent::DirectionalLightComponent(Game* game, Compositer* parent)
 	: Component(game, parent)
-	, dirLight(game->GetRenderer(), parent)
+	, dirLight(gRenderSys->GetRenderer(), parent)
 {
 }

@@ -9,6 +9,8 @@
 #include "components/PointLightComponent.h"
 #include "render/Lights.h"
 
+#include "render/RenderSystem.h"
+
 #include <iostream>
 
 PlayerBall::PlayerBall(Game* game)
@@ -20,23 +22,23 @@ PlayerBall::PlayerBall(Game* game)
 void PlayerBall::Initialize(Compositer* parent)
 {
 	CameraParamsPerspective perspective;
-	perspective.aspectRatio = (float)GetGame()->GetWindow()->GetWidth() / GetGame()->GetWindow()->GetHeigth();
+	perspective.aspectRatio = (float)gRenderSys->GetRenderer()->GetWindow()->GetWidth() / gRenderSys->GetRenderer()->GetWindow()->GetHeigth();
 	camera = new ThirdPersonCamera(GetGame(), perspective, this);
 
 	PointLightComponent* pointLight = new PointLightComponent(GetGame(), this);
 	pointLight->GetLightSource().SetColor(Math::Color{1.0f, 0.9f, 0.5f});
 	pointLight->GetLightSource().SetIntensity(10.0f);
 
-	Renderer* renderer = GetGame()->GetRenderer();
+	Renderer* renderer = gRenderSys->GetRenderer();
 	meshSocket = new CompositeComponent(GetGame(), this);
 	MeshComponent* mesh = new MeshComponent(GetGame(), meshSocket);
 	//mesh->SetShader(GetGame()->GetRenderer()->GetUtils()->GetMeshShader(renderer));
-	mesh->SetGeometry(GetGame()->GetRenderer()->GetUtils()->GetSphereGeom(renderer));
+	mesh->SetGeometry(renderer->GetUtils()->GetSphereGeom(renderer));
 
 	CompositeComponent* tempC = new CompositeComponent(GetGame(), meshSocket);
 	MeshComponent* cube = new MeshComponent(GetGame(), tempC);
 	//cube->SetShader(GetGame()->GetRenderer()->GetUtils()->GetMeshShader(renderer));
-	cube->SetGeometry(GetGame()->GetRenderer()->GetUtils()->GetCubeGeom(renderer));
+	cube->SetGeometry(renderer->GetUtils()->GetCubeGeom(renderer));
 	cube->SetColor(Math::Color{1.0f, 0.0f, 0.0f});
 	tempC->SetPosition(Math::Vector3{1.0f, 0.0f, 0.0f});
 	tempC->SetScale(Math::Vector3{2.0f, 0.2f, 0.2f});
@@ -92,7 +94,7 @@ void PlayerBall::ProceedInput(InputDevice* inpDevice)
 		sceneObjects[idx]->SetWorldTransform(res);
 		attachSocket->AddChild({sceneObjects[idx]});
 	}
-	for (int i = newChilds.size() - 1; i >= 0; --i) {
+	for (int i = (int)newChilds.size() - 1; i >= 0; --i) {
 		sceneObjects.erase(sceneObjects.begin() + newChilds[i]);
 	}
 	meshSocket->SetScale(Math::Vector3{targetScale});

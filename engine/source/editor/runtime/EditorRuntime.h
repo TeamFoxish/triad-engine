@@ -15,6 +15,13 @@ public:
 	EditorRuntime(EditorRuntime&&) = delete;
 	~EditorRuntime();
 
+	bool Init(const InitParams& params) override;
+	void Run() override;
+	void Shutdown() override;
+
+	// TODO: replace with viewport?
+	Window* GetWindow() const override;
+
 private:
 	std::unique_ptr<EngineRuntime> engRuntime;
 };

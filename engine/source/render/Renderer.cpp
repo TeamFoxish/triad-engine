@@ -184,7 +184,7 @@ void Renderer::Draw()
 	swapChain->Present(1, /*DXGI_PRESENT_DO_NOT_WAIT*/ 0);
 }
 
-void Renderer::SetClearColor(float* color)
+void Renderer::SetClearColor(const float* color)
 {
 	memcpy(clearColor, color, sizeof(float) * 4);
 }
@@ -196,7 +196,7 @@ void Renderer::PopulateLightsBuffer(DefaultMeshMaterial::CBPS& buffer) const
 	}
 }
 
-const std::shared_ptr<Mesh>& Renderer::GetMesh(const std::string& path)
+Mesh::PTR Renderer::GetMesh(const std::string& path)
 {
 	auto iter = meshes.find(path);
 	if (iter != meshes.end()) {

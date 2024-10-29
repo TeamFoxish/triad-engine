@@ -34,14 +34,14 @@ public:
 
 	void Draw();
 
-	void SetClearColor(float* color);
+	void SetClearColor(const float* color);
 
 	void PopulateLightsBuffer(DefaultMeshMaterial::CBPS& buffer) const;
 
 	const Math::Matrix& GetViewMatrix() const { return viewMatr; }
 	void SetViewMatrix(const Math::Matrix& view) { viewMatr = view; }
 
-	const Mesh::PTR& GetMesh(const std::string& path);
+	Mesh::PTR GetMesh(const std::string& path);
 	ID3D11ShaderResourceView* GetTexture(const std::wstring& path);
 
 	Window* GetWindow() const { return window; }

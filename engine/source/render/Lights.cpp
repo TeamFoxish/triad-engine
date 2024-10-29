@@ -5,6 +5,8 @@
 #include "core/Component.h"
 #include "core/Compositer.h"
 
+#include "render/RenderSystem.h"
+
 Light::Light(Renderer* renderer, Compositer* parent)
 	: parentRef(parent)
 {
@@ -23,7 +25,7 @@ Math::Vector3 Light::GetPos() const
 
 Renderer* Light::GetRenderer() const
 {
-	return parentRef->GetGamePtr()->GetRenderer();
+	return gRenderSys->GetRenderer();
 }
 
 DirectionalLight::DirectionalLight(Renderer* renderer, Compositer* parent)

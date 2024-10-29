@@ -3,6 +3,8 @@
 #include "render/Renderer.h"
 #include "core/Game.h"
 
+#include "render/RenderSystem.h"
+
 CameraComponent::CameraComponent(Game* game, const CameraParams& params, Compositer* parent)
 	: Component(game, parent)
 	, projMatr(params.MakeProjectionMatrix())
@@ -12,7 +14,7 @@ CameraComponent::CameraComponent(Game* game, const CameraParams& params, Composi
 
 void CameraComponent::SetViewMatrix(const Math::Matrix& view)
 {
-	GetGame()->GetRenderer()->SetViewMatrix(view);
+	gRenderSys->GetRenderer()->SetViewMatrix(view);
 }
 
 Math::Matrix CameraParamsPerspective::MakeProjectionMatrix() const

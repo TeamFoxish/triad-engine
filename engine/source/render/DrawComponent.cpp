@@ -1,9 +1,10 @@
 #include "DrawComponent.h"
 
-#include "core/Game.h"
 #include "Renderer.h"
 #include "Material.h"
 #include "GeometryData.h"
+
+#include "render/RenderSystem.h"
 
 #include <d3d11.h>
 #include <cassert>
@@ -17,12 +18,12 @@
 DrawComponent::DrawComponent(Game* game, Compositer* compister)
 	: Component(game, compister)
 {
-	GetGame()->GetRenderer()->AddComponent(this);
+	gRenderSys->GetRenderer()->AddComponent(this);
 }
 
 DrawComponent::~DrawComponent()
 {
-	GetGame()->GetRenderer()->RemoveComponent(this);
+	gRenderSys->GetRenderer()->RemoveComponent(this);
 }
 
 void DrawComponent::Initialize(Compositer* parent)

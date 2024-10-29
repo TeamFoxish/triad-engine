@@ -9,11 +9,13 @@
 #include "materials/DefaultMeshMaterial.h"
 #include "components/ThirdPersonCamera.h"
 
+#include "render/RenderSystem.h"
+
 MeshComponent::MeshComponent(Game* game, Compositer* parent)
 	: DrawComponent(game, parent)
 	, parent(parent)
 {
-	auto mat = std::make_shared<DefaultMeshMaterial>(GetGame()->GetRenderer()->GetUtils()->GetAdvMeshShader(GetGame()->GetRenderer(), sizeof(DefaultMeshMaterial::CBVS), sizeof(DefaultMeshMaterial::CBPS)));
+	auto mat = std::make_shared<DefaultMeshMaterial>(gRenderSys->GetRenderer()->GetUtils()->GetAdvMeshShader(gRenderSys->GetRenderer(), sizeof(DefaultMeshMaterial::CBVS), sizeof(DefaultMeshMaterial::CBPS)));
 	SetMaterial(mat);
 }
 
@@ -65,7 +67,7 @@ MeshComponent* MeshComponent::BuildMeshNode(const Mesh::MeshNode& node, Composit
 	parent->SetPosition(node.pos);
 	parent->SetRotation(node.rot);
 	parent->SetScale(node.scale);
-	Renderer* renderer = parent->GetGame()->GetRenderer();
+	Renderer* renderer = gRenderSys->GetRenderer();
 	MeshComponent* tempRes = nullptr;
 	for (const GeometryData::PTR& geom : node.geoms) {
 		MeshComponent* meshComp = new MeshComponent(parent->GetGame(), parent);

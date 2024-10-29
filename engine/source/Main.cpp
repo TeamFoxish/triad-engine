@@ -4,6 +4,10 @@
 
 #include "runtime/RuntimeIface.h"
 #include "config/ConfigSystem.h"
+#include "config/ConfigVar.h"
+
+static ConfigVar<int> cfgWindowWidth("/Engine/Window/Width", 800);
+static ConfigVar<int> cfgWindowHeight("/Engine/Window/Height", 800);
 
 #ifdef EDITOR
 #include "editor/init/EditorConfigurator.h"
@@ -16,19 +20,6 @@ using AppRuntime = EditorRuntime;
 using AppConfigurator = EngineConfigurator;
 using AppRuntime = EngineRuntime;
 #endif
-
-//#define TEMP_CFG_VAR_TEST
-#ifdef TEMP_CFG_VAR_TEST
-
-#include "config/ConfigVar.h"
-#include "config/ConfigSystem.h"
-
-static ConfigVar<std::string_view> cfgVarEngineName("/Engine/Name", "DefaultEngineName");
-static ConfigVar<std::string_view> cfgVarProjectName("/Project/Name", "DefaultProjectName");
-static ConfigVar<std::vector<std::string_view>> cfgVarNames("/Engine/CoolNames", {});
-static ConfigVar<std::vector<int>> cfgVarNumbers("/Engine/ArrayTest", {});
-
-#endif // TEMP_CFG_VAR_TEST
 
 #if defined(_WIN32) && defined(WIN_MAIN)
 
@@ -50,18 +41,6 @@ int main(int argc, char* argv[])
 
 #endif // _WIN32
 
-#ifdef TEMP_CFG_VAR_TEST
-	setlocale(LC_ALL, "");
-	ConfigSystem cfgSys;
-	cfgSys.Init("config/engine.cfg");
-	cfgSys.Override("config/project.cfg");
-	std::cout << cfgVarEngineName.GetRef() << '\n';
-	std::cout << cfgVarProjectName.GetRef() << '\n';
-	std::cout << cfgVarNames.GetRef()[0] << '\n';
-	std::cout << cfgVarNumbers.GetRef()[0] << '\n';
-	return 0;
-#else
-
 	setlocale(LC_ALL, ""); // TODO: remove when logging is done
 	ConfigSystem cfgSys;
 	std::unique_ptr<AppRuntime> appRuntime;
@@ -71,15 +50,14 @@ int main(int argc, char* argv[])
 			return EXIT_FAILURE;
 		}
 	}
-
-	Game game;
-	bool success = game.Initialize("TriadEngine", 800, 800);
-	if (success)
-	{
-		game.RunLoop();
+	RuntimeIface::InitParams params;
+	params.window.width = cfgWindowWidth;
+	params.window.height = cfgWindowHeight;
+	if (!appRuntime->Init(params)) {
+		return EXIT_FAILURE;
 	}
-	game.Shutdown();
+	appRuntime->Run();
+	appRuntime->Shutdown();
 
 	return 0;
-#endif
 }

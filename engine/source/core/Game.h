@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 #include <vector>
 #include <string>
 #include <chrono>
@@ -19,10 +18,10 @@ class Game {
 	friend class PlayerBall; // TODO: remove this !!!
 
 public:
-	bool Initialize(const std::string name, int windowWidth, int windowHeight);
+	bool Initialize();
 	void ProcessInput();
 	void Shutdown();
-	void RunLoop();
+	void UpdateFrame();
 
 	void Restart();
 	void LoadData();
@@ -37,21 +36,13 @@ public:
 	CameraComponent* GetActiveCamera() const { return camera; }
 	void SetActiveCamera(CameraComponent* cam) { camera = cam; }
 
-	Renderer* GetRenderer() const { return renderer.get(); }
-
-	Window* GetWindow() const { return window; }
-
 private:
 	void AddComponent(Component* comp);
 	void RemoveComponent(Component* comp);
 
 private:
-	std::unique_ptr<Renderer> renderer;
-
 	std::vector<Component*> components;
 	std::vector<Component*> pendingComponents;
-
-	Window* window = nullptr;
 
 	class PlayerBall* player = nullptr;
 	class CameraComponent* camera = nullptr;
@@ -62,5 +53,7 @@ private:
 	int frameNum = 0;
 
 	bool isUpdatingComponents = false;
+
+public:
 	bool isRunning = true;
 };

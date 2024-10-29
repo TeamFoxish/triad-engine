@@ -26,31 +26,16 @@
 #include "components/OrbiterComponent.h"
 
 #include "input/InputDevice.h"
+#include "render/RenderSystem.h"
 
 #ifdef _WIN32
 #include "os/wnd.h"
 #endif
 
 
-bool Game::Initialize(const std::string name, int windowWidth, int windowHeight)
+bool Game::Initialize()
 {
-	window = osCreateWindow(name, windowWidth, windowHeight);
-	if (!window) {
-		// TODO: log error message
-		return false;
-	}
-
-	renderer = std::make_unique<Renderer>();
-	if (!renderer->Initialize(window)) {
-		// TODO: log error message
-		return false;
-	}
-	float clearColor[] = {0.1f, 0.1f, 0.1f, 0.1f};
-	renderer->SetClearColor(clearColor);
-
-	globalInputDevice = new InputDevice(this);
-
-	srand(std::time(0));
+	srand((uint32_t)std::time(0));
 
 	LoadData();
 
@@ -84,14 +69,11 @@ void Game::Shutdown()
 	delete(globalInputDevice);
 }
 
-void Game::RunLoop()
+void Game::UpdateFrame()
 {
-	while (isRunning)
-	{
-		ProcessInput();
-		UpdateGame();
-		GenerateOutput();
-	}
+	ProcessInput();
+	UpdateGame();
+	GenerateOutput();
 }
 
 void Game::Restart()
@@ -123,7 +105,7 @@ void Game::LoadData()
 	{
 		CompositeComponent* pointLightC = new CompositeComponent(this);
 		MeshComponent* mesh = new MeshComponent(this, pointLightC);
-		mesh->SetGeometry(GetRenderer()->GetUtils()->GetSphereGeom(renderer.get()));
+		mesh->SetGeometry(gRenderSys->GetRenderer()->GetUtils()->GetSphereGeom(gRenderSys->GetRenderer()));
 		mesh->SetColor(Math::Color{1.0f, 0.0f, 0.0f});
 		PointLightComponent* pointLight = new PointLightComponent(this, pointLightC);
 		pointLight->GetLightSource().SetColor(Math::Color{1.0f, 0.0f, 0.0f});
@@ -135,7 +117,7 @@ void Game::LoadData()
 	{
 		CompositeComponent* pointLightC = new CompositeComponent(this);
 		MeshComponent* mesh = new MeshComponent(this, pointLightC);
-		mesh->SetGeometry(GetRenderer()->GetUtils()->GetSphereGeom(renderer.get()));
+		mesh->SetGeometry(gRenderSys->GetRenderer()->GetUtils()->GetSphereGeom(gRenderSys->GetRenderer()));
 		mesh->SetColor(Math::Color{0.0f, 1.0f, 0.0f});
 		PointLightComponent* pointLight = new PointLightComponent(this, pointLightC);
 		pointLight->GetLightSource().SetColor(Math::Color{0.0f, 1.0f, 0.0f});
@@ -147,7 +129,7 @@ void Game::LoadData()
 	{
 		CompositeComponent* pointLightC = new CompositeComponent(this);
 		MeshComponent* mesh = new MeshComponent(this, pointLightC);
-		mesh->SetGeometry(GetRenderer()->GetUtils()->GetSphereGeom(renderer.get()));
+		mesh->SetGeometry(gRenderSys->GetRenderer()->GetUtils()->GetSphereGeom(gRenderSys->GetRenderer()));
 		mesh->SetColor(Math::Color{0.0f, 0.0f, 1.0f});
 		PointLightComponent* pointLight = new PointLightComponent(this, pointLightC);
 		pointLight->GetLightSource().SetColor(Math::Color{0.0f, 0.0f, 1.0f});
@@ -167,10 +149,10 @@ void Game::LoadData()
 
 	for (int i = 0; i < 25; ++i) {
 		CompositeComponent* flopa = new CompositeComponent(this);
-		const Mesh::PTR& mesh = renderer->GetMesh("assets/flop.fbx");
+		const Mesh::PTR& mesh = gRenderSys->GetRenderer()->GetMesh("assets/flop.fbx");
 		MeshComponent* rootMesh = MeshComponent::Build(mesh, flopa);
 		if (rootMesh) {
-			Texture tex(0, L"assets/flopTex.png", renderer.get());
+			Texture tex(0, L"assets/flopTex.png", gRenderSys->GetRenderer());
 			rootMesh->SetTexture(tex);
 			// TODO: i feel really bad about this
 			flopa->boundingSphereRadius = rootMesh->boundingSphereRadius;
@@ -183,10 +165,10 @@ void Game::LoadData()
 	}
 	for (int i = 0; i < 25; ++i) {
 		CompositeComponent* flopa = new CompositeComponent(this);
-		const Mesh::PTR& mesh = renderer->GetMesh("assets/cheese.fbx");
+		const Mesh::PTR& mesh = gRenderSys->GetRenderer()->GetMesh("assets/cheese.fbx");
 		MeshComponent* rootMesh = MeshComponent::Build(mesh, flopa);
 		if (rootMesh) {
-			Texture tex(0, L"assets/cheeseTex.jpg", renderer.get());
+			Texture tex(0, L"assets/cheeseTex.jpg", gRenderSys->GetRenderer());
 			rootMesh->SetTexture(tex);
 			// TODO: i feel really bad about this
 			flopa->boundingSphereRadius = rootMesh->boundingSphereRadius;
@@ -244,7 +226,7 @@ void Game::UpdateGame()
 #ifdef _WIN32
 		WCHAR text[256];
 		swprintf_s(text, TEXT("FPS: %f"), fps);
-		SetWindowText(wndGetHWND(window), text);
+		SetWindowText(wndGetHWND(gRenderSys->GetRenderer()->GetWindow()), text);
 #endif
 
 		frameNum = 0;
@@ -266,7 +248,8 @@ void Game::UpdateGame()
 
 void Game::GenerateOutput()
 {
-	renderer->Draw();
+	// should be called from engine side
+	// gRenderSys->GetRenderer()->Draw();
 }
 
 CompositeComponent* Game::GetCameraHolder()

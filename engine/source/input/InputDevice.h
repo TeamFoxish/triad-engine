@@ -6,7 +6,7 @@
 #include <SimpleMath.h>
 
 
-class Game;
+class RuntimeIface;
 
 struct MouseMoveEventArgs
 {
@@ -17,9 +17,7 @@ struct MouseMoveEventArgs
 
 class InputDevice
 {
-	friend class Game;
-	
-	Game* game;
+	RuntimeIface* runtime;
 
 	std::unordered_set<Keys>* keys;
 
@@ -32,7 +30,7 @@ public:
 	
 public:
 	
-	InputDevice(Game* inGame);
+	InputDevice(RuntimeIface* runtime);
 	~InputDevice();
 
 
