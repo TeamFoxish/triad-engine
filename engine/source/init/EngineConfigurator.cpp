@@ -6,6 +6,8 @@
 #include "runtime/EngineRuntime.h"
 #include "config/ConfigSystem.h"
 
+#include "InitLoader.h"
+
 bool EngineConfigurator::CreateRuntime(int argc, char* argv[], std::unique_ptr<EngineRuntime>& runtime)
 {
     const auto params = std::make_shared<EngineCmdParams>();
@@ -31,8 +33,9 @@ bool EngineConfigurator::CreateRuntime(const EngineCmdParams& params, std::uniqu
 
     runtime = std::make_unique<EngineRuntime>();
 
-    if (params.startupScene) {
-        // TODO: set scene to runtime?
+    if (params.startupScene && InitLoader::startUpSceneTag == 0) {
+        // set startup scene if still unset
+        InitLoader::startUpSceneTag = ToStrid(*params.startupScene);
     }
 
     return true;

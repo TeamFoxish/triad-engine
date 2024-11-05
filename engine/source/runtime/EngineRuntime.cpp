@@ -5,11 +5,21 @@
 #include "render/RenderInit.h"
 #include "render/RenderSystem.h"
 
+#include "resource/ResourceInit.h"
+#include "resource/ResourceSystem.h"
+
+#include "init/InitLoader.h"
+#include "scene/SceneLoader.h"
+#include "scene/Scene.h"
+
 #include "input/InputDevice.h"
 
 #include "game/Game.h"
 
 ConfigVar<std::string_view> cfgProjectName("/Project/Name", "DefaultProjectName");
+ConfigVar<std::string_view> cfgInitResource("/Project/Resource/InitResource", "res://init.resource");
+
+std::unique_ptr<Game> gTempGame = nullptr;
 
 bool EngineRuntime::Init(const InitParams& params)
 {
@@ -21,31 +31,43 @@ bool EngineRuntime::Init(const InitParams& params)
 		}
 	}
 
+	gTempGame = std::make_unique<Game>();
+
+	// init systems
 	if (!InitRender(this)) {
+		// TODO: log error message
+		return false;
+	}
+	if (!InitResource(this)) {
 		// TODO: log error message
 		return false;
 	}
 	
 	globalInputDevice = new InputDevice(this);
 
+	gResourceSys->LoadResource(ToStrid(cfgInitResource.GetRef().data()));
+	std::unique_ptr<Scene> startUpScene = SceneLoader::CreateScene(InitLoader::startUpSceneTag);
+	gTempGame->scenes.push_back(std::move(startUpScene));
+	SceneLoader::FillScene(InitLoader::startUpSceneTag); // brediks?
+
 	return true;
 }
 
 void EngineRuntime::Run()
 {
-	std::unique_ptr<Game> tempGame = std::make_unique<Game>();
-	bool success = tempGame->Initialize();
+	bool success = gTempGame->Initialize();
 	if (success) {
-		while (tempGame->isRunning) {
-			tempGame->UpdateFrame();
+		while (gTempGame->isRunning) {
+			gTempGame->UpdateFrame();
 			gRenderSys->DrawFrame();
 		}
 	}
-	tempGame->Shutdown();
 }
 
 void EngineRuntime::Shutdown()
 {
+	gTempGame->Shutdown();
+	TermResource(this);
 	TermRender(this);
 	if (window) {
 		osDestroyWindow(window);

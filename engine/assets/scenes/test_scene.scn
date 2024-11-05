@@ -1,0 +1,43 @@
+content:
+  objects: 
+    dir-light: res://prefabs/dir_light.prefab
+    red-light: 
+      ref: res://prefabs/point_light.prefab
+      overrides:
+        r: 1.0
+        g: 0.0
+        b: 0.0
+    green-light: 
+      ref: res://prefabs/point_light.prefab
+      overrides:
+        r: 0.0
+        g: 1.0
+        b: 0.0
+    blue-light: 
+      ref: res://prefabs/point_light.prefab
+      overrides:
+        r: 0.0
+        g: 0.0
+        b: 1.0
+    player: res://prefabs/player.prefab
+    flopa1: res://prefabs/flopa.prefab
+    flopa2: res://prefabs/flopa.prefab
+    flopa3: res://prefabs/flopa.prefab
+    flopa4: res://prefabs/flopa.prefab
+    flopa5: res://prefabs/flopa.prefab
+    flopa6: res://prefabs/flopa.prefab
+    flopa7: res://prefabs/flopa.prefab
+    flopa8: res://prefabs/flopa.prefab
+    flopa9: res://prefabs/flopa.prefab
+    flopa10: res://prefabs/flopa.prefab
+    cheese1: res://prefabs/cheese.prefab
+    cheese2: res://prefabs/cheese.prefab
+    cheese3: res://prefabs/cheese.prefab
+    cheese4: res://prefabs/cheese.prefab
+    cheese5: res://prefabs/cheese.prefab
+    cheese6: res://prefabs/cheese.prefab
+    cheese7: res://prefabs/cheese.prefab
+    cheese8: res://prefabs/cheese.prefab
+    cheese9: res://prefabs/cheese.prefab
+    cheese10: res://prefabs/cheese.prefab
+type: scene

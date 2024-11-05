@@ -2,6 +2,7 @@
 
 #include "RuntimeIface.h"
 
+#include <memory>
 #include <string>
 #include "config/ConfigVar.h"
 
@@ -9,6 +10,11 @@ class Window;
 
 class EngineRuntime : public RuntimeIface {
 public:
+	EngineRuntime() = default;
+	EngineRuntime(const EngineRuntime&) = delete;
+	EngineRuntime(EngineRuntime&&) = delete;
+	~EngineRuntime() = default;
+
 	bool Init(const InitParams& params) override;
 	void Run() override;
 	void Shutdown() override;
@@ -20,3 +26,5 @@ private:
 };
 
 extern ConfigVar<std::string_view> cfgProjectName;
+
+extern std::unique_ptr<class Game> gTempGame;

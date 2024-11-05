@@ -5,12 +5,14 @@
 
 bool InitRender(RuntimeIface* runtime)
 {
+	assert(gRenderSys == nullptr);
 	gRenderSys = std::make_unique<RenderSystem>();
 	return gRenderSys->Init(runtime);
 }
 
 void TermRender(RuntimeIface* runtime)
 {
+	assert(gRenderSys);
 	gRenderSys->Term();
 	gRenderSys = nullptr;
 }

@@ -16,6 +16,7 @@
 #include "render/Shader.h"
 #include "render/MeshLoader.h"
 #include "render/Lights.h"
+#include "scene/Scene.h"
 
 #include "components/CompositeComponent.h"
 #include "components/ThirdPersonCamera.h"
@@ -27,17 +28,26 @@
 
 #include "input/InputDevice.h"
 #include "render/RenderSystem.h"
+#include "render/Renderer.h"
 
 #ifdef _WIN32
 #include "os/wnd.h"
 #endif
 
 
+Game::Game()
+{
+}
+
+Game::~Game()
+{
+}
+
 bool Game::Initialize()
 {
 	srand((uint32_t)std::time(0));
 
-	LoadData();
+	//LoadData();
 
 	prevTime = std::chrono::steady_clock::now();
 
@@ -59,8 +69,10 @@ void Game::ProcessInput()
 		return;
 	}
 
-	for (Component* comp : components) {
-		comp->ProceedInput(globalInputDevice);
+	for (const auto& pScene : scenes) {
+		for (Component* comp : pScene->GetComponents()) {
+			comp->ProceedInput(globalInputDevice);
+		}
 	}
 }
 
@@ -204,10 +216,10 @@ void Game::LoadData()
 
 void Game::UnloadData()
 {
-	while (!components.empty())
+	/*while (!components.empty())
 	{
 		delete components.back();
-	}
+	}*/
 }
 
 void Game::UpdateGame()
@@ -232,18 +244,14 @@ void Game::UpdateGame()
 		frameNum = 0;
 	}
 
-	isUpdatingComponents = true;
-	for (auto comp : components)
-	{
-		comp->Update(deltaTime);
+	for (const auto& pScene : scenes) {
+		ComponentStorage& storage = pScene->GetStorage();
+		storage.BeginUpdate();
+		for (Component* comp : storage.GetComponents()) {
+			comp->Update(deltaTime);
+		}
+		storage.EndUpdate();
 	}
-	isUpdatingComponents = false;
-
-	for (auto comp : pendingComponents)
-	{
-		components.emplace_back(comp);
-	}
-	pendingComponents.clear();
 }
 
 void Game::GenerateOutput()
@@ -259,37 +267,12 @@ CompositeComponent* Game::GetCameraHolder()
 
 void Game::AddComponent(Component* comp)
 {
-#ifdef _DEBUG
-	auto iter = std::find(pendingComponents.begin(), pendingComponents.end(), comp);
-	assert(iter == pendingComponents.end());
-	iter = std::find(components.begin(), components.end(), comp);
-	assert(iter == components.end());
-#endif
-
-	if (isUpdatingComponents) {
-		pendingComponents.push_back(comp);
-		return;
-	}
-	components.push_back(comp);
+	// TEMP: add component to the first loaded scene
+	scenes[0]->GetStorage().AddComponent(comp);
 }
 
-void Game::RemoveComponent(Component* comp)
+void Game::RemoveComponent(Component* comp) 
 {
-	auto iter = std::find(pendingComponents.begin(), pendingComponents.end(), comp);
-	if (iter != pendingComponents.end())
-	{
-		std::iter_swap(iter, pendingComponents.end() - 1);
-		pendingComponents.pop_back();
-		return;
-	}
-
-	iter = std::find(components.begin(), components.end(), comp);
-	if (iter != components.end())
-	{
-		std::iter_swap(iter, components.end() - 1);
-		components.pop_back();
-		return;
-	}
-
-	assert(false);
+	// TEMP: remove component from the first loaded scene
+	scenes[0]->GetStorage().RemoveComponent(comp);
 }

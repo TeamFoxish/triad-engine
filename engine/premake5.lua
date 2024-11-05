@@ -11,11 +11,11 @@ project("Engine")
   
   filter("configurations:Debug*")
     libdirs({ "libs/**/debug" })
-	links({ "assimp-vc143-mtd", "freetyped", "argumentumd" })
+	links({ "assimp-vc143-mtd", "freetyped", "argumentumd", "yaml-cppd" })
   
   filter("configurations:Release*")
     libdirs({ "libs/**/release" })
-	links({ "assimp-vc143-mt", "freetype", "argumentum" })
+	links({ "assimp-vc143-mt", "freetype", "argumentum", "yaml-cpp" })
   
   filter {  }
   

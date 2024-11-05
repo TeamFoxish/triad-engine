@@ -44,6 +44,7 @@ void PlayerBall::Initialize(Compositer* parent)
 	tempC->SetScale(Math::Vector3{2.0f, 0.2f, 0.2f});
 
 	attachSocket = new CompositeComponent(GetGame(), this);
+	GetGame()->player = this;
 
 	/*MeshComponent* rootMesh = nullptr;
 	MeshLoader::LoadMesh("assets/flop.fbx", meshSocket, &rootMesh);
