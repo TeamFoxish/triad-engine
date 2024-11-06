@@ -29,6 +29,8 @@ workspace("Triad")
 	
   filter {  }
   
+  defines({"_CRT_SECURE_NO_WARNINGS"}) -- ignore strncpy unsafety warnings caused by Strid
+  
   location("build")
   targetdir("bin/%{cfg.buildcfg}")
   objdir("intermediate/%{cfg.buildcfg}")

@@ -77,8 +77,8 @@ void InputDevice::OnMouseMove(RawMouseEventArgs args)
 	GetCursorPos(&p);
 	ScreenToClient(wndGetHWND(runtime->GetWindow()), &p);
 	
-	MousePosition	= Vector2(p.x, p.y);
-	MouseOffset		= Vector2(args.X, args.Y);
+	MousePosition	= Vector2((float)p.x, (float)p.y);
+	MouseOffset		= Vector2((float)args.X, (float)args.Y);
 	MouseWheelDelta = args.WheelDelta;
 
 	const MouseMoveEventArgs moveArgs = {MousePosition, MouseOffset, MouseWheelDelta};

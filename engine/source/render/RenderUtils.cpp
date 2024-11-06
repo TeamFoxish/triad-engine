@@ -174,7 +174,7 @@ std::shared_ptr<Shader> RenderUtils::CreateAdvMeshShader(Renderer* renderer, int
 	//assert(sizeof(MeshCBVS) % 16 == 0);
 	const D3D11_BUFFER_DESC cbVSDescs[] = {
 		{
-			cbVSSize,			// UINT ByteWidth;
+			(uint32_t)cbVSSize,			// UINT ByteWidth;
 			D3D11_USAGE_DYNAMIC,		// D3D11_USAGE Usage;
 			D3D11_BIND_CONSTANT_BUFFER, // UINT BindFlags;
 			D3D11_CPU_ACCESS_WRITE,		// UINT CPUAccessFlags;
@@ -185,7 +185,7 @@ std::shared_ptr<Shader> RenderUtils::CreateAdvMeshShader(Renderer* renderer, int
 	//assert(sizeof(MeshCBPS) % 16 == 0);
 	const D3D11_BUFFER_DESC cbPSDescs[] = {
 		{
-			cbPSSize,			// UINT ByteWidth;
+			(uint32_t)cbPSSize,			// UINT ByteWidth;
 			D3D11_USAGE_DYNAMIC,		// D3D11_USAGE Usage;
 			D3D11_BIND_CONSTANT_BUFFER, // UINT BindFlags;
 			D3D11_CPU_ACCESS_WRITE,		// UINT CPUAccessFlags;
@@ -194,7 +194,7 @@ std::shared_ptr<Shader> RenderUtils::CreateAdvMeshShader(Renderer* renderer, int
 		}
 	};
 
-	return std::make_shared<Shader>(L"shaders/advanced_mesh_shader.hlsl", renderer->GetDevice(), inputElements, std::size(inputElements), cbVSDescs, 1, cbPSDescs, 1);
+	return std::make_shared<Shader>(L"shaders/advanced_mesh_shader.hlsl", renderer->GetDevice(), inputElements, (int)std::size(inputElements), cbVSDescs, 1, cbPSDescs, 1);
 }
 
 std::shared_ptr<GeometryData> RenderUtils::CreateCubeGeom(Renderer* renderer)

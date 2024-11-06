@@ -34,7 +34,7 @@ public:
     // add vertex to mesh, fix position to be on unit sphere, return index
     uint32_t addVertex(Math::Vector3 p)
     {
-        const double length = std::sqrt(p.x * p.x + p.y * p.y + p.z * p.z);
+        const float length = std::sqrt(p.x * p.x + p.y * p.y + p.z * p.z);
         const Math::Vector3 pos(p.x, p.y, p.z);
         if (length < 0.01) {
             geometry.push_back({ pos });
@@ -53,7 +53,6 @@ public:
         int64_t greaterIndex = firstIsSmaller ? p2 : p1;
         int64_t key = (smallerIndex << 32) + greaterIndex;
 
-        uint32_t ret;
         auto iter = middlePointIndexCache.find(key);
         if (iter != middlePointIndexCache.end())
         {
@@ -64,9 +63,9 @@ public:
         Math::Vector3 point1 = geometry[p1].pos;
         Math::Vector3 point2 = geometry[p2].pos;
         Math::Vector3 middle = Math::Vector3(
-            (point1.x + point2.x) / 2.0,
-            (point1.y + point2.y) / 2.0,
-            (point1.z + point2.z) / 2.0);
+            (point1.x + point2.x) / 2.0f,
+            (point1.y + point2.y) / 2.0f,
+            (point1.z + point2.z) / 2.0f);
 
         // add vertex makes sure point is on unit sphere
         uint32_t i = addVertex(middle);
@@ -82,7 +81,7 @@ public:
         index = 0;
 
         // create 12 vertices of a icosahedron
-        auto t = (1.0 + std::sqrt(5.0)) / 2.0;
+        const float t = (1.0f + std::sqrt(5.0f)) / 2.0f;
 
         addVertex(Math::Vector3(-1, t, 0));
         addVertex(Math::Vector3(1, t, 0));

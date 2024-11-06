@@ -96,6 +96,7 @@ void Game::Restart()
 
 void Game::LoadData()
 {
+#if 0
 	auto rndPos = [](float extendX, float extendY) {
 		auto rndFloat = []() { return (float)rand() / RAND_MAX; };
 		const float x = extendX * 2;
@@ -212,6 +213,7 @@ void Game::LoadData()
 		flopa->SetRotation(Math::Quaternion::CreateFromYawPitchRoll(0.0f, Math::Pi / 2, 0.0f));
 		flopa->Initialize();
 	}*/
+#endif
 }
 
 void Game::UnloadData()

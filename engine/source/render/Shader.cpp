@@ -87,11 +87,11 @@ void Shader::Activate(ID3D11DeviceContext* context)
 	context->IASetInputLayout(layout);
 	context->VSSetShader(vertShader, nullptr, 0);
 	if (!cbVS.empty()) {
-		context->VSSetConstantBuffers(0, cbVS.size(), &cbVS.front());
+		context->VSSetConstantBuffers(0, (uint32_t)cbVS.size(), &cbVS.front());
 	}
 	context->PSSetShader(pixShader, nullptr, 0);
 	if (!cbPS.empty()) {
-		context->PSSetConstantBuffers(0, cbPS.size(), &cbPS.front());
+		context->PSSetConstantBuffers(0, (uint32_t)cbPS.size(), &cbPS.front());
 	}
 }
 

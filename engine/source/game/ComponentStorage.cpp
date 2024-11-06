@@ -1,5 +1,7 @@
 #include "ComponentStorage.h"
 
+#include "Component.h"
+
 #include <algorithm>
 #include <cassert>
 
