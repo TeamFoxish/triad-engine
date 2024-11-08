@@ -17,7 +17,8 @@ public:
 
 	Renderer* GetRenderer() const { return rendererImpl.get(); }
 
-	void DrawFrame();
+	void StartFrame();
+	void EndFrame();
 
 protected:
 	std::unique_ptr<Renderer> rendererImpl;

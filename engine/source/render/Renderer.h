@@ -33,6 +33,7 @@ public:
 	//void UnloadData();
 
 	void Draw();
+	void EndFrame();
 
 	void SetClearColor(const float* color);
 
@@ -81,5 +82,5 @@ private:
 
 	Math::Matrix viewMatr;
 
-	float clearColor[4] { 0.1f, 0.1f, 0.1f, 1.0f };
+	float clearColor[4]{ 0.1f, 0.1f, 0.1f, 1.0f };
 };

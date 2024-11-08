@@ -17,6 +17,7 @@
 #include "os/wnd.h"
 #endif
 
+#include "editor/ui_debug/UIDebug.h"
 
 bool Renderer::Initialize(Window* _window)
 {
@@ -143,7 +144,7 @@ bool Renderer::Initialize(Window* _window)
 
 	utils = std::make_unique<RenderUtils>();
 
-    return true;
+	return true;
 }
 
 void Renderer::Shutdown()
@@ -171,6 +172,7 @@ void Renderer::Draw()
 	context->OMSetDepthStencilState(pDSState, 1);
 
 	context->ClearRenderTargetView(rtv, clearColor);
+
 	context->ClearDepthStencilView(depthBuffer, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 	context->PSSetSamplers(0, 1, &samplerState);
@@ -178,9 +180,10 @@ void Renderer::Draw()
 	for (DrawComponent* comp : components) {
 		comp->Draw(this);
 	}
+}
 
-	context->OMSetRenderTargets(0, nullptr, nullptr);
-
+void Renderer::EndFrame()
+{
 	swapChain->Present(1, /*DXGI_PRESENT_DO_NOT_WAIT*/ 0);
 }
 

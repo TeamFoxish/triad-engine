@@ -4,7 +4,7 @@
 #include "runtime/RuntimeIface.h"
 #include "config/ConfigVar.h"
 
-static ConfigVar<std::vector<float>> cfgRenderClearColor("/Engine/Render/ClearColor", {0.0f, 0.0f, 0.0f, 0.0f});
+static ConfigVar<std::vector<float>> cfgRenderClearColor("/Engine/Render/ClearColor", { 0.0f, 0.0f, 0.0f, 0.0f });
 
 std::unique_ptr<RenderSystem> gRenderSys = nullptr;
 
@@ -23,7 +23,12 @@ void RenderSystem::Term()
 	rendererImpl->Shutdown();
 }
 
-void RenderSystem::DrawFrame()
+void RenderSystem::StartFrame()
 {
 	rendererImpl->Draw();
+}
+
+void RenderSystem::EndFrame()
+{
+	rendererImpl->EndFrame();
 }

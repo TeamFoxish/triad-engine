@@ -9,6 +9,8 @@
 #include "wnd.h"
 #include "input/InputDevice.h"
 
+#include "backends/imgui_impl_win32.h"
+#include "editor/ui_debug/UIDebug.h"
 
 class wndWindow : public Window {
 public:
@@ -34,9 +36,20 @@ void osDestroyWindow(Window* window)
 	window->Destroy();
 }
 
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT umessage, WPARAM wparam, LPARAM lparam)
 {
+	if (ImGui_ImplWin32_WndProcHandler(hwnd, umessage, wparam, lparam))
+		return true;
+
+	if (UIDebug::GetIsInitFlag()) {
+		auto& io = ImGui::GetIO();
+		if (io.WantCaptureMouse || io.WantCaptureKeyboard) {
+			return true;
+		}
+	}
+
 	switch (umessage) {
 	case WM_INPUT:
 	{
