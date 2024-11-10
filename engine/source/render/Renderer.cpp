@@ -5,6 +5,7 @@
 #include "MeshLoader.h"
 #include "TextureLoader.h"
 #include "Lights.h"
+#include "Shader.h"
 
 #include <d3d.h>
 #include <d3d11.h>
@@ -63,6 +64,45 @@ bool Renderer::Initialize(Window* _window)
 	{
 		// Well, that was unexpected
 		__debugbreak();
+	}
+	{
+		texToBackBuffShader = new Shader(L"shaders/texture_to_backbuffer.hlsl", device, nullptr, 0, nullptr, 0);
+	}
+	{   // SCREEN_TEX
+		D3D11_TEXTURE2D_DESC texDesc = {};
+		texDesc.Width = window->GetWidth();
+		texDesc.Height = window->GetHeigth();
+		texDesc.MipLevels = 1;
+		texDesc.Format = DXGI_FORMAT_R32G32B32A32_TYPELESS;
+		texDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+		texDesc.SampleDesc.Count = 1;
+		texDesc.SampleDesc.Quality = 0;
+		texDesc.ArraySize = 1;
+
+		ID3D11Texture2D* tex;
+		if (FAILED(device->CreateTexture2D(&texDesc, NULL, &tex))) {
+			assert(false);
+			return false;
+		}
+
+		D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+		rtvDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+		rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+		if (FAILED(device->CreateRenderTargetView(tex, &rtvDesc, &colorPassRtv))) {
+			assert(false);
+			return false;
+		}
+
+		D3D11_SHADER_RESOURCE_VIEW_DESC srtDesc = {};
+		srtDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+		srtDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+		srtDesc.Texture2D.MipLevels = 1;
+		if (FAILED(device->CreateShaderResourceView(tex, &srtDesc, &colorPassSrt))) {
+			assert(false);
+			return false;
+		}
+
+		tex->Release();
 	}
 
 	ID3D11Texture2D* backTex;
@@ -150,6 +190,8 @@ bool Renderer::Initialize(Window* _window)
 void Renderer::Shutdown()
 {
 	utils.reset();
+
+	delete texToBackBuffShader;
 }
 
 void Renderer::Draw()
@@ -167,11 +209,12 @@ void Renderer::Draw()
 
 	context->RSSetViewports(1, &viewport);
 
-	context->OMSetRenderTargets(1, &rtv, depthBuffer);
+	// draw to texture pass
+	context->OMSetRenderTargets(1, &colorPassRtv, depthBuffer);
 
 	context->OMSetDepthStencilState(pDSState, 1);
 
-	context->ClearRenderTargetView(rtv, clearColor);
+	context->ClearRenderTargetView(colorPassRtv, clearColor);
 
 	context->ClearDepthStencilView(depthBuffer, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
@@ -180,6 +223,20 @@ void Renderer::Draw()
 	for (DrawComponent* comp : components) {
 		comp->Draw(this);
 	}
+
+	// draw to screen pass
+	context->OMSetRenderTargets(1, &rtv, nullptr);
+
+	context->OMSetDepthStencilState(nullptr, 0);
+
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+
+	texToBackBuffShader->Activate(context);
+	context->IASetInputLayout(nullptr);
+	context->IASetVertexBuffers(0, 0, NULL, NULL, NULL);
+	context->PSSetShaderResources(0, 1, &colorPassSrt);
+
+	context->Draw(4, 0);
 }
 
 void Renderer::EndFrame()

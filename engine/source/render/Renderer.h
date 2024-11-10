@@ -11,6 +11,7 @@
 
 class Window;
 class Light;
+struct Shader;
 
 struct ID3D11Device;
 struct ID3D11DeviceContext;
@@ -75,10 +76,14 @@ private:
 	ID3D11DeviceContext* context = nullptr;
 	IDXGISwapChain* swapChain = nullptr;
 	ID3D11RasterizerState* rastState = nullptr;
+	ID3D11ShaderResourceView* colorPassSrt = nullptr;
+	ID3D11RenderTargetView* colorPassRtv = nullptr;
 	ID3D11RenderTargetView* rtv;
 	ID3D11SamplerState* samplerState;
 	ID3D11DepthStencilView* depthBuffer;
 	ID3D11DepthStencilState* pDSState;
+
+	Shader* texToBackBuffShader = nullptr;
 
 	Math::Matrix viewMatr;
 
