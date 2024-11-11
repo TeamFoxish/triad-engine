@@ -209,12 +209,20 @@ void Renderer::Draw()
 
 	context->RSSetViewports(1, &viewport);
 
+#ifdef EDITOR
 	// draw to texture pass
 	context->OMSetRenderTargets(1, &colorPassRtv, depthBuffer);
+#else
+	context->OMSetRenderTargets(1, &rtv, depthBuffer);
+#endif // EDITOR
 
 	context->OMSetDepthStencilState(pDSState, 1);
 
+#ifdef EDITOR
 	context->ClearRenderTargetView(colorPassRtv, clearColor);
+#else
+	context->ClearRenderTargetView(rtv, clearColor);
+#endif // EDITOR
 
 	context->ClearDepthStencilView(depthBuffer, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
@@ -224,19 +232,20 @@ void Renderer::Draw()
 		comp->Draw(this);
 	}
 
+#ifdef EDITOR
 	// draw to screen pass
 	context->OMSetRenderTargets(1, &rtv, nullptr);
 
 	context->OMSetDepthStencilState(nullptr, 0);
 
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-
 	texToBackBuffShader->Activate(context);
 	context->IASetInputLayout(nullptr);
 	context->IASetVertexBuffers(0, 0, NULL, NULL, NULL);
 	context->PSSetShaderResources(0, 1, &colorPassSrt);
 
 	context->Draw(4, 0);
+#endif // EDITOR
 }
 
 void Renderer::EndFrame()

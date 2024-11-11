@@ -1,5 +1,6 @@
 #include "UIDebug.h"
 
+#include <filesystem>
 #include <windows.h>
 #include <WinUser.h>
 #include <d3d.h>
@@ -13,6 +14,7 @@
 #include "render/RenderSystem.h"
 #include "render/Renderer.h"
 #include "os/wnd.h"
+#include "os/Window.h"
 
 
 void UIDebug::Init(Window* window)
@@ -38,9 +40,13 @@ void UIDebug::Init(Window* window)
 	// Setup ImGui Platform/Render backends
 
 
-
 	ImGui_ImplWin32_Init(wndGetHWND(window));
 	ImGui_ImplDX11_Init(gRenderSys->GetRenderer()->GetDevice(), gRenderSys->GetRenderer()->GetDeviceContext());
+
+	if (std::filesystem::exists("DefaultImGuiSettings.ini") && useDefaultSettings)
+	{
+		ImGui::LoadIniSettingsFromDisk("DefaultImGuiSettings.ini");
+	}
 }
 
 void UIDebug::StartNewFrame()
@@ -55,30 +61,58 @@ void UIDebug::TestDraw()
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 #ifdef EDITOR
 	{
-		ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
-
-		// 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
 		{
-			static float f = 0.0f;
-			static int counter = 0;
+			ImVec2 wSize{
+				(float)gRenderSys->GetRenderer()->GetWindow()->GetWidth(),
+				(float)gRenderSys->GetRenderer()->GetWindow()->GetHeigth()
+			};
+			ImGuiViewport* imViewPort = ImGui::GetMainViewport();
+			imViewPort->Size = wSize;
+			imViewPort->WorkSize = wSize;
+			ImGui::DockSpaceOverViewport(0, imViewPort);
+		}
 
-			ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-
-			ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-
-			ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-
-			if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-				counter++;
-			ImGui::SameLine();
-			ImGui::Text("counter = %d", counter);
-
-			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+		// Outliner
+		{
+			ImGui::Begin("Outliner");
 			ImGui::End();
 		}
 
+		// File system
+		{
+			ImGui::Begin("File system");
+			ImGui::End();
+		}
 
+		//// 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
+		//{
+		//	static float f = 0.0f;
+		//	static int counter = 0;
+		//
+		//	ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+		//	
+		//	ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+		//
+		//	ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+		//
+		//	if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+		//		counter++;
+		//	ImGui::SameLine();
+		//	ImGui::Text("counter = %d", counter);
+		//
+		//	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+		//	ImGui::End();
+		//}
 
+		// Viewport in window
+		{
+			ImGui::Begin("Scene Test", 0, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+			ImGui::Image((ImTextureID)(intptr_t)gRenderSys->GetRenderer()->GetColorPassSrt(), ImGui::GetWindowSize());
+			isSceneFocused = ImGui::IsWindowFocused();
+			ImGui::End();
+		}
+
+		//ImGui::SetNextWindowSize(ImGui::GetWindowSize());
 		bool show_demo_window = true;
 		if (show_demo_window)
 			ImGui::ShowDemoWindow(&show_demo_window);
@@ -109,7 +143,7 @@ void UIDebug::Destroy()
 	ImGui::DestroyContext();
 }
 
-bool UIDebug::GetIsInitFlag()
+bool UIDebug::GetUIDebugFlag()
 {
-	return isInitted;
+	return isInitted && !isSceneFocused;
 }

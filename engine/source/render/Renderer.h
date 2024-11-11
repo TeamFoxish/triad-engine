@@ -52,6 +52,8 @@ public:
 	ID3D11DeviceContext* GetDeviceContext() const { return context; }
 	IDXGISwapChain* GetSwapChain() const { return swapChain; }
 
+	ID3D11ShaderResourceView* GetColorPassSrt() const { return colorPassSrt; }
+
 private:
 	void AddComponent(DrawComponent* comp);
 	void RemoveComponent(DrawComponent* comp);

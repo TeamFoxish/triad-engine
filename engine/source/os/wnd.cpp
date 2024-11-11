@@ -43,7 +43,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT umessage, WPARAM wparam, LPARAM lparam)
 	if (ImGui_ImplWin32_WndProcHandler(hwnd, umessage, wparam, lparam))
 		return true;
 
-	if (UIDebug::GetIsInitFlag()) {
+	if (UIDebug::GetUIDebugFlag()) {
 		auto& io = ImGui::GetIO();
 		if (io.WantCaptureMouse || io.WantCaptureKeyboard) {
 			return true;

@@ -15,8 +15,11 @@ public:
 
 	static void Destroy();
 
-	static bool GetIsInitFlag();
+	static bool GetUIDebugFlag();
+
+	static inline bool useDefaultSettings = true;
 
 protected:
 	static inline bool isInitted = false;
+	static inline bool isSceneFocused = false;
 };
