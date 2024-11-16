@@ -23,6 +23,11 @@
 #include "os/wnd.h"
 #endif
 
+//#define TRIAD_LOG_FRAMEGRAPH
+#ifdef TRIAD_LOG_FRAMEGRAPH
+#include <fstream>
+#endif
+
 #include "editor/ui_debug/UIDebug.h"
 
 bool Renderer::Initialize(Window* _window)
@@ -357,6 +362,17 @@ void Renderer::TestFrameGraph()
 
     fg.compile();
     fg.execute(&context, &context);
+
+#ifdef TRIAD_LOG_FRAMEGRAPH
+	struct GraphLogger {
+	public:
+		GraphLogger(const FrameGraph& fg) {
+			std::ofstream f("fg.dot");
+			f << fg;
+		}
+	};
+	static GraphLogger _gLogger{fg};
+#endif
 }
 
 void Renderer::DrawScene()
