@@ -1,6 +1,11 @@
 #include "Renderer.h"
 
+#include "fg/FrameGraph.hpp"
+#include "fg/Blackboard.hpp"
+#include "FrameGraphResources.h"
+
 #include "os/Window.h"
+#include "RenderContext.h"
 #include "GeometryData.h"
 #include "MeshLoader.h"
 #include "TextureLoader.h"
@@ -22,7 +27,18 @@
 
 bool Renderer::Initialize(Window* _window)
 {
-	window = _window;
+	using namespace Triad::Render::Api;
+	window = context.window = _window;
+
+	D3D11_VIEWPORT viewport = {};
+	viewport.Width = static_cast<float>(window->GetWidth());
+	viewport.Height = static_cast<float>(window->GetHeigth());
+	viewport.TopLeftX = 0;
+	viewport.TopLeftY = 0;
+	viewport.MinDepth = 0;
+	viewport.MaxDepth = 1.0f;
+	context.viewport = viewport;
+
 	D3D_FEATURE_LEVEL featureLevel[] = { D3D_FEATURE_LEVEL_11_1 };
 
 	DXGI_SWAP_CHAIN_DESC swapDesc = {};
@@ -55,10 +71,10 @@ bool Renderer::Initialize(Window* _window)
 		1,
 		D3D11_SDK_VERSION,
 		&swapDesc,
-		&swapChain,
-		&device,
+		&context.swapChain,
+		&context.device,
 		nullptr,
-		&context);
+		&context.context);
 
 	if (FAILED(res))
 	{
@@ -66,55 +82,19 @@ bool Renderer::Initialize(Window* _window)
 		__debugbreak();
 	}
 	{
-		texToBackBuffShader = new Shader(L"shaders/texture_to_backbuffer.hlsl", device, nullptr, 0, nullptr, 0);
-	}
-	{   // SCREEN_TEX
-		D3D11_TEXTURE2D_DESC texDesc = {};
-		texDesc.Width = window->GetWidth();
-		texDesc.Height = window->GetHeigth();
-		texDesc.MipLevels = 1;
-		texDesc.Format = DXGI_FORMAT_R32G32B32A32_TYPELESS;
-		texDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-		texDesc.SampleDesc.Count = 1;
-		texDesc.SampleDesc.Quality = 0;
-		texDesc.ArraySize = 1;
-
-		ID3D11Texture2D* tex;
-		if (FAILED(device->CreateTexture2D(&texDesc, NULL, &tex))) {
-			assert(false);
-			return false;
-		}
-
-		D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
-		rtvDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-		rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-		if (FAILED(device->CreateRenderTargetView(tex, &rtvDesc, &colorPassRtv))) {
-			assert(false);
-			return false;
-		}
-
-		D3D11_SHADER_RESOURCE_VIEW_DESC srtDesc = {};
-		srtDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-		srtDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-		srtDesc.Texture2D.MipLevels = 1;
-		if (FAILED(device->CreateShaderResourceView(tex, &srtDesc, &colorPassSrt))) {
-			assert(false);
-			return false;
-		}
-
-		tex->Release();
+		texToBackBuffShader = new Shader(L"shaders/texture_to_backbuffer.hlsl", context.device, nullptr, 0, nullptr, 0);
 	}
 
-	ID3D11Texture2D* backTex;
-	res = swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backTex);	// __uuidof(ID3D11Texture2D)
-	res = device->CreateRenderTargetView(backTex, nullptr, &rtv);
+	//ID3D11Texture2D* backTex;
+	//res = context.swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backTex);	// __uuidof(ID3D11Texture2D)
+	//res = context.device->CreateRenderTargetView(backTex, nullptr, &rtv);
 
 	CD3D11_RASTERIZER_DESC rastDesc = {};
 	rastDesc.CullMode = D3D11_CULL_NONE;
 	rastDesc.FillMode = D3D11_FILL_SOLID;
 
-	res = device->CreateRasterizerState(&rastDesc, &rastState);
-	context->RSSetState(rastState);
+	res = context.device->CreateRasterizerState(&rastDesc, &context.masterRastState);
+	//context->RSSetState(rastState);
 
 	D3D11_SAMPLER_DESC samplerDesc = {};
 	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
@@ -126,34 +106,8 @@ bool Renderer::Initialize(Window* _window)
 	samplerDesc.BorderColor[2] = 1.0f;
 	samplerDesc.BorderColor[3] = 1.0f;
 	samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-	device->CreateSamplerState(&samplerDesc, &samplerState);
-	context->PSSetSamplers(0, 1, &samplerState);
-
-	D3D11_TEXTURE2D_DESC depthTextureDesc = {};
-	ZeroMemory(&depthTextureDesc, sizeof(depthTextureDesc));
-	depthTextureDesc.Width = window->GetWidth();
-	depthTextureDesc.Height = window->GetHeigth();
-	depthTextureDesc.MipLevels = 1;
-	depthTextureDesc.ArraySize = 1;
-	depthTextureDesc.SampleDesc.Count = 1;
-	depthTextureDesc.Format = DXGI_FORMAT_D32_FLOAT_S8X24_UINT;
-	depthTextureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-	depthTextureDesc.SampleDesc.Count = 1;
-	depthTextureDesc.SampleDesc.Quality = 0;
-
-	ID3D11Texture2D* dsTexutre;
-	if (FAILED(device->CreateTexture2D(&depthTextureDesc, NULL, &dsTexutre))) {
-		exit(-1);
-		return false;
-	}
-
-	D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
-	ZeroMemory(&dsvDesc, sizeof(dsvDesc));
-	dsvDesc.Format = depthTextureDesc.Format;
-	dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
-
-	device->CreateDepthStencilView(dsTexutre, &dsvDesc, &depthBuffer);
-	dsTexutre->Release();
+	context.device->CreateSamplerState(&samplerDesc, &context.masterSamplerState);
+	//context->PSSetSamplers(0, 1, &samplerState);
 
 	D3D11_DEPTH_STENCIL_DESC dsDesc;
 
@@ -180,7 +134,7 @@ bool Renderer::Initialize(Window* _window)
 	dsDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
 
 	// Create depth stencil state
-	device->CreateDepthStencilState(&dsDesc, &pDSState);
+	context.device->CreateDepthStencilState(&dsDesc, &pDSState);
 
 	utils = std::make_unique<RenderUtils>();
 
@@ -192,65 +146,19 @@ void Renderer::Shutdown()
 	utils.reset();
 
 	delete texToBackBuffShader;
+
+	// TODO: term render context
 }
 
 void Renderer::Draw()
 {
 	context->ClearState();
-	context->RSSetState(rastState);
-
-	D3D11_VIEWPORT viewport = {};
-	viewport.Width = static_cast<float>(window->GetWidth());
-	viewport.Height = static_cast<float>(window->GetHeigth());
-	viewport.TopLeftX = 0;
-	viewport.TopLeftY = 0;
-	viewport.MinDepth = 0;
-	viewport.MaxDepth = 1.0f;
-
-	context->RSSetViewports(1, &viewport);
-
-#ifdef EDITOR
-	// draw to texture pass
-	context->OMSetRenderTargets(1, &colorPassRtv, depthBuffer);
-#else
-	context->OMSetRenderTargets(1, &rtv, depthBuffer);
-#endif // EDITOR
-
-	context->OMSetDepthStencilState(pDSState, 1);
-
-#ifdef EDITOR
-	context->ClearRenderTargetView(colorPassRtv, clearColor);
-#else
-	context->ClearRenderTargetView(rtv, clearColor);
-#endif // EDITOR
-
-	context->ClearDepthStencilView(depthBuffer, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-
-	context->PSSetSamplers(0, 1, &samplerState);
-
-	for (DrawComponent* comp : components) {
-		comp->Draw(this);
-	}
-
-#ifdef EDITOR
-	// draw to screen pass
-	context->OMSetRenderTargets(1, &rtv, nullptr);
-
-	context->OMSetDepthStencilState(nullptr, 0);
-
-	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-	texToBackBuffShader->Activate(context);
-	context->IASetInputLayout(nullptr);
-	context->IASetVertexBuffers(0, 0, NULL, NULL, NULL);
-	context->PSSetShaderResources(0, 1, &colorPassSrt);
-
-	context->Draw(4, 0);
-#endif // EDITOR
+	TestFrameGraph();
 }
 
 void Renderer::EndFrame()
 {
-	swapChain->Present(1, /*DXGI_PRESENT_DO_NOT_WAIT*/ 0);
+	context.swapChain->Present(1, /*DXGI_PRESENT_DO_NOT_WAIT*/ 0);
 }
 
 void Renderer::SetClearColor(const float* color)
@@ -326,4 +234,143 @@ void Renderer::RemoveLight(Light* light)
 		lightSources.pop_back();
 		return;
 	}
+}
+
+
+void Renderer::TestFrameGraph()
+{
+    using namespace Triad::Render::Api;
+	FrameGraph fg;
+    FrameGraphBlackboard bboard;
+
+    struct SceneColorPassData {
+		FrameGraphResource color;
+		FrameGraphResource depth;
+	};
+    bboard.add<SceneColorPassData>() = fg.addCallbackPass<SceneColorPassData>("SceneColorPass",
+        [&](FrameGraph::Builder& builder, SceneColorPassData& data) {
+			{
+				decltype(FrameGraphResources::FGTexture::Desc::texDesc) texDesc = {};
+				texDesc.MipLevels = 1;
+				texDesc.Format = DXGI_FORMAT_R32G32B32A32_TYPELESS;
+				texDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+				texDesc.SampleDesc.Count = 1;
+				texDesc.SampleDesc.Quality = 0;
+				texDesc.ArraySize = 1;
+				data.color = builder.create<FrameGraphResources::FGTexture>("SceneColor", { 
+				    .texDesc = texDesc,
+				    .fitToViewport = true
+				});
+			}
+			{
+				decltype(FrameGraphResources::FGTexture::Desc::texDesc) depthTexDesc = {};
+				ZeroMemory(&depthTexDesc, sizeof(depthTexDesc));
+				depthTexDesc.Width = window->GetWidth();
+				depthTexDesc.Height = window->GetHeigth();
+				depthTexDesc.MipLevels = 1;
+				depthTexDesc.ArraySize = 1;
+				depthTexDesc.SampleDesc.Count = 1;
+				depthTexDesc.Format = DXGI_FORMAT_D32_FLOAT_S8X24_UINT;
+				depthTexDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+				depthTexDesc.SampleDesc.Count = 1;
+				depthTexDesc.SampleDesc.Quality = 0;
+				data.depth = builder.create<FrameGraphResources::FGTexture>("SceneDepth", { 
+				    .texDesc = depthTexDesc,
+				    .fitToViewport = true
+				});
+			}
+            data.color = builder.write(data.color);
+			data.depth = builder.write(data.depth);
+        },
+        [=, this](const SceneColorPassData& data, FrameGraphPassResources& resources, void*) {
+			context->ClearState();
+
+			// setup pipiline
+			context->RSSetState(context.masterRastState);
+			context->PSSetSamplers(0, 1, &context.masterSamplerState);
+			context->RSSetViewports(1, context.viewport.Get11());
+			context->OMSetDepthStencilState(pDSState, 1);
+
+			// color
+            auto& texture = resources.get<FrameGraphResources::FGTexture>(data.color);
+            RenderTargetDesc rtvDesc = {};
+            rtvDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+            rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+            RenderTarget* rtv = texture.BindWrite(context, &rtvDesc, 0);
+			context->ClearRenderTargetView(rtv, clearColor);
+
+			// depth
+			auto& depthTex = resources.get<FrameGraphResources::FGTexture>(data.depth);
+			D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
+			dsvDesc.Format = DXGI_FORMAT_D32_FLOAT_S8X24_UINT;
+			dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+			DepthBuffer* depthBuf = depthTex.BindWrite(context, dsvDesc);
+			context->ClearDepthStencilView(depthBuf, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
+			// TODO: remove all other render target setters
+			context->OMSetRenderTargets(context.activeRenderTargetNum, context.activeRenderTargets, context.activeDepthBuffuer);
+			
+			DrawScene();
+        }
+    );
+
+	struct CompositionPassData {
+		FrameGraphResource target;
+	};
+    const auto& sceneColor = bboard.get<SceneColorPassData>();
+    Texture2D* backTex;
+    context.swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backTex); // TODO: cache backTex pointer??
+    FrameGraphResource backBuff = fg.import("BackBuffer", FrameGraphResources::FGTexture::Desc{}, FrameGraphResources::FGTexture{backTex});
+    bboard.add<CompositionPassData>() = fg.addCallbackPass<CompositionPassData>("CompositionPass",
+        [&](FrameGraph::Builder& builder, CompositionPassData& data) {
+            builder.read(sceneColor.color);
+            data.target = builder.write(backBuff);
+        },
+        [=, this](const CompositionPassData& data, FrameGraphPassResources& resources, void*) {
+			context->ClearState();
+			context.activeDepthBuffuer = nullptr;
+
+			context->RSSetState(context.masterRastState);
+			context->PSSetSamplers(0, 1, &context.masterSamplerState);
+			context->RSSetViewports(1, context.viewport.Get11());
+			context->OMSetDepthStencilState(pDSState, 1);
+
+            auto& texture = resources.get<FrameGraphResources::FGTexture>(sceneColor.color);
+            D3D11_SHADER_RESOURCE_VIEW_DESC srtDesc = {};
+            srtDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+            srtDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+            srtDesc.Texture2D.MipLevels = 1;
+			colorPassSrt = texture.BindRead(context, srtDesc, 0);
+
+            auto& targetTex = resources.get<FrameGraphResources::FGTexture>(backBuff);
+            RenderTarget* rtv = targetTex.BindWrite(context, nullptr, 0);
+			context->ClearRenderTargetView(rtv, clearColor);
+
+			context->OMSetRenderTargets(context.activeRenderTargetNum, context.activeRenderTargets, context.activeDepthBuffuer);
+
+#ifndef EDITOR
+			// note: game viewport is drawn by imgui editor
+			DrawScreenQuad();
+#endif // !EDITOR
+        }
+    );
+
+    fg.compile();
+    fg.execute(&context, &context);
+}
+
+void Renderer::DrawScene()
+{
+	for (DrawComponent* comp : components) {
+		comp->Draw(this);
+	}
+}
+
+void Renderer::DrawScreenQuad()
+{
+	texToBackBuffShader->Activate(context.context);
+	context->IASetInputLayout(nullptr);
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	context->IASetVertexBuffers(0, 0, NULL, NULL, NULL);
+	context->Draw(4, 0);
 }

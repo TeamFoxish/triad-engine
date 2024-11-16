@@ -4,6 +4,8 @@
 #include <unordered_map>
 #include <memory>
 #include <string>
+
+#include "RenderContext.h"
 #include "RenderUtils.h"
 #include "DrawComponent.h"
 #include "materials/DefaultMeshMaterial.h" // TODO: TEMP E1
@@ -13,28 +15,25 @@ class Window;
 class Light;
 struct Shader;
 
-struct ID3D11Device;
-struct ID3D11DeviceContext;
-struct IDXGISwapChain;
-struct ID3D11RasterizerState;
-struct ID3D11RenderTargetView;
-struct ID3D11ShaderResourceView;
-struct ID3D11SamplerState;
-struct ID3D11DepthStencilView;
-struct ID3D11DepthStencilState;
-
 class Renderer {
 	friend DrawComponent::DrawComponent(Game*, Compositer*);
 	friend DrawComponent::~DrawComponent();
 	friend class Light;
 
 public:
+	Renderer() = default;
+	Renderer(const Renderer&) = delete;
+	Renderer(Renderer&&) = delete;
+	~Renderer() = default;
+
 	bool Initialize(Window* window);
 	void Shutdown();
-	//void UnloadData();
 
 	void Draw();
 	void EndFrame();
+
+	void DrawScene();
+	void DrawScreenQuad();
 
 	void SetClearColor(const float* color);
 
@@ -48,9 +47,8 @@ public:
 
 	Window* GetWindow() const { return window; }
 	RenderUtils* GetUtils() const { return utils.get(); }
-	ID3D11Device* GetDevice() const { return device; }
-	ID3D11DeviceContext* GetDeviceContext() const { return context; }
-	IDXGISwapChain* GetSwapChain() const { return swapChain; }
+	ID3D11Device* GetDevice() const { return context.device; }
+	ID3D11DeviceContext* GetDeviceContext() const { return context.context; }
 
 	ID3D11ShaderResourceView* GetColorPassSrt() const { return colorPassSrt; }
 
@@ -60,6 +58,8 @@ private:
 
 	void AddLight(Light* light);
 	void RemoveLight(Light* light);
+
+	void TestFrameGraph();
 
 private:
 	std::unique_ptr<RenderUtils> utils;
@@ -74,18 +74,13 @@ private:
 
 	Window* window = nullptr;
 
-	ID3D11Device* device = nullptr;
-	ID3D11DeviceContext* context = nullptr;
-	IDXGISwapChain* swapChain = nullptr;
-	ID3D11RasterizerState* rastState = nullptr;
-	ID3D11ShaderResourceView* colorPassSrt = nullptr;
-	ID3D11RenderTargetView* colorPassRtv = nullptr;
-	ID3D11RenderTargetView* rtv;
-	ID3D11SamplerState* samplerState;
-	ID3D11DepthStencilView* depthBuffer;
-	ID3D11DepthStencilState* pDSState;
+	RenderContext context;
 
-	Shader* texToBackBuffShader = nullptr;
+	Shader* texToBackBuffShader = nullptr; // TEMP
+
+	ID3D11ShaderResourceView* colorPassSrt = nullptr; // TEMP
+
+	ID3D11DepthStencilState* pDSState; // TEMP
 
 	Math::Matrix viewMatr;
 

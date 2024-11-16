@@ -439,6 +439,9 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 
+# imgui user configuration
+imgui.ini
+
 # any files in libs dir
 !**/libs/**
 
