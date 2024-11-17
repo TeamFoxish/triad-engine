@@ -19,6 +19,8 @@ struct FrameGraphResources {
 		auto BindWrite(RenderContext& ctx, const Triad::Render::Api::RenderTargetDesc* desc, uint32_t slot) -> Triad::Render::Api::RenderTarget*;
 		auto BindWrite(RenderContext& ctx, const Triad::Render::Api::DepthBufferDesc& desc) -> Triad::Render::Api::DepthBuffer*;
 
+		void Destroy();
+
 		Triad::Render::Api::Texture2D* tex = nullptr;
 	};
 };

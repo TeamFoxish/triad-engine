@@ -16,7 +16,12 @@ namespace std {
 
 		std::size_t operator()(const FGTextureDesc& desc) const noexcept {
 			std::size_t h{0};
-			hashCombine(h, desc.fitToViewport, desc.texDesc.Format, desc.texDesc.ArraySize, desc.texDesc.BindFlags, desc.texDesc.CPUAccessFlags, desc.texDesc.Height, desc.texDesc.MipLevels, desc.texDesc.MiscFlags, desc.texDesc.SampleDesc.Count, desc.texDesc.SampleDesc.Quality, desc.texDesc.Usage, desc.texDesc.Width);
+			if (desc.fitToViewport) {
+				hashCombine(h, desc.fitToViewport);
+			} else {
+				hashCombine(h, desc.texDesc.Width, desc.texDesc.Height);
+			}
+			hashCombine(h, desc.texDesc.Format, desc.texDesc.ArraySize, desc.texDesc.BindFlags, desc.texDesc.CPUAccessFlags, desc.texDesc.MipLevels, desc.texDesc.MiscFlags, desc.texDesc.SampleDesc.Count, desc.texDesc.SampleDesc.Quality, desc.texDesc.Usage);
 			return h;
 		}
 	};
@@ -49,7 +54,7 @@ public:
 	{
 		const auto h = std::hash<FGTextureDesc>{}(desc);
 		const auto iter = texturePool.find(h);
-		if (iter != texturePool.end() && !iter->second.empty()) {
+		if (iter != texturePool.end() && !iter->second.empty() && !CheckResized(ctx, iter, desc)) {
 			Texture2D* tex = iter->second.back();
 			iter->second.pop_back();
 			return tex;
@@ -96,6 +101,14 @@ public:
 		return depthBuf;
 	}
 
+	void DestroyTexture(Texture2D* tex)
+	{
+		DestroyView(textureShaderResources, tex);
+		DestroyView(textureRenderTargets, tex);
+		DestroyView(depthBuffers, tex);
+		tex->Release();
+	}
+
 	static std::unique_ptr<TransientResourcesStorage>& Instance()
 	{
 		static std::unique_ptr<TransientResourcesStorage> instance = std::make_unique<TransientResourcesStorage>();
@@ -103,7 +116,44 @@ public:
 	}
 
 private:
-	std::unordered_map<std::size_t, std::vector<Texture2D*>> texturePool;
+	using TexturePool = std::unordered_map<std::size_t, std::vector<Texture2D*>>;
+
+	bool CheckResized(RenderContext& ctx, const TexturePool::const_iterator& iter, const FGTextureDesc& desc)
+	{
+		if (!ctx.viewportResized || !desc.fitToViewport) {
+			return false;
+		}
+		decltype(desc.texDesc) oldDesc;
+		iter->second.back()->GetDesc(&oldDesc);
+		if (oldDesc.Width != ctx.viewport.width || oldDesc.Height != ctx.viewport.height) {
+			DestroyResources(iter); // destroy old-sized viewport textures
+			return true;
+		}
+		return false;
+	}
+
+	void DestroyResources(const TexturePool::const_iterator& iter)
+	{
+		const auto& textures = iter->second;
+		for (Texture2D* tex : textures) {
+			DestroyTexture(tex);
+		}
+		texturePool.erase(iter);
+	}
+
+	template<typename Res_T>
+	void DestroyView(std::unordered_map<Texture2D*, Res_T*>& storage, Texture2D* tex)
+	{
+		auto iter = storage.find(tex);
+		if (iter == storage.end()) {
+			return;
+		}
+		iter->second->Release();
+		storage.erase(iter);
+	}
+
+private:
+	TexturePool texturePool;
 	std::unordered_map<Texture2D*, ShaderResource*> textureShaderResources;
 	std::unordered_map<Texture2D*, RenderTarget*> textureRenderTargets;
 	std::unordered_map<Texture2D*, DepthBuffer*> depthBuffers;
@@ -147,4 +197,10 @@ auto FrameGraphResources::FGTexture::BindWrite(RenderContext& ctx, const Triad::
 	// TODO: move away set render targets call to pipeline setup
 	ctx.context->OMSetRenderTargets(1, ctx.activeRenderTargets, depthBuf);
 	return depthBuf;
+}
+
+void FrameGraphResources::FGTexture::Destroy()
+{
+	TransientResourcesStorage::Instance()->DestroyTexture(tex);
+	tex = nullptr;
 }

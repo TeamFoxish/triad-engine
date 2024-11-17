@@ -11,6 +11,7 @@
 #include "backends/imgui_impl_win32.h"
 #include "backends/imgui_impl_dx11.h"
 
+#include "runtime/EngineRuntime.h"
 #include "render/RenderSystem.h"
 #include "render/Renderer.h"
 #include "os/wnd.h"
@@ -106,10 +107,14 @@ void UIDebug::TestDraw()
 
 		// Viewport in window
 		{
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 			ImGui::Begin("Scene Test", 0, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
-			ImGui::Image((ImTextureID)(intptr_t)gRenderSys->GetRenderer()->GetColorPassSrt(), ImGui::GetWindowSize());
-			isSceneFocused = ImGui::IsWindowFocused();
+			if (HandleViewportResize()) {
+				ImGui::Image((ImTextureID)(intptr_t)gRenderSys->GetRenderer()->GetColorPassSrt(), ImGui::GetWindowSize());
+				isSceneFocused = ImGui::IsWindowFocused();
+			}
 			ImGui::End();
+			ImGui::PopStyleVar();
 		}
 
 		//ImGui::SetNextWindowSize(ImGui::GetWindowSize());
@@ -146,4 +151,36 @@ void UIDebug::Destroy()
 bool UIDebug::GetUIDebugFlag()
 {
 	return isInitted && !isSceneFocused;
+}
+
+bool UIDebug::HandleViewportResize()
+{
+	ImVec2 view = ImGui::GetContentRegionAvail();
+
+	if (view.x != viewportWidth || view.y != viewportHeight)
+	{
+		if (view.x == 0 || view.y == 0)
+		{
+			// The window is too small or collapsed.
+			return false;
+		}
+		if (viewportWidth == -1 && viewportHeight == -1) {
+			viewportWidth = view.x;
+			viewportHeight = view.y;
+			return true;
+		}
+
+		viewportWidth = view.x;
+		viewportHeight = view.y;
+
+		// TODO: resize only when resize complete
+		// buffers should resize next frame
+		gViewportResized.Broadcast(viewportWidth, viewportHeight);
+
+		// The window state has been successfully changed.
+		return true;
+	}
+
+	// The window state has not changed.
+	return true;
 }

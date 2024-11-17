@@ -35,6 +35,8 @@ public:
 	void DrawScene();
 	void DrawScreenQuad();
 
+	void ResizeBackBuff();
+
 	void SetClearColor(const float* color);
 
 	void PopulateLightsBuffer(DefaultMeshMaterial::CBPS& buffer) const;
@@ -49,6 +51,7 @@ public:
 	RenderUtils* GetUtils() const { return utils.get(); }
 	ID3D11Device* GetDevice() const { return context.device; }
 	ID3D11DeviceContext* GetDeviceContext() const { return context.context; }
+	RenderContext& GetContext() { return context; }
 
 	ID3D11ShaderResourceView* GetColorPassSrt() const { return colorPassSrt; }
 
@@ -81,6 +84,8 @@ private:
 	ID3D11ShaderResourceView* colorPassSrt = nullptr; // TEMP
 
 	ID3D11DepthStencilState* pDSState; // TEMP
+
+	Triad::Render::Api::RenderTarget* mainRtv = nullptr; // TEMP
 
 	Math::Matrix viewMatr;
 

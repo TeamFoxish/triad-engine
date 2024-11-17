@@ -20,6 +20,12 @@ public:
 	static inline bool useDefaultSettings = true;
 
 protected:
+	static bool HandleViewportResize();
+
+protected:
 	static inline bool isInitted = false;
 	static inline bool isSceneFocused = false;
+
+	static inline int viewportWidth = -1;
+	static inline int viewportHeight = -1;
 };

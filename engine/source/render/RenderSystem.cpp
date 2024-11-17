@@ -1,7 +1,7 @@
 #include "RenderSystem.h"
 
 #include "Renderer.h"
-#include "runtime/RuntimeIface.h"
+#include "runtime/EngineRuntime.h"
 #include "config/ConfigVar.h"
 
 static ConfigVar<std::vector<float>> cfgRenderClearColor("/Engine/Render/ClearColor", { 0.0f, 0.0f, 0.0f, 0.0f });
@@ -15,11 +15,27 @@ bool RenderSystem::Init(RuntimeIface* runtime)
 		return false;
 	}
 	rendererImpl->SetClearColor(cfgRenderClearColor.GetRef().data());
+	viewportResizedHandle = gViewportResized.AddLambda([this](int width, int height) {
+		RenderContext& ctx = rendererImpl->GetContext();
+		Math::Viewport viewport;
+		viewport.width = width;
+		viewport.height = height;
+		ctx.ResizeViewport(viewport);
+	});
+	runtime->GetWindow()->windowResized.AddLambda([this](int width, int height) {
+		RenderContext& ctx = rendererImpl->GetContext();
+		ctx.backbuffResized = true;
+#ifndef EDITOR
+		// viewport editor is resized by itself
+		gViewportResized.Broadcast(width, height);
+#endif
+	});
 	return true;
 }
 
 void RenderSystem::Term()
 {
+	gViewportResized.Remove(viewportResizedHandle);
 	rendererImpl->Shutdown();
 }
 

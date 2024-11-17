@@ -2,6 +2,8 @@
 
 #include <memory>
 
+#include "misc/Delegates.h"
+
 class RuntimeIface;
 class Renderer;
 
@@ -22,6 +24,8 @@ public:
 
 protected:
 	std::unique_ptr<Renderer> rendererImpl;
+
+	DelegateHandle viewportResizedHandle;
 };
 
 extern std::unique_ptr<RenderSystem> gRenderSys;

@@ -5,11 +5,23 @@
 
 #include "render/RenderSystem.h"
 
+#include "runtime/EngineRuntime.h" // TEMP
+
 CameraComponent::CameraComponent(Game* game, const CameraParams& params, Compositer* parent)
 	: Component(game, parent)
 	, projMatr(params.MakeProjectionMatrix())
+	, cachedParams(params.Clone())
 {
 	game->SetActiveCamera(this);
+	gViewportResized.AddLambda([this](int width, int height) {
+		cachedParams->UpdateViewport(width, height);
+		projMatr = cachedParams->MakeProjectionMatrix();
+	});
+}
+
+CameraComponent::~CameraComponent()
+{
+	gViewportResized.Remove(viewportUpdateHandle);
 }
 
 void CameraComponent::SetViewMatrix(const Math::Matrix& view)

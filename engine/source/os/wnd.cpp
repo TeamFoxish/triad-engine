@@ -11,6 +11,8 @@
 
 #include "backends/imgui_impl_win32.h"
 #include "editor/ui_debug/UIDebug.h"
+#include "render/RenderSystem.h"
+#include "render/Renderer.h"
 
 class wndWindow : public Window {
 public:
@@ -51,6 +53,17 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT umessage, WPARAM wparam, LPARAM lparam)
 	}
 
 	switch (umessage) {
+	case WM_SIZE:
+	{
+		// TODO: migrate to WM_ENTERSIZEMOVE WM_EXITSIZEMOVE events
+		UINT width = LOWORD(lparam);
+		UINT height = HIWORD(lparam);
+		if (!gRenderSys || gRenderSys->GetRenderer() == nullptr) {
+			return true;
+		}
+		gRenderSys->GetRenderer()->GetWindow()->windowResized.Broadcast((int)width, (int)height);
+		return true;
+	}
 	case WM_INPUT:
 	{
 		if (globalInputDevice) {

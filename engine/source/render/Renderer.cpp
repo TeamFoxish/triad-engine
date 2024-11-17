@@ -159,6 +159,7 @@ void Renderer::Draw()
 {
 	context->ClearState();
 	TestFrameGraph();
+	context.ResetFrame();
 }
 
 void Renderer::EndFrame()
@@ -323,8 +324,10 @@ void Renderer::TestFrameGraph()
 		FrameGraphResource target;
 	};
     const auto& sceneColor = bboard.get<SceneColorPassData>();
-    Texture2D* backTex;
-    context.swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backTex); // TODO: cache backTex pointer??
+    static Texture2D* backTex = nullptr;
+	if (!backTex) {
+		context.swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backTex); // TODO: cache backTex pointer??
+	}
     FrameGraphResource backBuff = fg.import("BackBuffer", FrameGraphResources::FGTexture::Desc{}, FrameGraphResources::FGTexture{backTex});
     bboard.add<CompositionPassData>() = fg.addCallbackPass<CompositionPassData>("CompositionPass",
         [&](FrameGraph::Builder& builder, CompositionPassData& data) {
@@ -348,7 +351,15 @@ void Renderer::TestFrameGraph()
 			colorPassSrt = texture.BindRead(context, srtDesc, 0);
 
             auto& targetTex = resources.get<FrameGraphResources::FGTexture>(backBuff);
+			if (context.backbuffResized) {
+				mainRtv = nullptr;
+				targetTex.Destroy();
+				ResizeBackBuff();
+				context.swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backTex);
+				targetTex.tex = backTex;
+			}
             RenderTarget* rtv = targetTex.BindWrite(context, nullptr, 0);
+			mainRtv = rtv;
 			context->ClearRenderTargetView(rtv, clearColor);
 
 			context->OMSetRenderTargets(context.activeRenderTargetNum, context.activeRenderTargets, context.activeDepthBuffuer);
@@ -389,4 +400,14 @@ void Renderer::DrawScreenQuad()
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	context->IASetVertexBuffers(0, 0, NULL, NULL, NULL);
 	context->Draw(4, 0);
+}
+
+void Renderer::ResizeBackBuff()
+{
+	context->OMSetRenderTargets(0, nullptr, nullptr);
+	for (int i = 0; i < context.activeRenderTargetNum; ++i) {
+		context.activeRenderTargets[i] = nullptr;
+	}
+	context.activeDepthBuffuer = nullptr;
+	context.swapChain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0);
 }

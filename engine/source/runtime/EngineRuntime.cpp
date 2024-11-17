@@ -23,6 +23,8 @@ ConfigVar<std::string_view> cfgInitResource("/Project/Resource/InitResource", "r
 
 std::unique_ptr<Game> gTempGame = nullptr;
 
+MulticastDelegate<int, int> gViewportResized;
+
 bool EngineRuntime::Init(const InitParams& params)
 {
 	if (params.window.createWindow) {

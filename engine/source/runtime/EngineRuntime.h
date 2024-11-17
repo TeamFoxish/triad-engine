@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 #include "config/ConfigVar.h"
+#include "misc/Delegates.h"
 
 class Window;
 
@@ -28,3 +29,5 @@ private:
 extern ConfigVar<std::string_view> cfgProjectName;
 
 extern std::unique_ptr<class Game> gTempGame;
+
+extern MulticastDelegate<int, int> gViewportResized;

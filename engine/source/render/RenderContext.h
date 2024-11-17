@@ -5,11 +5,13 @@
 #include "math/Math.h"
 
 struct RenderContext {
+	void ResetFrame();
 	void ResizeViewport(const Math::Viewport& viewport);
 
 	ID3D11DeviceContext* operator->() { return context; }
 
 	bool viewportResized = false;
+	bool backbuffResized = false;
 	Math::Viewport viewport;
 	Window* window;
 

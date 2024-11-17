@@ -22,7 +22,7 @@ PlayerBall::PlayerBall(Game* game)
 void PlayerBall::Initialize(Compositer* parent)
 {
 	CameraParamsPerspective perspective;
-	perspective.aspectRatio = (float)gRenderSys->GetRenderer()->GetWindow()->GetWidth() / gRenderSys->GetRenderer()->GetWindow()->GetHeigth();
+	perspective.aspectRatio = gRenderSys->GetRenderer()->GetContext().viewport.width / gRenderSys->GetRenderer()->GetContext().viewport.height;
 	camera = new ThirdPersonCamera(GetGame(), perspective, this);
 
 	PointLightComponent* pointLight = new PointLightComponent(GetGame(), this);

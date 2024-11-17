@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include "misc/Delegates.h"
 
 class Window {
 public:
@@ -9,6 +10,8 @@ public:
 
 	int GetWidth() const { return width; }
 	int GetHeigth() const { return height; }
+
+	MulticastDelegate<int, int> windowResized;
 
 protected:
 	int width;
