@@ -17,6 +17,7 @@ public:
 	bool Init(RuntimeIface* runtime);
 	void Term();
 
+	struct RenderContext& GetContext() const;
 	Renderer* GetRenderer() const { return rendererImpl.get(); }
 
 	void StartFrame();

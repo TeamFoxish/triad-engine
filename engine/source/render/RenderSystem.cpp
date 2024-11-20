@@ -10,6 +10,8 @@ std::unique_ptr<RenderSystem> gRenderSys = nullptr;
 
 bool RenderSystem::Init(RuntimeIface* runtime)
 {
+	extern bool InitRenderResources();
+	InitRenderResources();
 	rendererImpl = std::make_unique<Renderer>();
 	if (!rendererImpl->Initialize(runtime->GetWindow())) {
 		return false;
@@ -37,6 +39,13 @@ void RenderSystem::Term()
 {
 	gViewportResized.Remove(viewportResizedHandle);
 	rendererImpl->Shutdown();
+	extern void TermRenderResources();
+	TermRenderResources();
+}
+
+RenderContext& RenderSystem::GetContext() const
+{
+	return rendererImpl->GetContext();
 }
 
 void RenderSystem::StartFrame()

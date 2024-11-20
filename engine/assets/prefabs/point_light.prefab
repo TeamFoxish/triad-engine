@@ -1,3 +1,4 @@
 content:
   class: point_light
+  material: res://materials/default_mesh.material
 type: prefab

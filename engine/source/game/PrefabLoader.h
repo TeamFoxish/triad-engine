@@ -29,6 +29,9 @@ public:
 	}
 
 private:
+	static void TEMP_OverrideMaterial(class MeshComponent* mesh, const YAML::Node& overrides);
+
+private:
 	using CreateFunc = Component*(const YAML::Node&);
 	static inline std::unordered_map<ResTag, std::function<CreateFunc>> creators;
 };

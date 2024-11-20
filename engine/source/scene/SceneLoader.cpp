@@ -2,7 +2,6 @@
 
 #include "Scene.h"
 #include "game/PrefabLoader.h"
-#include <yaml-cpp/yaml.h>
 
 SceneLoader::SceneLoader()
 {

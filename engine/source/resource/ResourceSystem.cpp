@@ -62,14 +62,27 @@ void ResourceSystem::LoadResourceImpl(ResTag tag)
     while (!pending.empty()) {
         const YAML::Node node = std::move(pending.back());
         pending.pop_back();
-        for (const auto& child : node) {
-            pending.push_back(child.second);
+        // wtf. why i can't iterate over sequence and map with a single loop...
+        if (node.IsSequence()) {
+            for (auto child = node.begin(); child != node.end(); ++child) {
+                if (!child->IsDefined()) {
+                    continue;
+                }
+                pending.push_back(*child);
+            }
+        } else {
+            for (const auto& child : node) {
+                if (!child.second.IsDefined()) {
+                    continue;
+                }
+                pending.push_back(child.second);
+            }
         }
         if (!node.IsScalar()) {
             continue;
         }
         const std::string& val = node.Scalar();
-        if (IsTag(val)) {
+        if (Triad::Resource::IsTag(val)) {
             ResTag refTag = ToStrid(val);
             if (refTag == tag) {
                 continue; // ignore self references
@@ -129,19 +142,7 @@ bool ResourceSystem::ResolveTagToFile(ResTag tag, ResPath& outPath) const
 
 bool ResourceSystem::ResolveTagToFile(ResTag tag, const ResPath& root, ResPath& outPath) const
 {
-    const ResPath subpath = GetTagSubpath(tag);
+    const ResPath subpath = Triad::Resource::GetTagSubpath(tag);
     outPath = root / subpath;
     return std::filesystem::exists(outPath);
-}
-
-ResPath ResourceSystem::GetTagSubpath(ResTag tag)
-{
-    const std::string_view tagStr = tag.string();
-    assert(tagStr.size() > TAG_PREFIX.size());
-    return tagStr.substr(TAG_PREFIX.size());
-}
-
-bool ResourceSystem::IsTag(std::string_view str)
-{
-    return str.starts_with(TAG_PREFIX);
 }

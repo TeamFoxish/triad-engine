@@ -4,7 +4,7 @@
 #include "components/MeshComponent.h"
 #include "components/ThirdPersonCamera.h"
 #include "render/Renderer.h"
-#include "render/MeshLoader.h"
+#include "render/mesh/MeshLoader.h"
 #include "os/Window.h"
 #include "components/PointLightComponent.h"
 #include "render/Lights.h"
@@ -31,7 +31,7 @@ void PlayerBall::Initialize(Compositer* parent)
 
 	Renderer* renderer = gRenderSys->GetRenderer();
 	meshSocket = new CompositeComponent(GetGame(), this);
-	MeshComponent* mesh = new MeshComponent(GetGame(), meshSocket);
+	MeshComponent* mesh = meshComp = new MeshComponent(GetGame(), meshSocket);
 	//mesh->SetShader(GetGame()->GetRenderer()->GetUtils()->GetMeshShader(renderer));
 	mesh->SetGeometry(renderer->GetUtils()->GetSphereGeom(renderer));
 

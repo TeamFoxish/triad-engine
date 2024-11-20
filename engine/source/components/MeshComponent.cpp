@@ -3,54 +3,52 @@
 #include "game/Game.h"
 #include "render/Renderer.h"
 #include "render/RenderUtils.h"
+#include "render/RenderResources.h"
 #include "render/Shader.h"
 #include "render/GeometryData.h"
+#include "render/mesh/MeshRenderer.h"
 #include "CompositeComponent.h"
-#include "materials/DefaultMeshMaterial.h"
 #include "components/ThirdPersonCamera.h"
 
 #include "render/RenderSystem.h"
+
+
 
 MeshComponent::MeshComponent(Game* game, Compositer* parent)
 	: DrawComponent(game, parent)
 	, parent(parent)
 {
-	auto mat = std::make_shared<DefaultMeshMaterial>(gRenderSys->GetRenderer()->GetUtils()->GetAdvMeshShader(gRenderSys->GetRenderer(), sizeof(DefaultMeshMaterial::CBVS), sizeof(DefaultMeshMaterial::CBPS)));
-	SetMaterial(mat);
+	// TEMP
+	SetMaterial(RenderResources::Instance().materials.Get(ToStrid("res://materials/default_mesh.material")));
 }
 
 void MeshComponent::Draw(Renderer* renderer)
 {
-	auto material = GetMaterial().lock();
-	auto shader = material->GetShader();
+	auto shader = renderer->GetUtils()->GetAdvMeshShader(renderer, sizeof(MeshRenderer::CBVS), sizeof(MeshRenderer::CBPS));
 	auto context = renderer->GetDeviceContext();
+	shader->Activate(context);
+	auto material = GetMaterial().lock();
+	//material->Use(renderer->GetContext());
 	auto window = renderer->GetWindow();
-	auto cbVS = DefaultMeshMaterial::CBVS{};
+	auto cbVS = MeshRenderer::CBVS{};
 	cbVS.worldTransform = parent->GetWorldTransform().Transpose();
 	cbVS.viewProj = renderer->GetViewMatrix();
-	auto cbPS = DefaultMeshMaterial::CBPS{};
-	cbPS.color = color;
+	auto cbPS = MeshRenderer::CBPS{};
 	cbPS.uAmbientLight = Math::Color{0.2f, 0.2f, 0.2f};
 	ThirdPersonCamera* cam = static_cast<ThirdPersonCamera*>(GetGame()->GetActiveCamera());
 	cbPS.uCameraPos = Math::Vector4(cam->GetCameraPos());
-	cbPS.uSpecPower = 0.0f;
 	/*cbPS.dirLight.mDiffuseColor = Math::Color{1.0f, 1.0f, 1.0f};
 	cbPS.dirLight.mDirection = Math::Vector4{0.35f, 0.35f, -1.0f, 0.0f};
 	cbPS.dirLight.mDirection.Normalize();
 	cbPS.dirLight.mSpecColor = Math::Color{1.0f, 1.0f, 1.0f};*/
 	renderer->PopulateLightsBuffer(cbPS); // TODO: TEMP E2
 	cbPS.isTextureSet = 0;
-	if (tex.IsValid()) {
-		tex.Activate(context);
+	if (material->HasTextures()) {
 		cbPS.isTextureSet = 1;
 	}
-	else {
-		//__debugbreak();
-	}
-	shader.SetCBVS(context, 0, &cbVS);
-	shader.SetCBPS(context, 0, &cbPS);
+	shader->SetCBVS(context, 0, &cbVS);
+	shader->SetCBPS(context, 0, &cbPS);
 	
-	//shader.lock()->Activate(context);
 	DrawComponent::Draw(renderer);
 }
 

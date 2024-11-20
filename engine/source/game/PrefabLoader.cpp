@@ -3,7 +3,9 @@
 #include "math/Math.h"
 
 #include "render/RenderSystem.h"
+#include "render/RenderResources.h"
 #include "render/Renderer.h"
+#include "render/material/Material.h"
 
 #include "game/Game.h"
 #include "components/CompositeComponent.h"
@@ -39,6 +41,11 @@ void PrefabLoader::Load(ResTag tag, const YAML::Node& desc)
 	};
 
 	const std::string& prefabType = desc["class"].Scalar();
+	const std::string& materialTag = desc["material"].IsDefined() ? desc["material"].Scalar() : "";
+	std::shared_ptr<Material> material;
+	if (!materialTag.empty()) {
+		material = RenderResources::Instance().materials.Get(ToStrid(materialTag));
+	}
 	if (prefabType == "dir_light") {
 		creators[tag] = [](const YAML::Node& desc) {
 			CompositeComponent* dirLightSocket = new CompositeComponent(gTempGame.get());
@@ -49,7 +56,7 @@ void PrefabLoader::Load(ResTag tag, const YAML::Node& desc)
 			return dirLightSocket;
 		};
 	} else if (prefabType == "point_light") {
-		creators[tag] = [](const YAML::Node& desc) {
+		creators[tag] = [material](const YAML::Node& desc) {
 			Math::Color col = {1.0f, 1.0f, 1.0f};
 			if (desc["r"]) {
 				col.x = desc["r"].as<float>();
@@ -62,6 +69,10 @@ void PrefabLoader::Load(ResTag tag, const YAML::Node& desc)
 			}
 			CompositeComponent* pointLightC = new CompositeComponent(gTempGame.get());
 			MeshComponent* mesh = new MeshComponent(gTempGame.get(), pointLightC);
+			if (material) {
+				mesh->SetMaterial(material);
+			}
+			TEMP_OverrideMaterial(mesh, desc);
 			mesh->SetGeometry(gRenderSys->GetRenderer()->GetUtils()->GetSphereGeom(gRenderSys->GetRenderer()));
 			mesh->SetColor(col);
 			PointLightComponent* pointLight = new PointLightComponent(gTempGame.get(), pointLightC);
@@ -74,19 +85,25 @@ void PrefabLoader::Load(ResTag tag, const YAML::Node& desc)
 			return pointLightC;
 		};
 	} else if (prefabType == "player") {
-		creators[tag] = [](const YAML::Node& desc) {
+		creators[tag] = [material](const YAML::Node& desc) {
 			auto player = new PlayerBall(gTempGame.get());
 			player->Initialize();
+			if (material) {
+				player->meshComp->SetMaterial(material);
+			}
+			TEMP_OverrideMaterial(player->meshComp, desc);
 			return player;
 		};
 	} else if (prefabType == "flopa") {
-		creators[tag] = [rndPos](const YAML::Node& desc) {
+		creators[tag] = [rndPos, material](const YAML::Node& desc) {
 			CompositeComponent* flopa = new CompositeComponent(gTempGame.get());
 			const Mesh::PTR& mesh = gRenderSys->GetRenderer()->GetMesh("assets/flop.fbx");
 			MeshComponent* rootMesh = MeshComponent::Build(mesh, flopa);
 			if (rootMesh) {
-				Texture tex(0, L"assets/flopTex.png", gRenderSys->GetRenderer());
-				rootMesh->SetTexture(tex);
+				if (material) {
+					rootMesh->SetMaterial(material);
+				}
+				TEMP_OverrideMaterial(rootMesh, desc);
 				// TODO: i feel really bad about this
 				flopa->boundingSphereRadius = rootMesh->boundingSphereRadius;
 			}
@@ -98,13 +115,15 @@ void PrefabLoader::Load(ResTag tag, const YAML::Node& desc)
 			return flopa;
 		};
 	} else if (prefabType == "cheese") {
-		creators[tag] = [rndPos](const YAML::Node& desc) {
+		creators[tag] = [rndPos, material](const YAML::Node& desc) {
 			CompositeComponent* flopa = new CompositeComponent(gTempGame.get());
 			const Mesh::PTR& mesh = gRenderSys->GetRenderer()->GetMesh("assets/cheese.fbx");
 			MeshComponent* rootMesh = MeshComponent::Build(mesh, flopa);
 			if (rootMesh) {
-				Texture tex(0, L"assets/cheeseTex.jpg", gRenderSys->GetRenderer());
-				rootMesh->SetTexture(tex);
+				if (material) {
+					rootMesh->SetMaterial(material);
+				}
+				TEMP_OverrideMaterial(rootMesh, desc);
 				// TODO: i feel really bad about this
 				flopa->boundingSphereRadius = rootMesh->boundingSphereRadius;
 			}
@@ -121,4 +140,14 @@ void PrefabLoader::Load(ResTag tag, const YAML::Node& desc)
 Component* PrefabLoader::Create(ResTag tag, const YAML::Node& desc)
 {
 	return creators[tag](desc);
+}
+
+void PrefabLoader::TEMP_OverrideMaterial(MeshComponent* mesh, const YAML::Node& overrides)
+{
+	const YAML::Node& material = overrides["material"];
+	if (!material.IsDefined()) {
+		return;
+	}
+	const auto mat = RenderResources::Instance().materials.Get(ToStrid(material.Scalar()));
+	mesh->SetMaterial(mat);
 }

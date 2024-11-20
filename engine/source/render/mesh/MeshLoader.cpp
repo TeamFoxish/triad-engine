@@ -9,8 +9,8 @@
 #include <cassert>
 #include <functional>
 
-#include "GeometryData.h"
-#include "Renderer.h"
+#include "render/GeometryData.h"
+#include "render/Renderer.h"
 #include "Mesh.h"
 
 #include <d3d11.h>

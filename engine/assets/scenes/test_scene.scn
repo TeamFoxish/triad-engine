@@ -7,18 +7,21 @@ content:
         r: 1.0
         g: 0.0
         b: 0.0
+        material: res://materials/red.material
     green-light: 
       ref: res://prefabs/point_light.prefab
       overrides:
         r: 0.0
         g: 1.0
         b: 0.0
+        material: res://materials/green.material
     blue-light: 
       ref: res://prefabs/point_light.prefab
       overrides:
         r: 0.0
         g: 0.0
         b: 1.0
+        material: res://materials/blue.material
     player: res://prefabs/player.prefab
     flopa1: res://prefabs/flopa.prefab
     flopa2: res://prefabs/flopa.prefab

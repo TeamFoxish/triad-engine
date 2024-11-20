@@ -3,7 +3,7 @@
 #include "game/Component.h"
 #include "math/Math.h"
 
-#include "materials/DefaultMeshMaterial.h" // TODO: TEMP E2
+#include "mesh/MeshRenderer.h"
 
 
 class Renderer;
@@ -18,7 +18,7 @@ public:
 
 	void SetColor(const Math::Color& col) { color = col; }
 
-	virtual void UpdateBuffer(DefaultMeshMaterial::CBPS& buffer) const = 0;
+	virtual void UpdateBuffer(MeshRenderer::CBPS& buffer) const = 0;
 
 protected:
 	Renderer* GetRenderer() const;
@@ -34,7 +34,7 @@ class DirectionalLight : public Light {
 public:
 	DirectionalLight(Renderer* renderer, Compositer* parent);
 
-	void UpdateBuffer(DefaultMeshMaterial::CBPS& buffer) const override;
+	void UpdateBuffer(MeshRenderer::CBPS& buffer) const override;
 };
 
 
@@ -48,7 +48,7 @@ public:
 
 	PointLight(Renderer* renderer, Compositer* parent);
 
-	void UpdateBuffer(DefaultMeshMaterial::CBPS& buffer) const override;
+	void UpdateBuffer(MeshRenderer::CBPS& buffer) const override;
 
 	void SetIntensity(float _intensity) { intensity = _intensity; }
 

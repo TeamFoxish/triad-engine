@@ -1,7 +1,7 @@
 #include "DrawComponent.h"
 
 #include "Renderer.h"
-#include "Material.h"
+#include "material/Material.h"
 #include "GeometryData.h"
 
 #include "render/RenderSystem.h"
@@ -35,7 +35,7 @@ void DrawComponent::Initialize(Compositer* parent)
 void DrawComponent::Draw(Renderer* renderer)
 {
 	ID3D11DeviceContext* context = renderer->GetDeviceContext();
-	material->Use(renderer);
+	material->Use(renderer->GetContext());
 	geom->Activate(context);
 	context->DrawIndexed(geom->idxNum, 0, 0);
 }

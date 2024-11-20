@@ -1,8 +1,8 @@
 #pragma once
 
 #include "render/DrawComponent.h"
-#include "render/Mesh.h"
-#include "render/Texture.h"
+#include "render/mesh/Mesh.h"
+#include "render/material/Material.h"
 #include "math/Math.h"
 
 class CompositeComponent;
@@ -17,8 +17,6 @@ public:
 
 	void SetMesh(const Mesh::PTR _mesh) { mesh = _mesh; }
 
-	void SetTexture(const Texture& _tex) { tex = _tex; }
-
 	static MeshComponent* Build(Mesh::PTR mesh, CompositeComponent* parent);
 
 protected:
@@ -30,6 +28,5 @@ public:
 protected:
 	Compositer* parent;
 	Mesh::PTR mesh;
-	Texture tex;
 	Math::Color color{ 1.0f, 1.0f, 1.0f, 1.0f };
 };

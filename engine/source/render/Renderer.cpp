@@ -7,7 +7,7 @@
 #include "os/Window.h"
 #include "RenderContext.h"
 #include "GeometryData.h"
-#include "MeshLoader.h"
+#include "mesh/MeshLoader.h"
 #include "TextureLoader.h"
 #include "Lights.h"
 #include "Shader.h"
@@ -172,7 +172,7 @@ void Renderer::SetClearColor(const float* color)
 	memcpy(clearColor, color, sizeof(float) * 4);
 }
 
-void Renderer::PopulateLightsBuffer(DefaultMeshMaterial::CBPS& buffer) const
+void Renderer::PopulateLightsBuffer(MeshRenderer::CBPS& buffer) const
 {
 	for (const Light* light : lightSources) {
 		light->UpdateBuffer(buffer);
@@ -192,22 +192,6 @@ Mesh::PTR Renderer::GetMesh(const std::string& path)
 	meshes[path] = mesh;
 
 	return meshes[path];
-}
-
-ID3D11ShaderResourceView* Renderer::GetTexture(const std::wstring& path)
-{
-	// TODO: add texture unload if not used
-	auto iter = textures.find(path);
-	if (iter != textures.end()) {
-		return iter->second;
-	}
-	ID3D11ShaderResourceView* res;
-	if (!TextureLoader::LoadTexture(path, this, &res)) {
-		return nullptr;
-	}
-	textures[path] = res;
-
-	return res;
 }
 
 void Renderer::AddComponent(DrawComponent* comp)

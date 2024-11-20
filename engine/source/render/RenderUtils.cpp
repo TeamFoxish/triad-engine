@@ -4,7 +4,7 @@
 #include "GeometryData.h"
 #include "Shader.h"
 #include "SphereCreator.h"
-#include "Material.h"
+#include "material/Material.h"
 
 #include <cassert>
 #include <iostream>

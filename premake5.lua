@@ -30,6 +30,7 @@ workspace("Triad")
   filter {  }
   
   defines({"_CRT_SECURE_NO_WARNINGS"}) -- ignore strncpy unsafety warnings caused by Strid
+  defines({"YAML_CPP_STATIC_DEFINE"}) -- tried to define in code, but fails to link yaml-cpp in release configuration
   
   location("build")
   targetdir("bin/%{cfg.buildcfg}")

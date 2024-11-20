@@ -1,3 +1,4 @@
 content:
   class: cheese
+  material: res://materials/cheese.material
 type: prefab

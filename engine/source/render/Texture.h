@@ -11,12 +11,13 @@ class Texture
 public:
 	// TODO: remove default constructor
 	Texture() = default;
-	Texture(uint32_t slot, std::wstring path, Renderer* renderer);
 	Texture(uint32_t slot, ID3D11ShaderResourceView* srv);
 
 	void Activate(ID3D11DeviceContext* context);
 
 	bool IsValid() const { return texView != nullptr; }
+
+	ID3D11ShaderResourceView* View() { return texView; }
 
 protected:
 	ID3D11ShaderResourceView* texView = nullptr;

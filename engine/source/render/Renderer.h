@@ -8,8 +8,8 @@
 #include "RenderContext.h"
 #include "RenderUtils.h"
 #include "DrawComponent.h"
-#include "materials/DefaultMeshMaterial.h" // TODO: TEMP E1
-#include "Mesh.h" // TODO: forward declare
+#include "mesh/MeshRenderer.h"
+#include "mesh/Mesh.h" // TODO: forward declare
 
 class Window;
 class Light;
@@ -39,13 +39,12 @@ public:
 
 	void SetClearColor(const float* color);
 
-	void PopulateLightsBuffer(DefaultMeshMaterial::CBPS& buffer) const;
+	void PopulateLightsBuffer(MeshRenderer::CBPS& buffer) const;
 
 	const Math::Matrix& GetViewMatrix() const { return viewMatr; }
 	void SetViewMatrix(const Math::Matrix& view) { viewMatr = view; }
 
 	Mesh::PTR GetMesh(const std::string& path);
-	ID3D11ShaderResourceView* GetTexture(const std::wstring& path);
 
 	Window* GetWindow() const { return window; }
 	RenderUtils* GetUtils() const { return utils.get(); }
@@ -70,8 +69,6 @@ private:
 	std::vector<DrawComponent*> components;
 
 	std::unordered_map<std::string, Mesh::PTR> meshes;
-
-	std::unordered_map<std::wstring, ID3D11ShaderResourceView*> textures;
 
 	std::vector<Light*> lightSources;
 

@@ -32,13 +32,17 @@ cbuffer PixelConstantBuffer : register(b0)
 	};
 	#define NR_POINT_LIGHTS 4  
 	PointLight pointLights[NR_POINT_LIGHTS];
-	float4 color;
 	float4 uCameraPos;
 	float4 uAmbientLight;
-    float uSpecPower;
-	float uShininess;
 	int spotLightsNum;
 	int isTextureSet;
+}
+
+cbuffer MaterialCB : register(b1)
+{
+	float4 color;
+    float uSpecPower;
+	float uShininess;
 }
 
 cbuffer VertexConstantBuffer : register(b0)

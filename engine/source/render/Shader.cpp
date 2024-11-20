@@ -125,7 +125,6 @@ void Shader::SetCBVS(ID3D11DeviceContext* context, int slot, void* data)
 	context->Map(cbVS[slot], 0, D3D11_MAP_WRITE_DISCARD, 0, &subres);
 	memcpy(subres.pData, data, cbVSSizes[slot]);
 	context->Unmap(cbVS[slot], 0);
-
 }
 
 void Shader::SetCBPS(ID3D11DeviceContext* context, int slot, void* data)

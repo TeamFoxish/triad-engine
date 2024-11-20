@@ -13,6 +13,8 @@ public:
 	// temp list for collision test
 	std::vector<CompositeComponent*> sceneObjects;
 
+	class MeshComponent* meshComp = nullptr;
+
 protected:
 	class ThirdPersonCamera* camera = nullptr;
 	CompositeComponent* meshSocket = nullptr;

@@ -4,11 +4,8 @@
 #include <vector>
 #include <unordered_map>
 #include "Res.h"
-#include "file/FileIO.h"
 
 class RuntimeIface;
-
-using ResPath = Triad::FileIO::FPath;
 
 class ResourceSystem {
 public:
@@ -29,12 +26,6 @@ protected:
 	void LoadResourceImpl(ResTag tag);
 
 	bool ResolveTagToFile(ResTag tag, const ResPath& root, ResPath& outPath) const;
-
-	static ResPath GetTagSubpath(ResTag tag);
-
-	static bool IsTag(std::string_view str);
-
-	static constexpr std::string_view TAG_PREFIX = "res://";
 
 protected:
 	struct Resource {

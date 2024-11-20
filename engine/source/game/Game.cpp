@@ -14,7 +14,7 @@
 #include "render/Renderer.h"
 #include "render/RenderUtils.h"
 #include "render/Shader.h"
-#include "render/MeshLoader.h"
+#include "render/mesh/MeshLoader.h"
 #include "render/Lights.h"
 #include "scene/Scene.h"
 
