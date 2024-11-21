@@ -17,19 +17,74 @@ void MaterialLoader::Unload(ResTag tag)
 	RenderResources::Instance().materials.Remove(tag);
 }
 
+template<typename Prop_T>
+static void ApplyOverrides(std::vector<Prop_T>& target, const std::vector<Prop_T>& overrides) 
+{
+	for (const Prop_T& prop : overrides) {
+		auto iter = std::find_if(target.begin(), target.end(),
+			[&prop](const Prop_T& other) {
+				return other.key == prop.key; // find prop in material with matching key
+			});
+		if (iter == target.end()) {
+			// TODO: log error
+			continue;
+		}
+		if (iter->type != prop.type) {
+			// TODO: log error
+			continue;
+		}
+		*iter = prop; // apply override
+	}
+}
+
+template<typename Prop_T>
+static void ApplyOverrides(const std::shared_ptr<Material>& parent, std::vector<Prop_T>& target, const std::vector<Prop_T>& overrides) 
+{
+	if (!parent) {
+		target = overrides;
+		return;
+	}
+	ApplyOverrides(target, overrides);
+}
+
 std::shared_ptr<Material> MaterialLoader::CreateMaterial(const YAML::Node& desc)
 {
-	std::shared_ptr<Material> res = std::make_shared<Material>();
-	// TODO: get parent material and override values
-	res->properties = ParseProperties(desc["properties"]);
-	res->textures = ParseTextures(desc["textures"]);
-	return res;
+	const YAML::Node& parentMaterial = desc["parent"];
+	std::shared_ptr<Material> prototype = CreateChild(parentMaterial);
+	if (!prototype) {
+		prototype = std::make_shared<Material>();
+	}
+
+	ApplyOverrides(prototype->parent, prototype->properties, ParseProperties(desc["properties"]));
+	ApplyOverrides(prototype->parent, prototype->textures, ParseTextures(desc["textures"]));
+
+	return prototype;
+}
+
+std::shared_ptr<Material> MaterialLoader::CreateChild(const YAML::Node& parentTagNode)
+{
+	using RetT = std::shared_ptr<Material>;
+	if (!parentTagNode) {
+		return RetT{}; // parent was unset
+	}
+	if (!parentTagNode.IsScalar()) {
+		// TODO: log error
+		return RetT{};
+	}
+	const std::string& parentTag = parentTagNode.Scalar();
+	if (!Triad::Resource::IsTag(parentTag)) {
+		// TODO: log error
+		return RetT{};
+	}
+	const std::shared_ptr<Material> parent = 
+		RenderResources::Instance().materials.Get(ToStrid(parentTag));
+	return Material::CreateChild(parent);
 }
 
 Material::PropList MaterialLoader::ParseProperties(const YAML::Node& properties)
 {
 	Material::PropList props;
-	if (!properties.IsDefined()) {
+	if (!properties) {
 		return props;
 	}
 	
@@ -37,7 +92,7 @@ Material::PropList MaterialLoader::ParseProperties(const YAML::Node& properties)
 		Material::Prop prop;
 		{
 			const YAML::Node val = propEntry["key"];
-			if (!val.IsDefined() || !val.IsScalar()) {
+			if (!val || !val.IsScalar()) {
 				// TODO: log error
 				continue;
 			}
@@ -45,7 +100,7 @@ Material::PropList MaterialLoader::ParseProperties(const YAML::Node& properties)
 		}
 		{
 			const YAML::Node val = propEntry["type"];
-			if (!val.IsDefined() || !val.IsScalar()) {
+			if (!val || !val.IsScalar()) {
 				// TODO: log error
 				continue;
 			}
@@ -57,7 +112,7 @@ Material::PropList MaterialLoader::ParseProperties(const YAML::Node& properties)
 		}
 		{
 			const YAML::Node val = propEntry["value"];
-			if (!val.IsDefined()) {
+			if (!val) {
 				// TODO: log error
 				continue;
 			}
@@ -104,7 +159,7 @@ bool MaterialLoader::ParsePropValue(const YAML::Node& value, PropType type, Mate
 Material::TexturePropList MaterialLoader::ParseTextures(const YAML::Node& textures)
 {
 	Material::TexturePropList res;
-	if (!textures.IsDefined()) {
+	if (!textures) {
 		return res;
 	}
 
@@ -112,7 +167,7 @@ Material::TexturePropList MaterialLoader::ParseTextures(const YAML::Node& textur
 		Material::TextureProp prop;
 		{
 			const YAML::Node val = texEntry["key"];
-			if (!val.IsDefined() || !val.IsScalar()) {
+			if (!val || !val.IsScalar()) {
 				// TODO: log error
 				continue;
 			}
@@ -120,19 +175,18 @@ Material::TexturePropList MaterialLoader::ParseTextures(const YAML::Node& textur
 		}
 		{
 			const YAML::Node val = texEntry["tag"];
-			if (!val.IsDefined() || !val.IsScalar()) {
+			if (!val || !val.IsScalar()) {
 				// TODO: log error
 				continue;
 			}
-			if (!Triad::Resource::IsTag(val.Scalar())) {
-				continue; // unset texture
+			if (Triad::Resource::IsTag(val.Scalar())) {
+				ResTag tag = ToStrid(val.Scalar());
+				prop.tex = RenderResources::Instance().textures.Get(tag);
 			}
-			ResTag tag = ToStrid(val.Scalar());
-			prop.tex = RenderResources::Instance().textures.Get(tag);
 		}
 		{
 			const YAML::Node val = texEntry["slot"];
-			if (!val.IsDefined() || !val.IsScalar()) {
+			if (!val || !val.IsScalar()) {
 				// TODO: log error
 				continue;
 			}

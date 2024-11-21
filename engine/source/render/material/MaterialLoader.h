@@ -26,6 +26,8 @@ public:
 private:
 	static std::shared_ptr<Material> CreateMaterial(const YAML::Node& desc);
 
+	static std::shared_ptr<Material> CreateChild(const YAML::Node& parentTagNode);
+
 	static Material::PropList ParseProperties(const YAML::Node& properties);
 
 	using PropType = Material::Prop::Type;

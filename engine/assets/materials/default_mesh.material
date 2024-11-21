@@ -10,10 +10,10 @@ content:
         - 1.0
     - key: specular
       type: float
-      value: 0.5
+      value: 0.25
     - key: shininess
       type: float
-      value: 0.5
+      value: 32.0
   textures:
     - key: diffuse_texture
       tag: <invalid>

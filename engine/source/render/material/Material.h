@@ -15,11 +15,17 @@ class Material {
 
 public:
 	Material() = default;
+	Material(Material&&) = delete;
 	~Material();
 
 	void Use(struct RenderContext& ctx);
 
-	bool HasTextures() const { return !textures.empty(); }
+	bool HasBindedTextures() const;
+
+	static std::shared_ptr<Material> CreateChild(const std::shared_ptr<Material>& parent);
+
+	// shouldn't be used directly
+	Material(const Material& parent) = default;
 
 protected:
 	struct Batch {
@@ -77,7 +83,10 @@ protected:
 	struct TextureProp {
 		Strid key;
 		uint32_t slot;
-		Texture* tex;
+		Texture* tex = nullptr;
+
+		// dummy value to support material properties override
+		static inline bool type = true;
 	};
 
 protected:
@@ -85,6 +94,8 @@ protected:
 	// requires too many creation parameters
 	// shaders are defined in specific renderers
 	// std::shared_ptr<Shader> shader;
+
+	std::shared_ptr<Material> parent;
 
 	struct ID3D11Buffer* buffer = nullptr;
 	uint32_t bufferSize = 0;

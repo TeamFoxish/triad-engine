@@ -37,9 +37,28 @@ void Material::Use(RenderContext& ctx)
 
 	// bind textures
 	for (const TextureProp& prop : textures) {
-		auto tex = prop.tex->View();
+		auto tex = prop.tex ? prop.tex->View() : nullptr;
 		ctx->PSSetShaderResources(prop.slot, 1, &tex);
 	}
+}
+
+bool Material::HasBindedTextures() const
+{
+	for (const TextureProp& prop : textures) {
+		if (prop.tex != nullptr) {
+			return true;
+		}
+	}
+	return false;
+}
+
+std::shared_ptr<Material> Material::CreateChild(const std::shared_ptr<Material>& parent)
+{
+	auto child = std::make_shared<Material>(*parent);
+	child->parent = parent;
+	child->buffer = nullptr;
+	child->bufferSize = 0;
+	return child;
 }
 
 std::vector<Material::Batch> Material::BuildBuffer() const

@@ -42,10 +42,7 @@ void MeshComponent::Draw(Renderer* renderer)
 	cbPS.dirLight.mDirection.Normalize();
 	cbPS.dirLight.mSpecColor = Math::Color{1.0f, 1.0f, 1.0f};*/
 	renderer->PopulateLightsBuffer(cbPS); // TODO: TEMP E2
-	cbPS.isTextureSet = 0;
-	if (material->HasTextures()) {
-		cbPS.isTextureSet = 1;
-	}
+	cbPS.isTextureSet = material->HasBindedTextures() ? 1 : 0;
 	shader->SetCBVS(context, 0, &cbVS);
 	shader->SetCBPS(context, 0, &cbPS);
 	

@@ -1,5 +1,5 @@
 content:
-  # parent: <optional>
+  parent: res://materials/default_mesh.material
   properties:
     - key: diffuse_color
       type: vector4
@@ -8,14 +8,4 @@ content:
         - 0.0
         - 0.0
         - 1.0
-    - key: specular
-      type: float
-      value: 0.5
-    - key: shininess
-      type: float
-      value: 0.5
-  textures:
-    - key: diffuse_texture
-      tag: <invalid>
-      slot: 0
 type: material

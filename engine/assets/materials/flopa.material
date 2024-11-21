@@ -1,19 +1,5 @@
 content:
-  # parent: <optional>
-  properties:
-    - key: diffuse_color
-      type: vector4
-      value:
-        - 255
-        - 255
-        - 255
-        - 255
-    - key: specular
-      type: float
-      value: 0.5
-    - key: shininess
-      type: float
-      value: 0.5
+  parent: res://materials/default_mesh.material
   textures:
     - key: diffuse_texture
       tag: res://textures/flopTex.texture
