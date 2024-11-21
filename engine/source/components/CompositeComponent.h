@@ -39,6 +39,8 @@ public:
 	void ComputeWorldTransform(Compositer* parent = nullptr, bool recusive = true) override;
 	void TEMP_PendingComputeWT() { recomputeWorldTransform = true; }
 
+	std::vector<Component*> GetChildren() const { return children; }
+
 public:
 	float boundingSphereRadius = 0.0f;
 

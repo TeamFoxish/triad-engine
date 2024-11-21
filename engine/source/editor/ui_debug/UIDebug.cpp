@@ -17,6 +17,11 @@
 #include "os/wnd.h"
 #include "os/Window.h"
 
+#include "runtime/EngineRuntime.h"
+#include "game/Game.h"
+#include "scene/Scene.h"
+#include "components/CompositeComponent.h"
+
 
 void UIDebug::Init(Window* window)
 {
@@ -76,6 +81,38 @@ void UIDebug::TestDraw()
 		// Outliner
 		{
 			ImGui::Begin("Outliner");
+
+			auto components = gTempGame->scenes[0].get()->GetStorage().GetComponents();
+
+			if (ImGui::TreeNodeEx("scene", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Selected))
+			{
+				for (Component* component : components)
+				{
+					if (component->isComposite)
+					{
+						if (ImGui::TreeNodeEx(component->GetName().c_str()))
+						{
+							CompositeComponent* cc = dynamic_cast<CompositeComponent*>(component);
+
+							for (Component* child : cc->GetChildren())
+							{
+								if (ImGui::TreeNodeEx(child->GetName().c_str(), ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Leaf))
+								{
+									ImGui::TreePop();
+								}
+							}
+							ImGui::TreePop();
+						}
+
+					}
+					else if (ImGui::TreeNodeEx(component->GetName().c_str(), ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Leaf))
+					{
+						ImGui::TreePop();
+					}
+				}
+				ImGui::TreePop();
+			}
+
 			ImGui::End();
 		}
 

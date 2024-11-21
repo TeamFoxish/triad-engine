@@ -7,6 +7,8 @@
 Component::Component(Game* _game, Compositer* parent)
 	: game(_game)
 {
+	name = std::format("Component {}", num++);
+
 	if (parent) {
 		parent->AddChild({this});
 		hasParent = true;

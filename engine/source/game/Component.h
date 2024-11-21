@@ -2,11 +2,15 @@
 
 #include "Compositer.h"
 
+#include <string>
+
 class Game;
 class Component;
 //template<typename, typename>
 //class Compositer_T;
 using Compositer = Compositer_T<Component>;
+
+static int num = 0;
 
 class Component
 {
@@ -23,8 +27,15 @@ public:
 	virtual void TEMP_PendingComputeWT() {}
 
 	Game* GetGame() const { return game; }
+	std::string GetName() const { return name; }
+	bool HasParent() const { return hasParent; }
+
+#ifdef EDITOR
+	bool isComposite = false;
+#endif // EDITOR
 
 private:
 	Game* game;
 	bool hasParent = false;
+	std::string name;
 };

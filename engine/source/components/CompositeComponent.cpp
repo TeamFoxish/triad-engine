@@ -5,6 +5,9 @@
 CompositeComponent::CompositeComponent(Game* game, Compositer* compositer)
 	: Component(game, compositer)
 {
+#ifdef EDITOR
+	isComposite = true;
+#endif // EDITOR
 }
 
 CompositeComponent::~CompositeComponent()
