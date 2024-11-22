@@ -5,6 +5,7 @@
 #include "runtime/RuntimeIface.h"
 #include "config/ConfigSystem.h"
 #include "config/ConfigVar.h"
+#include "logs/Log.h"
 
 static ConfigVar<int> cfgWindowWidth("/Engine/Window/Width", 800);
 static ConfigVar<int> cfgWindowHeight("/Engine/Window/Height", 800);
@@ -41,7 +42,9 @@ int main(int argc, char* argv[])
 
 #endif // _WIN32
 
-	setlocale(LC_ALL, ""); // TODO: remove when logging is done
+	//setlocale(LC_ALL, ""); // TODO: remove when logging is done
+	TriadLogs::Init();
+
 	ConfigSystem cfgSys;
 	std::unique_ptr<AppRuntime> appRuntime;
 	{

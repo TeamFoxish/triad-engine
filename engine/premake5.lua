@@ -8,6 +8,7 @@ project("Engine")
   includedirs({ "source" })
   includedirs({ "libs/**/include" })
   includedirs({ "source/imgui" })
+  includedirs({ "source/spdlog" })
   
   filter("configurations:Debug*")
     libdirs({ "libs/**/debug" })
