@@ -5,7 +5,7 @@
 #include "runtime/RuntimeIface.h"
 #include "config/ConfigSystem.h"
 #include "config/ConfigVar.h"
-#include "logs/Log.h"
+#include "logs/Logs.h"
 
 static ConfigVar<int> cfgWindowWidth("/Engine/Window/Width", 800);
 static ConfigVar<int> cfgWindowHeight("/Engine/Window/Height", 800);
