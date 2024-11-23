@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef EDITOR
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -36,3 +38,5 @@ private:
 	std::shared_ptr<OutlinerNode> root;
 	std::shared_ptr<OutlinerNode> selectedNode;
 };
+
+#endif // EDITOR

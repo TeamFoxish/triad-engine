@@ -1,5 +1,7 @@
 #include "UIOutliner.h"
 
+#ifdef EDITOR
+
 #include "components/CompositeComponent.h"
 #include "imgui.h"
 
@@ -119,3 +121,5 @@ void Outliner::DrawOutlinerNode(std::shared_ptr<OutlinerNode> node)
         ImGui::TreePop();
     }
 }
+
+#endif // EDITOR

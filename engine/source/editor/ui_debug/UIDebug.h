@@ -3,11 +3,14 @@
 #include <string>
 #include <vector>
 
+#ifdef EDITOR
 #include "UIOutliner.h"
+#endif // EDITOR
 
 class Window;
 class Component;
 class CompositeComponent;
+class Outliner;
 
 struct OutlinerNode
 {
@@ -43,5 +46,7 @@ protected:
 	static inline int viewportWidth = -1;
 	static inline int viewportHeight = -1;
 
+#ifdef EDITOR
 	static inline Outliner outliner;
+#endif // EDITOR
 };

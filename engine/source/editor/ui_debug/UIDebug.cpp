@@ -54,7 +54,9 @@ void UIDebug::Init(Window* window)
 		ImGui::LoadIniSettingsFromDisk("DefaultImGuiSettings.ini");
 	}
 
+#ifdef EDITOR
 	outliner.Init("scene", gTempGame->scenes[0].get()->GetStorage().GetComponents());
+#endif // EDITOR
 }
 
 void UIDebug::StartNewFrame()
