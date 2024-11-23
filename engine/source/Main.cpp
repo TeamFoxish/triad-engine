@@ -42,7 +42,6 @@ int main(int argc, char* argv[])
 
 #endif // _WIN32
 
-	//setlocale(LC_ALL, ""); // TODO: remove when logging is done
 	TriadLogs::Init();
 
 	ConfigSystem cfgSys;
@@ -50,6 +49,7 @@ int main(int argc, char* argv[])
 	{
 		AppConfigurator configurator;
 		if (!configurator.CreateRuntime(argc, argv, appRuntime)) {
+			LOG_CRIT("failed to create application runtime");
 			return EXIT_FAILURE;
 		}
 	}
@@ -57,10 +57,13 @@ int main(int argc, char* argv[])
 	params.window.width = cfgWindowWidth;
 	params.window.height = cfgWindowHeight;
 	if (!appRuntime->Init(params)) {
+		LOG_CRIT("failed to initialize application runtime");
 		return EXIT_FAILURE;
 	}
 	appRuntime->Run();
 	appRuntime->Shutdown();
+
+	TriadLogs::Term();
 
 	return 0;
 }

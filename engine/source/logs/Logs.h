@@ -8,10 +8,12 @@ class TriadLogs
 public:
     static void Init();
 
-    inline static std::shared_ptr<spdlog::logger>& GetTriadLogger() { return triadLogger; }
+    static void Term();
+
+    static spdlog::logger& Logger() { return *logger; }
 
 private:
-    static std::shared_ptr<spdlog::logger> triadLogger;
+    static inline std::shared_ptr<spdlog::logger> logger;
 };
 
 #define __FILENAME__ (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__)
@@ -27,10 +29,10 @@ private:
 
 #else
 
-#define LOG_INFO(...)   ::TriadLogs::GetTriadLogger()->info(__VA_ARGS__)
-#define LOG_DEBUG(...)  ::TriadLogs::GetTriadLogger()->debug(__VA_ARGS__)
-#define LOG_WARN(...)   ::TriadLogs::GetTriadLogger()->warn(__VA_ARGS__)
-#define LOG_ERROR(...)  ::TriadLogs::GetTriadLogger()->error(__VA_ARGS__)
-#define LOG_CRIT(...)   ::TriadLogs::GetTriadLogger()->critical(__VA_ARGS__)
+#define LOG_INFO(...)   ::TriadLogs::Logger().info(__VA_ARGS__)
+#define LOG_DEBUG(...)  ::TriadLogs::Logger().debug(__VA_ARGS__)
+#define LOG_WARN(...)   ::TriadLogs::Logger().warn(__VA_ARGS__)
+#define LOG_ERROR(...)  ::TriadLogs::Logger().error(__VA_ARGS__)
+#define LOG_CRIT(...)   ::TriadLogs::Logger().critical(__VA_ARGS__)
 
 #endif

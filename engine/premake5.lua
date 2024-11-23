@@ -8,15 +8,14 @@ project("Engine")
   includedirs({ "source" })
   includedirs({ "libs/**/include" })
   includedirs({ "source/imgui" })
-  includedirs({ "source/spdlog" })
   
   filter("configurations:Debug*")
     libdirs({ "libs/**/debug" })
-	links({ "assimp-vc143-mtd", "freetyped", "argumentumd", "yaml-cppd" })
+	links({ "assimp-vc143-mtd", "freetyped", "argumentumd", "yaml-cppd", "spdlogd" })
   
   filter("configurations:Release*")
     libdirs({ "libs/**/release" })
-	links({ "assimp-vc143-mt", "freetype", "argumentum", "yaml-cpp" })
+	links({ "assimp-vc143-mt", "freetype", "argumentum", "yaml-cpp", "spdlog" })
   
   filter {  }
   
