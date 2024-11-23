@@ -1,6 +1,20 @@
 #pragma once
 
+#include <string>
+#include <vector>
+
+#include "UIOutliner.h"
+
 class Window;
+class Component;
+class CompositeComponent;
+
+struct OutlinerNode
+{
+	std::string name = "empty node";
+	bool isSelected = false;
+	std::vector<OutlinerNode*> children;
+};
 
 class UIDebug
 {
@@ -28,4 +42,6 @@ protected:
 
 	static inline int viewportWidth = -1;
 	static inline int viewportHeight = -1;
+
+	static inline Outliner outliner;
 };
