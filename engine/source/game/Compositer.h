@@ -1,6 +1,7 @@
 #pragma once
 
 #include "math/Math.h"
+#include "shared/TransformStorage.h"
 #include <initializer_list>
 
 template<typename CHILD_T>
@@ -25,5 +26,6 @@ public:
 	virtual Math::Vector3 GetRight() const = 0;
 
 	virtual const Math::Matrix& GetWorldTransform(Compositer_T* parent = nullptr) = 0;
-	//virtual void ComputeWorldTransform() = 0;
+
+	virtual TransformStorage::Handle GetTransformHandle() const = 0;
 };

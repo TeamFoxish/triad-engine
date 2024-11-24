@@ -89,11 +89,12 @@ void PlayerBall::ProceedInput(InputDevice* inpDevice)
 	}
 	for (int idx : newChilds) {
 		GetGame()->RemoveComponent(sceneObjects[idx]);
-		const Math::Matrix& local = attachSocket->GetWorldTransform(this);
+		/*const Math::Matrix& local = attachSocket->GetWorldTransform(this);
 		const Math::Matrix& other = sceneObjects[idx]->GetWorldTransform();
 		const Math::Matrix res = other * local.Invert();
-		sceneObjects[idx]->SetWorldTransform(res);
-		attachSocket->AddChild({sceneObjects[idx]});
+		sceneObjects[idx]->SetWorldTransform(res);*/
+		//attachSocket->AddChild({sceneObjects[idx]});
+		attachSocket->AddChild(sceneObjects[idx]);
 	}
 	for (int i = (int)newChilds.size() - 1; i >= 0; --i) {
 		sceneObjects.erase(sceneObjects.begin() + newChilds[i]);

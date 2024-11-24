@@ -22,10 +22,6 @@ public:
 	virtual void ProceedInput(class InputDevice* inpDevice) {  }
 	virtual void Update(float deltaTime, Compositer* parent = nullptr) {  }
 
-	// TODO: remove this method from Component
-	virtual void ComputeWorldTransform(Compositer* parent = nullptr, bool recursive = true) {}
-	virtual void TEMP_PendingComputeWT() {}
-
 	Game* GetGame() const { return game; }
 	std::string GetName() const { return name; }
 	bool HasParent() const { return hasParent; }

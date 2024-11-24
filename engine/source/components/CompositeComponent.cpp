@@ -1,5 +1,7 @@
 #include "CompositeComponent.h"
 
+#include "shared/SharedStorage.h"
+
 #include <algorithm>
 
 CompositeComponent::CompositeComponent(Game* game, Compositer* compositer)
@@ -8,6 +10,12 @@ CompositeComponent::CompositeComponent(Game* game, Compositer* compositer)
 #ifdef EDITOR
 	isComposite = true;
 #endif // EDITOR
+
+	if (compositer) {
+		transformHandle = SharedStorage::Instance().transforms.Add(compositer->GetTransformHandle());
+	} else {
+		transformHandle = SharedStorage::Instance().transforms.Add();
+	}
 }
 
 CompositeComponent::~CompositeComponent()
@@ -16,6 +24,7 @@ CompositeComponent::~CompositeComponent()
 		delete child;
 	}
 	children.clear();
+	SharedStorage::Instance().transforms.Remove(transformHandle);
 }
 
 void CompositeComponent::RemoveChild(Component* comp)
@@ -25,6 +34,12 @@ void CompositeComponent::RemoveChild(Component* comp)
 	if (iter != children.end()) {
 		children.erase(iter);
 	}
+}
+
+void CompositeComponent::AddChild(CompositeComponent* comp)
+{
+	children.push_back(comp);
+	SharedStorage::Instance().transforms.Attach(transformHandle, comp->GetTransformHandle());
 }
 
 void CompositeComponent::ProceedInput(InputDevice* inpDevice)
@@ -39,88 +54,68 @@ void CompositeComponent::Initialize(Compositer* parent)
 	for (Component* child : children) {
 		child->Initialize(this);
 	}
-	ComputeWorldTransform(static_cast<CompositeComponent*>(parent));
 }
 
 void CompositeComponent::Update(float deltaTime, Compositer* parent)
 {
-	// TODO: remove casts
-	ComputeWorldTransform(static_cast<CompositeComponent*>(parent));
 	for (Component* child : children) {
 		child->Update(deltaTime, this);
 	}
-	TEMP_PendingComputeWT();
-	ComputeWorldTransform(static_cast<CompositeComponent*>(parent));
+}
+
+Math::Vector3 CompositeComponent::GetPosition() const
+{
+	return SharedStorage::Instance().transforms.AccessRead(transformHandle).GetLocalPosition();
 }
 
 void CompositeComponent::SetPosition(Math::Vector3 pos)
 {
-	position = pos;
-	recomputeWorldTransform = true;
+	SharedStorage::Instance().transforms.AccessWrite(transformHandle).SetLocalPosition(pos);
+}
+
+Math::Quaternion CompositeComponent::GetRotation() const
+{
+	return SharedStorage::Instance().transforms.AccessRead(transformHandle).GetLocalRotation();
 }
 
 void CompositeComponent::SetRotation(Math::Quaternion rot)
 {
-	rotation = rot;
-	recomputeWorldTransform = true;
+	SharedStorage::Instance().transforms.AccessWrite(transformHandle).SetLocalRotation(rot);
+}
+
+Math::Vector3 CompositeComponent::GetScale() const
+{
+	return SharedStorage::Instance().transforms.AccessRead(transformHandle).GetLocalScale();
 }
 
 void CompositeComponent::SetScale(Math::Vector3 scale)
 {
-	this->scale = scale;
-	recomputeWorldTransform = true;
+	SharedStorage::Instance().transforms.AccessWrite(transformHandle).SetLocalScale(scale);
 }
 
 Math::Vector3 CompositeComponent::GetForward() const
 {
+	const Math::Quaternion rotation = GetRotation();
 	return Math::Vector3::Transform(Math::Vector3::UnitX, rotation);
 }
 
 Math::Vector3 CompositeComponent::GetRight() const
 {
+	const Math::Quaternion rotation = GetRotation();
 	return Math::Vector3::Transform(Math::Vector3::UnitY, rotation);
 }
 
 const Math::Matrix& CompositeComponent::GetWorldTransform(Compositer* parent)
 {
-	// TODO: replace this call with non-recursive version
-	ComputeWorldTransform(parent, false);
-	return worldTransform;
+	return SharedStorage::Instance().transforms.AccessRead(transformHandle).GetMatrix();
 }
 
-void CompositeComponent::SetWorldTransform(Math::Matrix matr)
+void CompositeComponent::SetWorldTransform(const Math::Matrix& matr)
 {
-	//worldTransform = matr;
-	if (!matr.Decompose(scale, rotation, position)) {
-		assert(false); // wtf?
-	}
-	recomputeWorldTransform = true;
+	SharedStorage::Instance().transforms.AccessWrite(transformHandle).SetMatrix(matr);
 }
 
-void CompositeComponent::SetLocalTransform(Math::Matrix matr)
+void CompositeComponent::SetLocalTransform(const Math::Matrix& matr)
 {
-	matr.Decompose(scale, rotation, position);
-}
-
-void CompositeComponent::ComputeWorldTransform(Compositer* parent, bool recursive)
-{
-	if (recomputeWorldTransform) {
-		recomputeWorldTransform = false;
-		worldTransform = Math::Matrix::CreateScale(scale);
-		worldTransform *= Math::Matrix::CreateFromQuaternion(rotation);
-		worldTransform *= Math::Matrix::CreateTranslation(position);
-		if (parent) {
-			// TODO: where do i get parent for GetWorldTransform() ???
-			worldTransform *= parent->GetWorldTransform();
-		}
-		for (Component* comp : children) {
-			comp->TEMP_PendingComputeWT();
-		}
-	}
-	if (!recursive) {
-		return;
-	}
-	for (Component* comp : children) {
-		comp->ComputeWorldTransform(this);
-	}
+	SharedStorage::Instance().transforms.AccessWrite(transformHandle).SetLocalMatrix(matr);
 }

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "game/Component.h"
-#include "game/Component.h"
 
 #include <vector>
 #include <initializer_list>
@@ -17,29 +16,31 @@ public:
 	void AddChild(const std::initializer_list<Component*>& batch) override { children.insert(children.end(), batch.begin(), batch.end()); }
 	void RemoveChild(Component* comp) override;
 
+	void AddChild(CompositeComponent* comp);
+
 	void ProceedInput(InputDevice* inpDevice) override;
 	void Initialize(Compositer* parent = nullptr) override;
 	void Update(float deltaTime, Compositer* parent = nullptr) override;
 
-	Math::Vector3 GetPosition() const override { return position; }
+	Math::Vector3 GetPosition() const override;
 	void SetPosition(Math::Vector3 pos) override;
 
-	Math::Quaternion GetRotation() const override { return rotation; }
+	Math::Quaternion GetRotation() const override;
 	void SetRotation(Math::Quaternion rot) override;
 
-	Math::Vector3 GetScale() const override { return scale; }
+	Math::Vector3 GetScale() const override;
 	void SetScale(Math::Vector3 scale) override;
 
 	Math::Vector3 GetForward() const override;
 	Math::Vector3 GetRight() const override;
 
 	const Math::Matrix& GetWorldTransform(Compositer* parent = nullptr) override;
-	void SetWorldTransform(Math::Matrix matr);
-	void SetLocalTransform(Math::Matrix matr);
-	void ComputeWorldTransform(Compositer* parent = nullptr, bool recusive = true) override;
-	void TEMP_PendingComputeWT() { recomputeWorldTransform = true; }
+	void SetWorldTransform(const Math::Matrix& matr);
+	void SetLocalTransform(const Math::Matrix& matr);
 
 	std::vector<Component*> GetChildren() const { return children; }
+
+	TransformStorage::Handle GetTransformHandle() const override { return transformHandle; }
 
 public:
 	float boundingSphereRadius = 0.0f;
@@ -47,10 +48,5 @@ public:
 protected:
 	std::vector<Component*> children;
 
-	Math::Vector3 position = Math::Vector3::Zero;
-	Math::Quaternion rotation = Math::Quaternion::Identity;
-	Math::Vector3 scale{1.0f, 1.0f, 1.0f};
-
-	Math::Matrix worldTransform;
-	bool recomputeWorldTransform = true;
+	TransformStorage::Handle transformHandle;
 };

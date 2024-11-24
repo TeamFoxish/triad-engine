@@ -2,6 +2,8 @@
 
 #include "os/Window.h"
 
+#include "shared/SharedStorage.h"
+
 #include "render/RenderInit.h"
 #include "render/RenderSystem.h"
 
@@ -38,6 +40,10 @@ bool EngineRuntime::Init(const InitParams& params)
 	gTempGame = std::make_unique<Game>();
 
 	// init systems
+	if (!InitSharedStorage()) {
+		// TODO: log error message
+		return false;
+	}
 	if (!InitRender(this)) {
 		// TODO: log error message
 		return false;
@@ -66,6 +72,8 @@ void EngineRuntime::Run()
 		while (gTempGame->isRunning) {
 			gTempGame->UpdateFrame();
 
+			SharedStorage::Instance().transforms.Update();
+
 			UIDebug::StartNewFrame();
 			gRenderSys->StartFrame();
 
@@ -81,8 +89,10 @@ void EngineRuntime::Shutdown()
 {
 	UIDebug::Destroy();
 	gTempGame->Shutdown();
+	// delete globalInputDevice; crushes
 	TermResource(this);
 	TermRender(this);
+	TermSharedStorage();
 	if (window) {
 		osDestroyWindow(window);
 	}

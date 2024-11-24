@@ -176,7 +176,7 @@ MeshData GatherMeshData(const aiScene* scene, int meshIdx)
 
     for (uint32_t i = 0; i < mesh->mNumVertices; ++i) {
         const aiVector3D& vert = mesh->mVertices[i];
-        res.boundingSphereRadius = max(res.boundingSphereRadius, vert.SquareLength());
+        res.boundingSphereRadius = std::max(res.boundingSphereRadius, vert.SquareLength());
         addVector(vert);
         for (auto& stage : pipeline) {
             stage(i);
