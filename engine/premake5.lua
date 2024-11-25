@@ -1,6 +1,9 @@
+local scriptDir = path.getdirectory(_SCRIPT)  -- Gets the directory of the Premake script
+
 project("Engine")
   targetname("Engine")
-  kind("ConsoleApp")  -- TODO: replace with SharedLib/StaticLib when scripting prototype is ready
+  kind("ConsoleApp")  -- TODO: replace with SharedLib/StaticLib when scripting prototype is ready. 
+                      -- Seekerses comment: maybe not. Engine actually .exe that starts and compiles scripts. Working like framework
   location("../build/Engine")
   language("C++")
   debugdir("")
@@ -11,15 +14,32 @@ project("Engine")
   
   filter("configurations:Debug*")
     libdirs({ "libs/**/debug" })
-	links({ "assimp-vc143-mtd", "freetyped", "argumentumd", "yaml-cppd" })
+	links({ "assimp-vc143-mtd", "freetyped", "argumentumd", "yaml-cppd", "angelscriptd" })
   
   filter("configurations:Release*")
     libdirs({ "libs/**/release" })
-	links({ "assimp-vc143-mt", "freetype", "argumentum", "yaml-cpp" })
+	links({ "assimp-vc143-mt", "freetype", "argumentum", "yaml-cpp", "angelscript" })
   
   filter {  }
   
   links({ "d3d11", "dxgi", "d3dcompiler", "dxguid", "DirectXTK", "foonathan_string_id" })
   
   files({ "source/**.h", "source/**.cpp", "source/**.hpp" })
+
+  postbuildcommands { 
+    "{COPYDIR} " .. scriptDir .. "/assets %{cfg.targetdir}/assets",
+    "{COPYDIR} " .. scriptDir .. "/config %{cfg.targetdir}/config",
+    "{COPYDIR} " .. scriptDir .. "/fonts %{cfg.targetdir}/fonts",
+    "{COPYDIR} " .. scriptDir .. "/shaders %{cfg.targetdir}/shaders",
+    "{COPYFILE} " .. scriptDir .. "/DefaultImGuiSettings.ini %{cfg.targetdir}/DefaultImGuiSettings.ini"
+   }
+
+  filter("configurations:Debug*")
+   postbuildcommands {
+    "{COPYFILE} " .. scriptDir .. "/assimp-vc143-mtd.dll %{cfg.targetdir}/assimp-vc143-mtd.dll"
+  }
+  filter("configurations:Release*")
+   postbuildcommands {
+    "{COPYFILE} " .. scriptDir .. "/assimp-vc143-mt.dll %{cfg.targetdir}/assimp-vc143-mt.dll"
+  }
   

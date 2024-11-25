@@ -1,3 +1,9 @@
 content:
   class: flopa
+  components: 
+    firstScript: res://scripts/Init.script
+    secondScript: res://scripts/Component.script
+    thirdScript: res://scripts/CompositeComponent.script
+    fourthScript: res://scripts/BaseComponent.script
+    fifthScript: res://scripts/DeltaTimePrinter.script
 type: prefab

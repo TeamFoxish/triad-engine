@@ -18,6 +18,8 @@
 
 #include "editor/ui_debug/UIDebug.h"
 
+#include "scripts/ScriptSystem.h"
+
 ConfigVar<std::string_view> cfgProjectName("/Project/Name", "DefaultProjectName");
 ConfigVar<std::string_view> cfgInitResource("/Project/Resource/InitResource", "res://init.resource");
 
@@ -44,10 +46,15 @@ bool EngineRuntime::Init(const InitParams& params)
 		// TODO: log error message
 		return false;
 	}
+	if(!InitScript(this)) {
+		// TODO: log error message
+		return false;
+	}
 
 	globalInputDevice = new InputDevice(this);
 
 	gResourceSys->LoadResource(ToStrid(cfgInitResource.GetRef().data()));
+	static_cast<ScriptLoader*>(Factory<ResourceLoader>::Create("script").get())->Build();
 	std::unique_ptr<Scene> startUpScene = SceneLoader::CreateScene(InitLoader::startUpSceneTag);
 	gTempGame->scenes.push_back(std::move(startUpScene));
 	SceneLoader::FillScene(InitLoader::startUpSceneTag); // brediks?	
@@ -81,6 +88,7 @@ void EngineRuntime::Shutdown()
 	gTempGame->Shutdown();
 	TermResource(this);
 	TermRender(this);
+	TermScript(this);
 	if (window) {
 		osDestroyWindow(window);
 	}

@@ -1,0 +1,31 @@
+#pragma once
+
+#include "angelscript.h"
+#include "resource/ResourceLoader.h"
+#include "misc/Factory.h"
+#include "scriptbuilder.h"
+#include <unordered_map>
+
+class ScriptLoader : public ResourceLoader, RegisteredInFactory<ResourceLoader, ScriptLoader> {
+public:
+    ScriptLoader();
+	~ScriptLoader();
+
+	void Load(ResTag tag, const YAML::Node& desc) override;
+	void Unload(ResTag tag) override {};
+	void Build();
+
+	static std::unique_ptr<ResourceLoader> CreateInstance()
+	{
+		return std::make_unique<ScriptLoader>();
+	}
+
+	static const char* GetFactoryKey()
+	{
+		return "script";
+	}
+
+private:
+	static inline std::unordered_map<ResTag, const YAML::Node> _scripts;
+	static inline std::unordered_map<std::string, CScriptBuilder> _loadedModules;
+};

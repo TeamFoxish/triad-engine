@@ -65,6 +65,10 @@ void ResourceSystem::LoadResourceImpl(ResTag tag)
         for (const auto& child : node) {
             pending.push_back(child.second);
         }
+        if (!node.IsDefined()) {
+            std::cout << "Resource :" << tag.string() << " contains invalid or undefined nodes !" << std::endl;
+            continue;
+        }
         if (!node.IsScalar()) {
             continue;
         }
