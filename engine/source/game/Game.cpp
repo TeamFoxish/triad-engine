@@ -29,6 +29,7 @@
 #include "input/InputDevice.h"
 #include "render/RenderSystem.h"
 #include "render/Renderer.h"
+#include "scripts/ScriptSystem.h"
 
 #ifdef _WIN32
 #include "os/wnd.h"
@@ -50,6 +51,10 @@ bool Game::Initialize()
 	//LoadData();
 
 	prevTime = std::chrono::steady_clock::now();
+
+	if (!gScriptSys->PostInitEvent()) {
+		std::cout << "Failed to handle Init event in scripts !" << std::endl;
+	}
 
 	return true;
 }
@@ -245,6 +250,10 @@ void Game::UpdateGame()
 
 		frameNum = 0;
 	}
+
+	if (!gScriptSys->Update(deltaTime)) {
+        std::cout << "Failed to execute script update function." << std::endl;
+   	}
 
 	for (const auto& pScene : scenes) {
 		ComponentStorage& storage = pScene->GetStorage();
