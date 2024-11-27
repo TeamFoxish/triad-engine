@@ -26,7 +26,14 @@ public:
 	std::string GetName() const { return name; }
 	bool HasParent() const { return hasParent; }
 
+	using Id_T = uint32_t;
+	Id_T GetId() const { return uid; }
+
+private:
+	void SetId();
+
 #ifdef EDITOR
+public:
 	bool isComposite = false;
 #endif // EDITOR
 
@@ -34,4 +41,5 @@ private:
 	Game* game;
 	bool hasParent = false;
 	std::string name;
+	Id_T uid;
 };

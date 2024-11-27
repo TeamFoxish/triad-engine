@@ -4,6 +4,9 @@
 
 class MeshRenderer {
 public:
+	
+
+public:
 	__declspec(align(16))
 	struct CBVS {
 		Math::Matrix worldTransform;
@@ -31,5 +34,6 @@ public:
 		Math::Color uAmbientLight;
 		int spotLightsNum = 0;
 		int isTextureSet = 0;
+		uint32_t entityId = 0;
 	};
 };

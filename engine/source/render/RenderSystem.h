@@ -23,6 +23,8 @@ public:
 	void StartFrame();
 	void EndFrame();
 
+	uint32_t GetEntityIdUnderCursor() const;
+
 protected:
 	std::unique_ptr<Renderer> rendererImpl;
 

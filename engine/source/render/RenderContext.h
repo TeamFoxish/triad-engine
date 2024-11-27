@@ -6,7 +6,11 @@
 
 struct RenderContext {
 	void ResetFrame();
+	void ClearState();
+
 	void ResizeViewport(const Math::Viewport& viewport);
+
+	void TEMP_UpdateRenderTargetsNum();
 
 	ID3D11DeviceContext* operator->() { return context; }
 
@@ -23,8 +27,9 @@ struct RenderContext {
 	ID3D11SamplerState* masterSamplerState;
 
 	// current OM state
-	uint32_t activeRenderTargetNum = 1;
-	Triad::Render::Api::RenderTarget* activeRenderTargets[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT];
+	uint32_t activeRenderTargetNum = 0;
+	static constexpr int MAX_ACTIVE_RENDER_TARGETS = D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT;
+	Triad::Render::Api::RenderTarget* activeRenderTargets[MAX_ACTIVE_RENDER_TARGETS];
 	Triad::Render::Api::DepthBuffer* activeDepthBuffuer = nullptr;
 
 	IDXGISwapChain* swapChain;

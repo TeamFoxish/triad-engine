@@ -117,8 +117,10 @@ void UIDebug::TestDraw()
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 			ImGui::Begin("Scene Test", 0, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+			UpdateViewportPos();
 			if (HandleViewportResize()) {
 				ImGui::Image((ImTextureID)(intptr_t)gRenderSys->GetRenderer()->GetColorPassSrt(), ImGui::GetWindowSize());
+
 				isSceneFocused = ImGui::IsWindowFocused();
 			}
 			ImGui::End();
@@ -159,6 +161,20 @@ void UIDebug::Destroy()
 bool UIDebug::GetUIDebugFlag()
 {
 	return isInitted && !isSceneFocused;
+}
+
+void UIDebug::UpdateViewportPos()
+{
+	const ImVec2 windowPos = ImGui::GetMainViewport()->Pos;
+	const ImVec2 viewportPos = ImGui::GetWindowPos();
+	ImVec2 vMin = ImGui::GetWindowContentRegionMin();
+	ImVec2 vMax = ImGui::GetWindowContentRegionMax();
+	vMin.x += viewportPos.x;
+	vMin.y += viewportPos.y;
+	vMax.x += viewportPos.x;
+	vMax.y += viewportPos.y;
+	viewportX = (int)(vMin.x - windowPos.x);
+	viewportY = (int)(vMin.y - windowPos.y);
 }
 
 bool UIDebug::HandleViewportResize()

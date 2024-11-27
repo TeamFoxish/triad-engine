@@ -37,12 +37,9 @@ void MeshComponent::Draw(Renderer* renderer)
 	cbPS.uAmbientLight = Math::Color{0.2f, 0.2f, 0.2f};
 	ThirdPersonCamera* cam = static_cast<ThirdPersonCamera*>(GetGame()->GetActiveCamera());
 	cbPS.uCameraPos = Math::Vector4(cam->GetCameraPos());
-	/*cbPS.dirLight.mDiffuseColor = Math::Color{1.0f, 1.0f, 1.0f};
-	cbPS.dirLight.mDirection = Math::Vector4{0.35f, 0.35f, -1.0f, 0.0f};
-	cbPS.dirLight.mDirection.Normalize();
-	cbPS.dirLight.mSpecColor = Math::Color{1.0f, 1.0f, 1.0f};*/
 	renderer->PopulateLightsBuffer(cbPS); // TODO: TEMP E2
 	cbPS.isTextureSet = material->HasBindedTextures() ? 1 : 0;
+	cbPS.entityId = GetId();
 	shader->SetCBVS(context, 0, &cbVS);
 	shader->SetCBPS(context, 0, &cbPS);
 	

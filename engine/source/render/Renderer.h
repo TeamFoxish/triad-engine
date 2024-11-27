@@ -54,6 +54,8 @@ public:
 
 	ID3D11ShaderResourceView* GetColorPassSrt() const { return colorPassSrt; }
 
+	uint32_t GetEntityIdUnderCursor() const { return entityIdUnderCursor; }
+
 private:
 	void AddComponent(DrawComponent* comp);
 	void RemoveComponent(DrawComponent* comp);
@@ -87,4 +89,6 @@ private:
 	Math::Matrix viewMatr;
 
 	float clearColor[4]{ 0.1f, 0.1f, 0.1f, 1.0f };
+
+	uint32_t entityIdUnderCursor = 0;
 };
