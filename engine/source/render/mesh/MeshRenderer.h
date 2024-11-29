@@ -1,10 +1,14 @@
 #pragma once
 
 #include "math/Math.h"
+#include "Mesh.h"
+#include "render/Renderable.h"
+
+struct RenderContext;
 
 class MeshRenderer {
 public:
-	
+	static void DrawMesh(RenderContext& ctx, const Renderable& obj);
 
 public:
 	__declspec(align(16))

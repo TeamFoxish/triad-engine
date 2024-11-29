@@ -25,17 +25,3 @@ DrawComponent::~DrawComponent()
 {
 	gRenderSys->GetRenderer()->RemoveComponent(this);
 }
-
-void DrawComponent::Initialize(Compositer* parent)
-{
-	assert(material);
-	assert(geom);
-}
-
-void DrawComponent::Draw(Renderer* renderer)
-{
-	ID3D11DeviceContext* context = renderer->GetDeviceContext();
-	material->Use(renderer->GetContext());
-	geom->Activate(context);
-	context->DrawIndexed(geom->idxNum, 0, 0);
-}

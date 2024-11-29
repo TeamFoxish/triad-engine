@@ -73,8 +73,7 @@ void PrefabLoader::Load(ResTag tag, const YAML::Node& desc)
 				mesh->SetMaterial(material);
 			}
 			TEMP_OverrideMaterial(mesh, desc);
-			mesh->SetGeometry(gRenderSys->GetRenderer()->GetUtils()->GetSphereGeom(gRenderSys->GetRenderer()));
-			mesh->SetColor(col);
+			mesh->SetMesh(Mesh::CreateFromGeom(gRenderSys->GetRenderer()->GetUtils()->GetSphereGeom(gRenderSys->GetRenderer())));
 			PointLightComponent* pointLight = new PointLightComponent(gTempGame.get(), pointLightC);
 			pointLight->GetLightSource().SetColor(col);
 			pointLight->GetLightSource().SetIntensity(25.0f);
@@ -98,7 +97,8 @@ void PrefabLoader::Load(ResTag tag, const YAML::Node& desc)
 		creators[tag] = [rndPos, material](const YAML::Node& desc) {
 			CompositeComponent* flopa = new CompositeComponent(gTempGame.get());
 			const Mesh::PTR& mesh = gRenderSys->GetRenderer()->GetMesh("assets/flop.fbx");
-			MeshComponent* rootMesh = MeshComponent::Build(mesh, flopa);
+			MeshComponent* rootMesh = new MeshComponent(gTempGame.get(), flopa);
+			rootMesh->SetMesh(mesh);
 			if (rootMesh) {
 				if (material) {
 					rootMesh->SetMaterial(material);
@@ -118,7 +118,8 @@ void PrefabLoader::Load(ResTag tag, const YAML::Node& desc)
 		creators[tag] = [rndPos, material](const YAML::Node& desc) {
 			CompositeComponent* flopa = new CompositeComponent(gTempGame.get());
 			const Mesh::PTR& mesh = gRenderSys->GetRenderer()->GetMesh("assets/cheese.fbx");
-			MeshComponent* rootMesh = MeshComponent::Build(mesh, flopa);
+			MeshComponent* rootMesh = new MeshComponent(gTempGame.get(), flopa);
+			rootMesh->SetMesh(mesh);
 			if (rootMesh) {
 				if (material) {
 					rootMesh->SetMaterial(material);

@@ -46,50 +46,52 @@ bool MeshLoader::LoadMesh(const std::string& path, Renderer* renderer, Mesh::PTR
     // Now we can access the file's contents.
     //DoTheSceneProcessing(scene);
     outMesh = std::make_shared<Mesh>();
-    CopyNodesWithMeshes(scene, scene->mRootNode, outMesh->root, renderer, aiMatrix4x4{});
+    CopyNodesWithMeshes(scene, scene->mRootNode, *outMesh, renderer, aiMatrix4x4{});
 
     // We're done. Everything will be cleaned up by the importer destructor
     return true;
 }
 
-void MeshLoader::CopyNodesWithMeshes(const aiScene* scene, aiNode* node, Mesh::MeshNode& targetParent, Renderer* renderer, const aiMatrix4x4& accTransform) {
+void MeshLoader::CopyNodesWithMeshes(const aiScene* scene, aiNode* node, Mesh& target, Renderer* renderer, const aiMatrix4x4& accTransform) {
+    // TODO: set node->mTransformation * accTransform here and remove else branch?
     aiMatrix4x4 transform;
 
     // if node has meshes, create a new scene object for it
     if (node->mNumMeshes > 0) {
         // copy the meshes
+        Mesh::MeshNode& meshNode = target.nodes.emplace_back();
         for (uint32_t i = 0; i < node->mNumMeshes; ++i) {
-            AddMesh(scene, i, renderer, targetParent);
+            AddMesh(scene, i, renderer, meshNode);
         }
 
+        // set local transform matrix
         aiVector3D pos;
         aiVector3D rotAxis;
         ai_real angle;
         aiVector3D scale;
-        // TODO: replace transform with node's transoform or accTransform???
-        transform.Decompose(scale, rotAxis, angle, pos);
-        targetParent.pos = *reinterpret_cast<Math::Vector3*>(&pos);
+        accTransform.Decompose(scale, rotAxis, angle, pos);
+        Math::Matrix& matr = meshNode.localMatr;
+        matr = Math::Matrix::CreateScale(*reinterpret_cast<Math::Vector3*>(&scale));
         if (rotAxis.SquareLength() > 0.99f) {
-            targetParent.rot = Math::Quaternion::CreateFromAxisAngle(
+            Math::Quaternion rot = Math::Quaternion::CreateFromAxisAngle(
                 *reinterpret_cast<Math::Vector3*>(&rotAxis), angle);
+            matr *= Math::Matrix::CreateFromQuaternion(rot);
         }
-        targetParent.scale = *reinterpret_cast<Math::Vector3*>(&scale);
-    }
-    else {
+        matr *= Math::Matrix::CreateTranslation(*reinterpret_cast<Math::Vector3*>(&pos));
+    } else {
         // if no meshes, skip the node, but keep its transformation
         transform = node->mTransformation * accTransform;
         for (uint32_t i = 0; i < node->mNumChildren; ++i) {
             aiNode* child = node->mChildren[i];
-            CopyNodesWithMeshes(scene, child, targetParent, renderer, transform);
+            CopyNodesWithMeshes(scene, child, target, renderer, transform);
         }
         return;
     }
 
     // continue for all child nodes
-    targetParent.children.resize(node->mNumChildren);
     for (uint32_t i = 0; i < node->mNumChildren; ++i) {
         aiNode* child = node->mChildren[i];
-        CopyNodesWithMeshes(scene, child, targetParent.children[i], renderer, transform);
+        CopyNodesWithMeshes(scene, child, target, renderer, transform);
     }
 }
 

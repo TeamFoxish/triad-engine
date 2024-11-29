@@ -14,7 +14,7 @@ struct GeometryData {
 		const std::vector<uint32_t> strides, 
 		const std::vector<uint32_t> offsets);
 
-	void Activate(struct ID3D11DeviceContext* context);
+	void Activate(struct ID3D11DeviceContext* context) const;
 
 	struct ID3D11Buffer* vertexBuf;
 	struct ID3D11Buffer* indexBuf;
