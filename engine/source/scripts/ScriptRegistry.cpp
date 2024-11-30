@@ -109,6 +109,9 @@ bool ScriptRegistry::RegisterStdLibrary(asIScriptEngine *engine)
     RegisterScriptGrid(engine);
     RegisterExceptionRoutines(engine);
 
+    extern bool MathScriptBindingsInit();
+    MathScriptBindingsInit();
+
     return RegisterCustomFunctions(engine);
 }
 
