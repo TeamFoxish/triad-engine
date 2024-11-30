@@ -1,0 +1,11 @@
+content:
+  class: MeshComponent
+  source_file: file://MeshComponent.as
+  module: Engine
+  overrides:
+    # mesh: <invalid> unset
+    someInt: 0
+    someFloat: 1.0
+    someString: aboba
+    material: res://materials/default_mesh.material
+type: component

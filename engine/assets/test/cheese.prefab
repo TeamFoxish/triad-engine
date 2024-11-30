@@ -1,0 +1,9 @@
+content:
+  class: cheese
+  components:
+    Mesh:
+      script: res://test/MeshComponent.script
+      overrides:
+        mesh: res://meshes/cheese.mesh
+        material: res://materials/cheese.material
+type: prefab
