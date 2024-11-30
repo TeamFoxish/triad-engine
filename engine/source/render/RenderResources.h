@@ -20,7 +20,8 @@ struct RenderResources {
 	template<typename K, typename T>
 	class Storage {
 	public:
-		T Get(K key);
+		T Get(K key) { return GetRef(key); }
+		T& GetRef(K key);
 
 		void Add(K key, T res);
 		void Remove(K key);
@@ -38,7 +39,7 @@ private:
 };
 
 template<typename K, typename T>
-inline T RenderResources::Storage<K, T>::Get(K key)
+inline T& RenderResources::Storage<K, T>::GetRef(K key)
 {
 	auto iter = storage.find(key);
 	assert(iter != storage.end());

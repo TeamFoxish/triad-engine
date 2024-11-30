@@ -6,6 +6,7 @@
 
 #include "os/Window.h"
 #include "RenderContext.h"
+#include "Renderable.h"
 #include "GeometryData.h"
 #include "mesh/MeshLoader.h"
 #include "TextureLoader.h"
@@ -196,22 +197,6 @@ Mesh::PTR Renderer::GetMesh(const std::string& path)
 	meshes[path] = mesh;
 
 	return meshes[path];
-}
-
-void Renderer::AddComponent(DrawComponent* comp)
-{
-	components.push_back(comp);
-}
-
-void Renderer::RemoveComponent(DrawComponent* comp)
-{
-	auto iter = std::find(components.begin(), components.end(), comp);
-	if (iter != components.end())
-	{
-		std::iter_swap(iter, components.end() - 1);
-		components.pop_back();
-		return;
-	}
 }
 
 void Renderer::AddLight(Light* light)
@@ -448,8 +433,8 @@ void Renderer::TestFrameGraph()
 
 void Renderer::DrawScene()
 {
-	for (DrawComponent* comp : components) {
-		comp->Draw(this);
+	for (const Renderable& renderObj : RenderableStorage::Instance().GetStorage()) {
+		MeshRenderer::DrawMesh(context, renderObj);
 	}
 }
 

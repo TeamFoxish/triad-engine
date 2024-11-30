@@ -7,7 +7,6 @@
 
 #include "RenderContext.h"
 #include "RenderUtils.h"
-#include "DrawComponent.h"
 #include "mesh/MeshRenderer.h"
 #include "mesh/Mesh.h" // TODO: forward declare
 
@@ -16,8 +15,6 @@ class Light;
 struct Shader;
 
 class Renderer {
-	friend DrawComponent::DrawComponent(Game*, Compositer*);
-	friend DrawComponent::~DrawComponent();
 	friend class Light;
 
 public:
@@ -57,9 +54,6 @@ public:
 	uint32_t GetEntityIdUnderCursor() const { return entityIdUnderCursor; }
 
 private:
-	void AddComponent(DrawComponent* comp);
-	void RemoveComponent(DrawComponent* comp);
-
 	void AddLight(Light* light);
 	void RemoveLight(Light* light);
 
@@ -67,8 +61,6 @@ private:
 
 private:
 	std::unique_ptr<RenderUtils> utils;
-
-	std::vector<DrawComponent*> components;
 
 	std::unordered_map<std::string, Mesh::PTR> meshes;
 

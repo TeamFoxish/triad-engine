@@ -8,6 +8,13 @@ Renderable::Renderable(uint32_t _entityId, TransformStorage::Handle _transform)
 {
 }
 
-Renderable::~Renderable()
+bool InitRenderableStorage()
 {
+	RenderableStorage::instance = std::make_unique<RenderableStorage>();
+	return true;
+}
+
+void TermRenderableStorage()
+{
+	RenderableStorage::instance.reset();
 }

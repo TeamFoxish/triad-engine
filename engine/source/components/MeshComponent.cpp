@@ -14,35 +14,15 @@
 
 
 MeshComponent::MeshComponent(Game* game, Compositer* parent)
-	: DrawComponent(game, parent)
+	: Component(game, parent)
 	, parent(parent)
-	, renderObj(GetId(), parent->GetTransformHandle())
+	, renderObj(RenderableStorage::Instance().Add(GetId(), parent->GetTransformHandle()))
 {
 	// TEMP
 	SetMaterial(RenderResources::Instance().materials.Get(ToStrid("res://materials/default_mesh.material")));
 }
 
-void MeshComponent::Draw(Renderer* renderer)
+MeshComponent::~MeshComponent()
 {
-	MeshRenderer::DrawMesh(renderer->GetContext(), renderObj);
-	//auto shader = renderer->GetUtils()->GetAdvMeshShader(renderer, sizeof(MeshRenderer::CBVS), sizeof(MeshRenderer::CBPS));
-	//auto context = renderer->GetDeviceContext();
-	//shader->Activate(context);
-	//auto material = GetMaterial().lock();
-	////material->Use(renderer->GetContext());
-	//auto window = renderer->GetWindow();
-	//auto cbVS = MeshRenderer::CBVS{};
-	//cbVS.worldTransform = parent->GetWorldTransform().Transpose();
-	//cbVS.viewProj = renderer->GetViewMatrix();
-	//auto cbPS = MeshRenderer::CBPS{};
-	//cbPS.uAmbientLight = Math::Color{0.2f, 0.2f, 0.2f};
-	//ThirdPersonCamera* cam = static_cast<ThirdPersonCamera*>(GetGame()->GetActiveCamera());
-	//cbPS.uCameraPos = Math::Vector4(cam->GetCameraPos());
-	//renderer->PopulateLightsBuffer(cbPS); // TODO: TEMP E2
-	//cbPS.isTextureSet = material->HasBindedTextures() ? 1 : 0;
-	//cbPS.entityId = GetId();
-	//shader->SetCBVS(context, 0, &cbVS);
-	//shader->SetCBPS(context, 0, &cbPS);
-	//
-	//DrawComponent::Draw(renderer);
+	RenderableStorage::Instance().Remove(renderObj);
 }
