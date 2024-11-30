@@ -94,10 +94,10 @@ bool ScriptRegistry::RegisterCustomFunctions(asIScriptEngine *engine)
 
 bool ScriptRegistry::RegisterStdLibrary(asIScriptEngine *engine)
 {
-    RegisterStdString(engine);
-    //RegisterStdStringUtils(engine);
-    RegisterScriptDateTime(engine);
     RegisterScriptArray(engine, true);
+    RegisterStdString(engine);
+    RegisterStdStringUtils(engine);
+    RegisterScriptDateTime(engine);
     RegisterScriptAny(engine);
     RegisterScriptHandle(engine);
     RegisterScriptWeakRef(engine);

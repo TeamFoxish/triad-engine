@@ -107,13 +107,13 @@ void RegisterTransform()
 	r = engine->RegisterObjectBehaviour("Transform", asBEHAVE_ADDREF, "void f()", asMETHOD(CTransformHandle, AddRef), asCALL_THISCALL); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("Transform", asBEHAVE_RELEASE, "void f()", asMETHOD(CTransformHandle, Release), asCALL_THISCALL); assert(r >= 0);
 
-	r = engine->RegisterObjectMethod("Transform", "Vector3 GetPosition()", asMETHOD(CTransformHandle, GetPosition), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Transform", "Vector3 GetPosition() const", asMETHOD(CTransformHandle, GetPosition), asCALL_THISCALL); assert(r >= 0);
 	r = engine->RegisterObjectMethod("Transform", "void SetPosition(const Vector3 &in)", asMETHOD(CTransformHandle, SetPosition), asCALL_THISCALL); assert(r >= 0);
-	r = engine->RegisterObjectMethod("Transform", "Vector3 GetScale()", asMETHOD(CTransformHandle, GetScale), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Transform", "Vector3 GetScale() const", asMETHOD(CTransformHandle, GetScale), asCALL_THISCALL); assert(r >= 0);
 	r = engine->RegisterObjectMethod("Transform", "void SetScale(const Vector3 &in)", asMETHOD(CTransformHandle, SetScale), asCALL_THISCALL); assert(r >= 0);
-	r = engine->RegisterObjectMethod("Transform", "Vector3 GetLocalPosition()", asMETHOD(CTransformHandle, GetLocalPosition), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Transform", "Vector3 GetLocalPosition() const", asMETHOD(CTransformHandle, GetLocalPosition), asCALL_THISCALL); assert(r >= 0);
 	r = engine->RegisterObjectMethod("Transform", "void SetLocalPosition(const Vector3 &in)", asMETHOD(CTransformHandle, SetLocalPosition), asCALL_THISCALL); assert(r >= 0);
-	r = engine->RegisterObjectMethod("Transform", "Vector3 GetLocalScale()", asMETHOD(CTransformHandle, GetLocalScale), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Transform", "Vector3 GetLocalScale() const", asMETHOD(CTransformHandle, GetLocalScale), asCALL_THISCALL); assert(r >= 0);
 	r = engine->RegisterObjectMethod("Transform", "void SetLocalScale(const Vector3 &in)", asMETHOD(CTransformHandle, SetLocalScale), asCALL_THISCALL); assert(r >= 0);
 	// TODO: add quaternions bindings
 }
