@@ -10,7 +10,9 @@
 #include <functional>
 
 #include "render/GeometryData.h"
+#include "render/RenderSystem.h"
 #include "render/Renderer.h"
+#include "render/RenderResources.h"
 #include "Mesh.h"
 
 #include <d3d11.h>
@@ -20,6 +22,28 @@
 #pragma comment(lib, "d3dcompiler.lib")
 #pragma comment(lib, "dxguid.lib")
 
+MeshLoader::MeshLoader()
+{
+    FACTORY_INIT;
+}
+
+void MeshLoader::Load(ResTag tag, const YAML::Node& desc)
+{
+    Triad::FileIO::FPath path;
+    if (!Triad::Resource::ResolveFileTagToFile(tag, desc["file"], path)) {
+        return;
+    }
+    Mesh::PTR mesh;
+    if (!LoadMesh(path.string(), gRenderSys->GetRenderer(), mesh)) {
+        return;
+    }
+    RenderResources::Instance().meshes.Add(tag, std::move(mesh));
+}
+
+void MeshLoader::Unload(ResTag tag)
+{
+    RenderResources::Instance().meshes.Remove(tag);
+}
 
 bool MeshLoader::LoadMesh(const std::string& path, Renderer* renderer, Mesh::PTR& outMesh)
 {
@@ -29,7 +53,7 @@ bool MeshLoader::LoadMesh(const std::string& path, Renderer* renderer, Mesh::PTR
     // And have it read the given file with some example postprocessing
     // Usually - if speed is not the most important aspect for you - you'll
     // probably to request more postprocessing than we do in this example.
-    const aiScene* scene = importer.ReadFile(path,
+    const aiScene* scene = importer.ReadFile(path.data(),
         aiProcess_CalcTangentSpace |
         aiProcess_Triangulate |
         aiProcess_JoinIdenticalVertices |

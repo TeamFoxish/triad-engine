@@ -145,5 +145,22 @@ class Transform{
     void SetLocalPosition(const Vector3 &in);
     Vector3 GetLocalScale() const;
     void SetLocalScale(const Vector3 &in);
-        
+}
+
+class Material{
+	Material();
+	Material(const string& tag);
+}
+
+class Mesh{
+	Mesh();
+	Mesh(const string& tag);
+}
+
+class Renderable{
+	Renderable(uint entityId, const Transform@ transform);
+	Renderable(const Renderable &in) delete;
+
+	Mesh mesh;
+	Material material;
 }

@@ -1,0 +1,4 @@
+content:
+  source_file: ./assets/scripts/MeshComponent.as
+  module: Engine
+type: script

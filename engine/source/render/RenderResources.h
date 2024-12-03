@@ -30,6 +30,7 @@ struct RenderResources {
 		std::unordered_map<K, T> storage;
 	};
 
+	Storage<ResTag, std::shared_ptr<class Mesh>> meshes;
 	Storage<ResTag, std::shared_ptr<class Material>> materials;
 	Storage<ResTag, std::shared_ptr<struct Shader>> shaders;
 	Storage<ResTag, class Texture*> textures;

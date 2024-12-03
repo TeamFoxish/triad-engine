@@ -5,6 +5,8 @@
 class CRef {
 public:
 	CRef() = default;
+	// TODO: fix ability to copy?
+	CRef(const CRef&) = delete;
 	virtual ~CRef() = default;
 
 	void AddRef();
