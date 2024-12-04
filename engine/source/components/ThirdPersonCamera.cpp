@@ -53,8 +53,8 @@ void ThirdPersonCamera::Update(float deltaTime, Compositer* parent)
 	Math::Vector3 up = right.Cross(viewDir);
 
 	// Create look at matrix, set as view
-	Math::Matrix view = Math::Matrix::CreateLookAt(camPos, target, up);
-	SetViewMatrix((view * projMatr).Transpose());
+	viewMatr = Math::Matrix::CreateLookAt(camPos, target, up);
+	SetViewMatrix((viewMatr * projMatr).Transpose());
 	mPitchSpeed = 0.0f;
 }
 

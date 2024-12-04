@@ -15,6 +15,7 @@ Component::Component(Game* _game, Compositer* parent)
 		parent->AddChild({this});
 		hasParent = true;
 		game->scenes[0]->GetStorage().TEMP_AddChildComponentIdEntry(this);
+		_parent = parent;
 		return;
 	}
 	// TODO: make Game a compositer as well??? (may require additional member pointer)

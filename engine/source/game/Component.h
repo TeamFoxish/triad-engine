@@ -36,10 +36,13 @@ private:
 public:
 	bool isComposite = false;
 #endif // EDITOR
+	Compositer* _parent = nullptr; // ToDo: remove
+
 
 private:
 	Game* game;
 	bool hasParent = false;
 	std::string name;
 	Id_T uid;
+
 };

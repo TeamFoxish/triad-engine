@@ -55,11 +55,13 @@ public:
 
 	void SetProjectionMatrix(const Math::Matrix& matr) { projMatr = matr; }
 	const Math::Matrix& GetProjectionMatrix() const { return projMatr; }
+	const Math::Matrix& GetViewMatrix() const { return viewMatr; }
 
 protected:
 	void SetViewMatrix(const Math::Matrix& view);
 
 	Math::Matrix projMatr;
+	Math::Matrix viewMatr;
 
 	std::unique_ptr<CameraParams> cachedParams; // TEMP
 

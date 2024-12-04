@@ -11,6 +11,7 @@ project("Engine")
   includedirs({ "source" })
   includedirs({ "libs/**/include" })
   includedirs({ "source/imgui" })
+  includedirs({ "source/ImGuizmo" })
   
   filter("configurations:Debug*")
     libdirs({ "libs/**/debug" })
