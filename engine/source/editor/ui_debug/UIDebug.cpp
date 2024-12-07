@@ -169,7 +169,8 @@ void UIDebug::TestDraw()
 
                 float w_width = (float)ImGui::GetWindowWidth();
                 float w_height = (float)ImGui::GetWindowHeight();
-                ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, w_width, w_height);
+                const float headerHeight = ImGui::GetTextLineHeightWithSpacing(); // https://github.com/CedricGuillemet/ImGuizmo/issues/109
+                ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y + headerHeight, w_width, w_height);
 
 
                 CameraComponent* camera = gTempGame->GetActiveCamera();
@@ -240,6 +241,7 @@ void UIDebug::UpdateViewportPos()
     vMax.y += viewportPos.y;
     viewportX = (int)(vMin.x - windowPos.x);
     viewportY = (int)(vMin.y - windowPos.y);
+    // TODO: adjust viewportY by ImGui::GetTextLineHeightWithSpacing()?
 }
 
 bool UIDebug::HandleViewportResize()
