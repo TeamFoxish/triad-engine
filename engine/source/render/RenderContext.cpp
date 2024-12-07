@@ -11,6 +11,8 @@ void RenderContext::ClearState()
 	context->ClearState();
 	memset(activeRenderTargets, 0, sizeof(activeRenderTargets));
 	activeRenderTargetNum = 0;
+	activeDepthBuffuer = nullptr;
+	activeShader = nullptr;
 }
 
 void RenderContext::ResizeViewport(const Math::Viewport& _viewport)

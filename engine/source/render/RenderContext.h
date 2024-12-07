@@ -1,6 +1,7 @@
 #pragma once
 
 #include "drv/d3d11/D3D11Helpers.h"
+#include "Shader.h"
 #include "os/Window.h"
 #include "math/Math.h"
 
@@ -18,6 +19,11 @@ struct RenderContext {
 	bool backbuffResized = false;
 	Math::Viewport viewport;
 	Window* window;
+
+	std::shared_ptr<Shader> activeShader;
+
+	// mouse picking support
+	uint32_t entityIdUnderCursor = 0;
 
 	// d3d11 part
 	ID3D11Device* device;

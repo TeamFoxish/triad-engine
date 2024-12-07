@@ -9,6 +9,7 @@
 #include "RenderUtils.h"
 #include "mesh/MeshRenderer.h"
 #include "mesh/Mesh.h" // TODO: forward declare
+#include "DeferredRenderer.h" // TODO: forward declare
 
 class Window;
 class Light;
@@ -29,7 +30,7 @@ public:
 	void Draw();
 	void EndFrame();
 
-	void DrawScene();
+	void DrawSceneGeometry();
 	void DrawScreenQuad();
 
 	void ResizeBackBuff();
@@ -38,7 +39,7 @@ public:
 
 	void PopulateLightsBuffer(MeshRenderer::CBPS& buffer) const;
 
-	const Math::Matrix& GetViewMatrix() const { return viewMatr; }
+	const Math::Matrix& GetViewProjMatrix() const { return viewMatr; }
 	void SetViewMatrix(const Math::Matrix& view) { viewMatr = view; }
 
 	Mesh::PTR GetMesh(const std::string& path);
@@ -51,7 +52,7 @@ public:
 
 	ID3D11ShaderResourceView* GetColorPassSrt() const { return colorPassSrt; }
 
-	uint32_t GetEntityIdUnderCursor() const { return entityIdUnderCursor; }
+	uint32_t GetEntityIdUnderCursor() const { return context.entityIdUnderCursor; }
 
 private:
 	void AddLight(Light* light);
@@ -70,7 +71,7 @@ private:
 
 	RenderContext context;
 
-	Shader* texToBackBuffShader = nullptr; // TEMP
+	std::shared_ptr<Shader> texToBackBuffShader; // TEMP
 
 	ID3D11ShaderResourceView* colorPassSrt = nullptr; // TEMP
 
@@ -80,7 +81,7 @@ private:
 
 	Math::Matrix viewMatr;
 
-	float clearColor[4]{ 0.1f, 0.1f, 0.1f, 1.0f };
+	std::unique_ptr<DeferredRenderer> deferredRenderer;
 
-	uint32_t entityIdUnderCursor = 0;
+	float clearColor[4]{ 0.1f, 0.1f, 0.1f, 1.0f };
 };

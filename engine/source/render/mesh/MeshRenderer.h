@@ -9,6 +9,7 @@ struct RenderContext;
 class MeshRenderer {
 public:
 	static void DrawMesh(RenderContext& ctx, const Renderable& obj);
+	static void DrawGeometryOnly(RenderContext& ctx, const Renderable& obj);
 
 public:
 	__declspec(align(16))
@@ -37,6 +38,12 @@ public:
 		Math::Vector4 uCameraPos;
 		Math::Color uAmbientLight;
 		int spotLightsNum = 0;
+		int isTextureSet = 0;
+		uint32_t entityId = 0;
+	};
+	__declspec(align(16))
+	struct CBPSGeom {
+		Math::Color ambientColor;
 		int isTextureSet = 0;
 		uint32_t entityId = 0;
 	};

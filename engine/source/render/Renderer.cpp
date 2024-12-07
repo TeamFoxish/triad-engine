@@ -92,7 +92,7 @@ bool Renderer::Initialize(Window* _window)
 		__debugbreak();
 	}
 	{
-		texToBackBuffShader = new Shader(L"shaders/texture_to_backbuffer.hlsl", context.device, nullptr, 0, nullptr, 0);
+		texToBackBuffShader = std::make_shared<Shader>(L"shaders/texture_to_backbuffer.hlsl", (Shader::CreationFlags)(Shader::VERTEX_SH | Shader::PIXEL_SH), context.device, nullptr, 0, nullptr, 0);
 	}
 
 	//ID3D11Texture2D* backTex;
@@ -100,8 +100,10 @@ bool Renderer::Initialize(Window* _window)
 	//res = context.device->CreateRenderTargetView(backTex, nullptr, &rtv);
 
 	CD3D11_RASTERIZER_DESC rastDesc = {};
+	//rastDesc.CullMode = D3D11_CULL_BACK;
 	rastDesc.CullMode = D3D11_CULL_NONE;
 	rastDesc.FillMode = D3D11_FILL_SOLID;
+	rastDesc.FrontCounterClockwise = true;
 
 	res = context.device->CreateRasterizerState(&rastDesc, &context.masterRastState);
 	//context->RSSetState(rastState);
@@ -148,14 +150,16 @@ bool Renderer::Initialize(Window* _window)
 
 	utils = std::make_unique<RenderUtils>();
 
+	deferredRenderer = std::make_unique<DeferredRenderer>(context);
+
 	return true;
 }
 
 void Renderer::Shutdown()
 {
-	utils.reset();
+	deferredRenderer.reset();
 
-	delete texToBackBuffShader;
+	utils.reset();
 
 	// TODO: term render context
 }
@@ -221,153 +225,12 @@ void Renderer::TestFrameGraph()
 	FrameGraph fg;
     FrameGraphBlackboard bboard;
 
-    struct SceneColorPassData {
-		FrameGraphResource color;
-		FrameGraphResource depth;
-		FrameGraphResource entityIds;
-		FrameGraphResource entityIdsCopy;
-	};
-    bboard.add<SceneColorPassData>() = fg.addCallbackPass<SceneColorPassData>("SceneColorPass",
-        [&](FrameGraph::Builder& builder, SceneColorPassData& data) {
-			{
-				decltype(FrameGraphResources::FGTexture::Desc::texDesc) texDesc = {};
-				texDesc.MipLevels = 1;
-				texDesc.Format = DXGI_FORMAT_R32G32B32A32_TYPELESS;
-				texDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-				texDesc.SampleDesc.Count = 1;
-				texDesc.SampleDesc.Quality = 0;
-				texDesc.ArraySize = 1;
-				data.color = builder.create<FrameGraphResources::FGTexture>("SceneColor", { 
-				    .texDesc = texDesc,
-				    .fitToViewport = true
-				});
-			}
-			{
-				decltype(FrameGraphResources::FGTexture::Desc::texDesc) texDesc = {};
-				texDesc.MipLevels = 1;
-				texDesc.Format = DXGI_FORMAT_R32_TYPELESS;
-				texDesc.BindFlags = D3D11_BIND_RENDER_TARGET;
-				texDesc.SampleDesc.Count = 1;
-				texDesc.SampleDesc.Quality = 0;
-				texDesc.ArraySize = 1;
-				data.entityIds = builder.create<FrameGraphResources::FGTexture>("EntityIds", {
-				    .texDesc = texDesc,
-				    .fitToViewport = true
-				});
-			}
-			{
-				decltype(FrameGraphResources::FGTexture::Desc::texDesc) texDesc = {};
-				texDesc.MipLevels = 1;
-				texDesc.Width = 1;
-				texDesc.Height = 1;
-				texDesc.Usage = D3D11_USAGE_STAGING;
-				texDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
-				texDesc.Format = DXGI_FORMAT_R32_UINT;
-				//texDesc.BindFlags = D3D11_BIND_RENDER_TARGET;
-				texDesc.SampleDesc.Count = 1;
-				texDesc.SampleDesc.Quality = 0;
-				texDesc.ArraySize = 1;
-				data.entityIdsCopy = builder.create<FrameGraphResources::FGTexture>("EntityIdsCopy", {
-				    .texDesc = texDesc,
-				    .fitToViewport = false
-				});
-			}
-			{
-				decltype(FrameGraphResources::FGTexture::Desc::texDesc) depthTexDesc = {};
-				ZeroMemory(&depthTexDesc, sizeof(depthTexDesc));
-				depthTexDesc.Width = window->GetWidth();
-				depthTexDesc.Height = window->GetHeigth();
-				depthTexDesc.MipLevels = 1;
-				depthTexDesc.ArraySize = 1;
-				depthTexDesc.SampleDesc.Count = 1;
-				depthTexDesc.Format = DXGI_FORMAT_D32_FLOAT_S8X24_UINT;
-				depthTexDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-				depthTexDesc.SampleDesc.Count = 1;
-				depthTexDesc.SampleDesc.Quality = 0;
-				data.depth = builder.create<FrameGraphResources::FGTexture>("SceneDepth", { 
-				    .texDesc = depthTexDesc,
-				    .fitToViewport = true
-				});
-			}
-            data.color = builder.write(data.color);
-			data.depth = builder.write(data.depth);
-			data.entityIds = builder.write(data.entityIds);
-			data.entityIdsCopy = builder.write(data.entityIdsCopy);
-        },
-        [=, this](const SceneColorPassData& data, FrameGraphPassResources& resources, void*) {
-			context.ClearState();
-
-			// setup pipiline
-			context->RSSetState(context.masterRastState);
-			context->PSSetSamplers(0, 1, &context.masterSamplerState);
-			context->RSSetViewports(1, context.viewport.Get11());
-			context->OMSetDepthStencilState(pDSState, 1);
-
-			{	// color
-				auto& texture = resources.get<FrameGraphResources::FGTexture>(data.color);
-				RenderTargetDesc rtvDesc = {};
-				rtvDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-				rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-				RenderTarget* rtv = texture.BindWrite(context, &rtvDesc, 0);
-				context->ClearRenderTargetView(rtv, clearColor);
-			}
-
-			// enitity ids
-			auto& idsTexture = resources.get<FrameGraphResources::FGTexture>(data.entityIds);
-			RenderTargetDesc rtvDesc = {};
-			rtvDesc.Format = DXGI_FORMAT_R32_UINT;
-			rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-			RenderTarget* rtv = idsTexture.BindWrite(context, &rtvDesc, 1);
-			context->ClearRenderTargetView(rtv, clearColor);
-
-			// depth
-			auto& depthTex = resources.get<FrameGraphResources::FGTexture>(data.depth);
-			D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
-			dsvDesc.Format = DXGI_FORMAT_D32_FLOAT_S8X24_UINT;
-			dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-			DepthBuffer* depthBuf = depthTex.BindWrite(context, dsvDesc);
-			context->ClearDepthStencilView(depthBuf, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-
-			context.TEMP_UpdateRenderTargetsNum();
-			context->OMSetRenderTargets(context.activeRenderTargetNum, context.activeRenderTargets, context.activeDepthBuffuer);
-			
-			DrawScene();
-
-			// copy entities id texture region and cache entity id under the cursor
-			// TODO: use imgui cursor pos instead?
-			Math::Vector2 mousePos = globalInputDevice->MousePosition;
-#ifdef EDITOR // TODO: should be aquired as input->GetMousePos()
-			mousePos.x -= UIDebug::GetViewportX();
-			mousePos.y -= UIDebug::GetViewportY();
-			mousePos.y -= 10; // TEMP no idea why cursor losing about 10 units by Y axis when fetching texture 0_o
-#endif
-			entityIdUnderCursor = 0;
-			if (mousePos.x < 0.0f || mousePos.x > context.viewport.width || mousePos.y < 0.0f || mousePos.y > context.viewport.height) {
-				return;
-			}
-			// get a single pixel texture with uint32 content
-			auto& idsCopy = resources.get<FrameGraphResources::FGTexture>(data.entityIdsCopy);
-			D3D11_BOX srcRegion;
-			srcRegion.left = (uint32_t)mousePos.x;
-			srcRegion.right = srcRegion.left + 1;
-			srcRegion.top = (uint32_t)mousePos.y;
-			srcRegion.bottom = srcRegion.top + 1;
-			srcRegion.front = 0;
-			srcRegion.back = 1;
-			// copy a single pixel region to idsCopy texture
-			context->CopySubresourceRegion(idsCopy.tex, 0, 0, 0, 0, idsTexture.tex, 0, &srcRegion);
-			// read resulted id
-			D3D11_MAPPED_SUBRESOURCE destRes = {};
-			context->Map(idsCopy.tex, 0, D3D11_MAP_READ, 0, &destRes);
-			entityIdUnderCursor = static_cast<uint32_t*>(destRes.pData)[0];
-			context->Unmap(idsCopy.tex, 0);
-        }
-    );
+	deferredRenderer->Draw(context, fg, bboard);
 
 	struct CompositionPassData {
 		FrameGraphResource target;
 	};
-    const auto& sceneColor = bboard.get<SceneColorPassData>();
+    const auto& sceneColor = bboard.get<DeferredLightingPass::DeferredLightingPassData>();
     static Texture2D* backTex = nullptr;
 	if (!backTex) {
 		context.swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backTex); // TODO: cache backTex pointer??
@@ -375,7 +238,7 @@ void Renderer::TestFrameGraph()
     FrameGraphResource backBuff = fg.import("BackBuffer", FrameGraphResources::FGTexture::Desc{}, FrameGraphResources::FGTexture{backTex});
     bboard.add<CompositionPassData>() = fg.addCallbackPass<CompositionPassData>("CompositionPass",
         [&](FrameGraph::Builder& builder, CompositionPassData& data) {
-            builder.read(sceneColor.color);
+            builder.read(sceneColor.sceneColor);
             data.target = builder.write(backBuff);
         },
         [=, this](const CompositionPassData& data, FrameGraphPassResources& resources, void*) {
@@ -387,7 +250,7 @@ void Renderer::TestFrameGraph()
 			context->RSSetViewports(1, context.viewport.Get11());
 			context->OMSetDepthStencilState(pDSState, 1);
 
-            auto& texture = resources.get<FrameGraphResources::FGTexture>(sceneColor.color);
+            auto& texture = resources.get<FrameGraphResources::FGTexture>(sceneColor.sceneColor);
             D3D11_SHADER_RESOURCE_VIEW_DESC srtDesc = {};
             srtDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
             srtDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
@@ -431,7 +294,7 @@ void Renderer::TestFrameGraph()
 #endif
 }
 
-void Renderer::DrawScene()
+void Renderer::DrawSceneGeometry()
 {
 	for (const Renderable& renderObj : RenderableStorage::Instance().GetStorage()) {
 		MeshRenderer::DrawMesh(context, renderObj);
@@ -440,7 +303,7 @@ void Renderer::DrawScene()
 
 void Renderer::DrawScreenQuad()
 {
-	texToBackBuffShader->Activate(context.context);
+	texToBackBuffShader->Activate(context, texToBackBuffShader);
 	context->IASetInputLayout(nullptr);
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	context->IASetVertexBuffers(0, 0, NULL, NULL, NULL);
