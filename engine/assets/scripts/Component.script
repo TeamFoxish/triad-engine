@@ -1,4 +1,0 @@
-content:
-  source_file: ./assets/scripts/Component.as
-  module: Engine
-type: script

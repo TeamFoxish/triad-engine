@@ -1,0 +1,9 @@
+content:
+  class: TestComponent
+  module: Engine
+  overrides:
+    someInt: 1
+    someFloat: 1.0
+    someString: ComponentOverride
+    material: res://materials/default_mesh.material
+type: component

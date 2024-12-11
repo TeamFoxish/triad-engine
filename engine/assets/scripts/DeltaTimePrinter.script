@@ -1,4 +1,0 @@
-content:
-  source_file: ./assets/scripts/DeltaTimePrinter.as
-  module: Engine
-type: script

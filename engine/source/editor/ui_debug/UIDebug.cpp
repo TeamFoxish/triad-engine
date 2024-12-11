@@ -21,6 +21,7 @@
 #include "game/Game.h"
 #include "scene/Scene.h"
 #include "components/CompositeComponent.h"
+#include "game/ComponentStorage.h"
 
 
 void UIDebug::Init(Window* window)
@@ -55,7 +56,8 @@ void UIDebug::Init(Window* window)
 	}
 
 #ifdef EDITOR
-	outliner.Init("scene", gTempGame->scenes[0].get()->GetStorage().GetComponents());
+	std::vector<Component*> components;
+	outliner.Init("scene", components);
 #endif // EDITOR
 }
 

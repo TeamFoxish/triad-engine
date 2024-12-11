@@ -1,0 +1,4 @@
+content:
+  source_file: ./assets/scripts/ComponentHandle.as
+  module: Engine
+type: script

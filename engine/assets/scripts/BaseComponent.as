@@ -1,6 +1,10 @@
 class BaseComponent : Component {
-
     Component@ parent;
+    string id;
+
+    BaseComponent() {
+        AddToStorage(this);
+    }
 
     void Update(float deltaTime) {
         // do nothing, default behavior
@@ -17,4 +21,4 @@ class BaseComponent : Component {
     Component@ GetParent() {
         return parent;
     }
-}
+};

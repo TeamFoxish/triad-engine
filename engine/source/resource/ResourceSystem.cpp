@@ -3,6 +3,7 @@
 #include "config/ConfigVar.h"
 #include "ResourceLoader.h"
 #include "misc/Factory.h"
+#include "logs/Logs.h"
 #include <iostream>
 #include <set>
 #include <yaml-cpp/yaml.h>
@@ -28,14 +29,14 @@ void ResourceSystem::LoadResourceImpl(ResTag tag)
 {
     ResPath filePath;
     if (!ResolveTagToFile(tag, filePath)) {
-        std::cerr << std::format("unable to load resource with tag '{}'", tag.string()) << std::endl;
+        LOG_ERROR("Unable to load resource with tag \"{}\"", tag.string());
         return;
     }
     std::string data;
     try {
         data = ReadFile(filePath);
     } catch (FException ex) {
-        std::cout << std::format("unable to read file '{}': {}", filePath.string(), ex.what()) << std::endl;
+        LOG_ERROR("Unable to read file \"{}\": {}", filePath.string(), ex.what());
         return;
     }
     YAML::Node resFile;
@@ -44,7 +45,7 @@ void ResourceSystem::LoadResourceImpl(ResTag tag)
         resFile = YAML::Load(data);
         type = resFile["type"].as<std::string>();
     } catch (YAML::Exception ex) {
-        std::cout << std::format("unable to read file '{}': {}", filePath.string(), ex.what()) << std::endl;
+        LOG_ERROR("Unable to read file \"{}\": {}", filePath.string(), ex.what());
         return;
     }
     const YAML::Node desc = resFile["content"];
@@ -79,7 +80,7 @@ void ResourceSystem::LoadResourceImpl(ResTag tag)
             }
         }
         if (!node.IsDefined()) {
-            std::cout << "Resource :" << tag.string() << " contains invalid or undefined nodes !" << std::endl;
+            LOG_WARN("Resource : \"{}\" contains invalid or undefined nodes !", tag.string());
             continue;
         }
         if (!node.IsScalar()) {
@@ -102,7 +103,7 @@ void ResourceSystem::LoadResourceImpl(ResTag tag)
 
     // create loader by type string and call Load
     if (!Factory<ResourceLoader>::IsRegistered(type.c_str())) {
-        std::cout << std::format("unable to load resource with tag '{}'. there is no registered loader for type '{}'", tag.string(), type) << std::endl;
+        LOG_ERROR("Unable to load resource with tag \"{}\". there is no registered loader for type \"{}\"", tag.string(), type);
         return;
     }
     std::unique_ptr<ResourceLoader> loader = Factory<ResourceLoader>::Create(type.c_str());
@@ -114,7 +115,7 @@ void ResourceSystem::UnloadResource(ResTag tag)
     assert(tag != 0);
     const auto iter = resources.find(tag);
     if (iter == resources.end()) {
-        std::cout << std::format("unable to unload resource with tag '{}'. it wasn't loaded", tag.string()) << std::endl;
+        LOG_WARN("Unable to unload resource with tag \"{}\". it wasn't indexed", tag.string());
         return;
     }
     Resource& res = iter->second;
@@ -127,7 +128,7 @@ void ResourceSystem::UnloadResource(ResTag tag)
     }
     // create loader by type string and call Unload
     if (!Factory<ResourceLoader>::IsRegistered(res.type.string())) {
-        std::cout << std::format("unable to unload resource with tag '{}'. there is no registered loader for type '{}'", tag.string(), res.type.string()) << std::endl;
+        LOG_ERROR("Unable to unload resource with tag \"{}\". There is no registered loader for type \"{}\"", tag.string(), res.type.string());
         return;
     }
     std::unique_ptr<ResourceLoader> loader = Factory<ResourceLoader>::Create(res.type.string());

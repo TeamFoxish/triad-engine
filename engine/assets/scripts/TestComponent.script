@@ -1,0 +1,4 @@
+content:
+  source_file: ./assets/scripts/TestComponent.as
+  module: Engine
+type: script

@@ -5,6 +5,7 @@
 #include "RenderContext.h"
 #include "RenderResources.h"
 #include "file/FileIO.h"
+#include "logs/Logs.h"
 
 #include <WICTextureLoader.h>
 #include <wrl.h>
@@ -25,6 +26,7 @@ void TextureLoader::Load(ResTag tag, const YAML::Node& desc)
         return;
     }
     RenderResources::Instance().textures.Add(tag, new Texture(0, view));
+    LOG_INFO("Resource \"Texture\" with tag \"{}\" was indexed", tag.string());
 }
 
 void TextureLoader::Unload(ResTag tag)

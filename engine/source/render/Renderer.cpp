@@ -389,7 +389,7 @@ void Renderer::DrawScreenQuad()
 void Renderer::ResizeBackBuff()
 {
 	context->OMSetRenderTargets(0, nullptr, nullptr);
-	for (int i = 0; i < context.activeRenderTargetNum; ++i) {
+	for (uint32_t i = 0; i < context.activeRenderTargetNum; ++i) {
 		context.activeRenderTargets[i] = nullptr;
 	}
 	context.activeDepthBuffuer = nullptr;

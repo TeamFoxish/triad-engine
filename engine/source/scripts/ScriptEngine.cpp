@@ -3,6 +3,7 @@
 #include <iostream>
 #include <format>
 #include "misc/Function.h"
+#include "logs/Logs.h"
 
 ScriptEngine::ScriptEngine()
 {
@@ -28,7 +29,13 @@ bool ScriptEngine::CallFunction(asIScriptFunction *function)
 
     if( r != asEXECUTION_FINISHED ) {
         if ( r == asEXECUTION_EXCEPTION ) {
-            std::cout << std::format("An exception '%s' occurred. Please correct the code and try again.", context->GetExceptionString()) << std::endl;
+             const asIScriptFunction *function = context->GetExceptionFunction();
+            LOG_ERROR("Exception \"{}\". Line \"{}\" at:\n\tModule: \"{}\"\n\tFunction: \"{}\"\n\tFile: \"{}\"",
+                context->GetExceptionString(),
+                context->GetExceptionLineNumber(),
+                function->GetModuleName(),
+                function->GetDeclaration(),
+                function->GetScriptSectionName());
             return false;
         }
     }
@@ -47,7 +54,13 @@ bool ScriptEngine::CallFunction(asIScriptFunction* function, Consumer<asIScriptC
 
     if( r != asEXECUTION_FINISHED ) {
         if ( r == asEXECUTION_EXCEPTION ) {
-            std::cout << std::format("An exception '%s' occurred. Please correct the code and try again.", context->GetExceptionString()) << std::endl;
+            const asIScriptFunction *function = context->GetExceptionFunction();
+            LOG_ERROR("Exception \"{}\". Line \"{}\" at:\n\tModule: \"{}\"\n\tFunction: \"{}\"\n\tFile: \"{}\"",
+                context->GetExceptionString(),
+                context->GetExceptionLineNumber(),
+                function->GetModuleName(),
+                function->GetDeclaration(),
+                function->GetScriptSectionName());
             return false;
         }
     }
@@ -65,7 +78,13 @@ bool ScriptEngine::CallFunctionAndGet(asIScriptFunction *function, Consumer<asIS
 
     if( r != asEXECUTION_FINISHED ) {
         if ( r == asEXECUTION_EXCEPTION ) {
-            std::cout << std::format("An exception '%s' occurred. Please correct the code and try again.", context->GetExceptionString()) << std::endl;
+             const asIScriptFunction *function = context->GetExceptionFunction();
+            LOG_ERROR("Exception \"{}\". Line \"{}\" at:\n\tModule: \"{}\"\n\tFunction: \"{}\"\n\tFile: \"{}\"",
+                context->GetExceptionString(),
+                context->GetExceptionLineNumber(),
+                function->GetModuleName(),
+                function->GetDeclaration(),
+                function->GetScriptSectionName());
             return false;
         }
     }
@@ -90,7 +109,13 @@ bool ScriptEngine::CallFunctionAndGet(asIScriptFunction *function,
 
     if( r != asEXECUTION_FINISHED ) {
         if ( r == asEXECUTION_EXCEPTION ) {
-            std::cout << std::format("An exception '%s' occurred. Please correct the code and try again.", context->GetExceptionString()) << std::endl;
+             const asIScriptFunction *function = context->GetExceptionFunction();
+            LOG_ERROR("Exception \"{}\". Line \"{}\" at:\n\tModule: \"{}\"\n\tFunction: \"{}\"\n\tFile: \"{}\"",
+                context->GetExceptionString(),
+                context->GetExceptionLineNumber(),
+                function->GetModuleName(),
+                function->GetDeclaration(),
+                function->GetScriptSectionName());
             return false;
         }
     }

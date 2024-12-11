@@ -1,0 +1,16 @@
+content:
+  name: TestScene
+  objects:
+    flopa1:
+      prefab: res://prefabs/flopa.prefab
+    flopa2:
+      prefab: res://prefabs/flopa.prefab
+      overrides:
+        TestComponent:
+          someInt: 3
+          someFloat: 3.0
+          someString: SceneOverride
+          material: res://materials/cheese.material
+    cheese1: 
+      prefab: res://prefabs/cheese.prefab
+type: scene

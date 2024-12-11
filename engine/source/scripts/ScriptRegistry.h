@@ -7,7 +7,7 @@
 class ScriptRegistry {
 private:
     // Caching previously requested functions. Module -> FunctionSignature -> FunctionPointer
-    //static inline std::unordered_map<const std::string, std::unordered_map<const std::string, asIScriptFunction*>> _functionCache;
+    // static inline std::unordered_map<const std::string, std::unordered_map<const std::string, asIScriptFunction*>> _functionCache;
     static bool RegisterCustomFunctions(asIScriptEngine* engine);
 public:
     // Registers all add-on's of Angel Script and then passing to our std functions

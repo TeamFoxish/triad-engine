@@ -12,8 +12,10 @@ public:
 	~ScriptLoader();
 
 	void Load(ResTag tag, const YAML::Node& desc) override;
+	void LoadAll(const std::string& scriptDirPath);
 	void Unload(ResTag tag) override {};
 	void Build();
+	CScriptBuilder* GetBuilderByModule(const std::string& module);
 
 	static std::unique_ptr<ResourceLoader> CreateInstance()
 	{
@@ -27,5 +29,5 @@ public:
 
 private:
 	static inline std::unordered_map<ResTag, const YAML::Node> _scripts;
-	static inline std::unordered_map<std::string, CScriptBuilder> _loadedModules;
+	static inline std::unordered_map<std::string, CScriptBuilder*> _loadedModules;
 };

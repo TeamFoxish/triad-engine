@@ -21,6 +21,7 @@
 #include "editor/ui_debug/UIDebug.h"
 
 #include "scripts/ScriptSystem.h"
+#include "scripts/ScriptObject.h"
 
 ConfigVar<std::string_view> cfgProjectName("/Project/Name", "DefaultProjectName");
 ConfigVar<std::string_view> cfgInitResource("/Project/Resource/InitResource", "res://init.resource");
@@ -62,10 +63,9 @@ bool EngineRuntime::Init(const InitParams& params)
 	globalInputDevice = new InputDevice(this);
 
 	gResourceSys->LoadResource(ToStrid(cfgInitResource.GetRef().data()));
-	static_cast<ScriptLoader*>(Factory<ResourceLoader>::Create("script").get())->Build();
-	std::unique_ptr<Scene> startUpScene = SceneLoader::CreateScene(InitLoader::startUpSceneTag);
-	gTempGame->scenes.push_back(std::move(startUpScene));
-	SceneLoader::FillScene(InitLoader::startUpSceneTag); // brediks?	
+	gScriptSys->BuildModules();
+	ScriptObject* sceneRoot = SceneLoader::CreateScene(InitLoader::startUpSceneTag);
+	gScriptSys->SetScene(sceneRoot);
 
 	UIDebug::Init(window);
 

@@ -1,6 +1,7 @@
 #include "MaterialLoader.h"
 
 #include "render/RenderResources.h"
+#include "logs/Logs.h"
 
 MaterialLoader::MaterialLoader()
 {
@@ -10,6 +11,7 @@ MaterialLoader::MaterialLoader()
 void MaterialLoader::Load(ResTag tag, const YAML::Node& desc)
 {
 	RenderResources::Instance().materials.Add(tag, CreateMaterial(desc));
+	LOG_INFO("Resource \"Material\" with tag \"{}\" was indexed", tag.string());
 }
 
 void MaterialLoader::Unload(ResTag tag)

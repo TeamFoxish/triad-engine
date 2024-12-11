@@ -2,9 +2,10 @@
 
 #include "resource/ResourceLoader.h"
 #include "misc/Factory.h"
-
+#include "scripts/ScriptObject.h"
 #include <unordered_map>
 #include <functional>
+#include "logs/Logs.h"
 
 class Component;
 
@@ -16,9 +17,9 @@ public:
 	void Load(ResTag tag, const YAML::Node& desc) override;
 	void Unload(ResTag tag) override {}
 
-	static Component* Create(ResTag tag, const YAML::Node& desc);
+	static ScriptObject* Create(ResTag* tag);
 
-	static std::unique_ptr<ResourceLoader> CreateInstance()
+    static std::unique_ptr<ResourceLoader> CreateInstance()
 	{
 		return std::make_unique<PrefabLoader>();
 	}
@@ -29,9 +30,5 @@ public:
 	}
 
 private:
-	static void TEMP_OverrideMaterial(class MeshComponent* mesh, const YAML::Node& overrides);
-
-private:
-	using CreateFunc = Component*(const YAML::Node&);
-	static inline std::unordered_map<ResTag, std::function<CreateFunc>> creators;
+	static inline std::unordered_map<ResTag, const YAML::Node> _prefabs;
 };

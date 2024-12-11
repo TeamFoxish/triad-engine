@@ -17,6 +17,8 @@
 #include "scripthelper.h"
 #include "misc/API.h"
 #include <iostream>
+#include <string>
+#include "misc/Strid.h"
 
 
 asIScriptFunction* updateCallback = 0;
@@ -42,6 +44,58 @@ ENGINE_API void SetOnFixedUpdate(asIScriptFunction* fixedUpdateFunc) {
         fixedUpdateCallback->Release();
     }
     fixedUpdateCallback = fixedUpdateFunc;
+}
+
+ENGINE_API void InitComponent(asIScriptObject *obj);
+
+class Component;
+class Component {
+    Component* parent;
+    std::vector<Component> child;
+};
+
+std::string PropToString(const char* name, int type, void* value) {
+    std::string val;
+    if (type == 4) {
+        auto* fl = static_cast<uint32_t*>(value);
+        val = std::to_string(*fl);
+        *fl = *fl + 1;
+    }
+    if (type == 10) {
+        val = std::to_string(*static_cast<float*>(value));
+    }
+    auto* ti = gScriptSys->GetRawEngine()->GetTypeInfoById(type);
+    if (ti != nullptr && ti ->GetName() != "string" && ti->GetName() != "array") {
+        asIScriptObject* obj = *static_cast<asIScriptObject**>(value);
+        asIScriptGeneric* j = reinterpret_cast<asIScriptGeneric*>(value);
+        gScriptSys->GetEngine();
+
+    }
+    return  "Name: " + std::string(name) + " Type: " + (ti == nullptr ? std::to_string(type) : ti->GetName()) + " Value: " + val;
+}
+
+ENGINE_API void InitComponent(asIScriptObject *obj)
+{
+    obj->AddRef();
+    asUINT propsCount = obj->GetPropertyCount();
+    for (asUINT i = 0; i < propsCount; i++) {
+        auto* propName = obj->GetPropertyName(i);
+        void* propValue = obj->GetAddressOfProperty(i);
+        int propType = obj->GetPropertyTypeId(i);
+        if (propName == "parent") {
+            continue;
+        }
+        std::cout << PropToString(propName, propType, propValue) << std::endl;
+    }
+    obj->Release();
+}
+
+ENGINE_API asIScriptObject* LoadScene(Strid sceneName) {
+    return nullptr;
+}
+
+ENGINE_API void SaveScene(asIScriptObject* sceneRoot) {
+    
 }
 
 bool ScriptRegistry::RegisterCustomFunctions(asIScriptEngine *engine)
@@ -89,15 +143,31 @@ bool ScriptRegistry::RegisterCustomFunctions(asIScriptEngine *engine)
         std::cout << "Unrecoverable error while binging 'SetFixedUpdate' fixed update function setter." << std::endl;
         return false;
     }
+
+    // Component initialization
+    r = engine->RegisterInterface("Component");
+    if (r < 0) {
+        std::cout << "Unrecoverable error while registering 'Component' interface." << std::endl;
+        return false;
+    }
+    engine->RegisterInterfaceMethod("Component", "void Update(float deltaTime)");
+    engine->RegisterInterfaceMethod("Component", "void FixedUpdate(float deltaTime)");
+    engine->RegisterInterfaceMethod("Component", "void SetParent(Component@ _parent)");
+    engine->RegisterInterfaceMethod("Component", "Component@ GetParent()");
+    r = engine->RegisterGlobalFunction("void InitComponent(Component @component)", asFUNCTION(InitComponent), asCALL_CDECL);
+    if (r < 0) {
+        std::cout << "Unrecoverable error while binging 'InitComponent' init component function." << std::endl;
+        return false;
+    }
     return true;
 }
 
 bool ScriptRegistry::RegisterStdLibrary(asIScriptEngine *engine)
 {
     RegisterStdString(engine);
-    //RegisterStdStringUtils(engine);
-    RegisterScriptDateTime(engine);
     RegisterScriptArray(engine, true);
+    RegisterStdStringUtils(engine);
+    RegisterScriptDateTime(engine);
     RegisterScriptAny(engine);
     RegisterScriptHandle(engine);
     RegisterScriptWeakRef(engine);
