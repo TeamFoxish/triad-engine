@@ -2,7 +2,7 @@
 
 const Math::Transform& TransformStorage::AccessRead(Handle handle)
 {
-	TransformEntry& entry = storage(handle);
+	TransformEntry& entry = storage[handle];
 	if (entry.isDirty) {
 		UpdateUpward(entry); // TODO: do not update transforms until any matrix is requested
 	}
@@ -11,7 +11,7 @@ const Math::Transform& TransformStorage::AccessRead(Handle handle)
 
 Math::Transform& TransformStorage::AccessWrite(Handle handle)
 {
-	TransformEntry& entry = storage(handle);
+	TransformEntry& entry = storage[handle];
 	if (entry.isDirty) {
 		return entry.transform;
 	}
@@ -20,7 +20,7 @@ Math::Transform& TransformStorage::AccessWrite(Handle handle)
 	while (!pending.empty()) {
 		Handle h = pending.back();
 		pending.pop_back();
-		TransformEntry& transform = storage(h);
+		TransformEntry& transform = storage[h];
 		transform.isDirty = true;
 		if (!transform.children.empty()) {
 			pending.insert(pending.end(), transform.children.begin(), transform.children.end());
@@ -32,10 +32,10 @@ Math::Transform& TransformStorage::AccessWrite(Handle handle)
 auto TransformStorage::Add(Handle parent) -> Handle
 {
 	const Handle handle = Add();
-	TransformEntry& entry = storage(handle);
+	TransformEntry& entry = storage[handle];
 	entry.transform = Math::Transform(Math::Matrix::Identity, Math::Matrix::Identity);
 	entry.parent = parent;
-	TransformEntry& parentEntry = storage(parent);
+	TransformEntry& parentEntry = storage[parent];
 	parentEntry.children.push_back(handle);
 	return handle;
 }
@@ -43,10 +43,10 @@ auto TransformStorage::Add(Handle parent) -> Handle
 void TransformStorage::Remove(Handle handle)
 {
 	// transforms should be removed in upward order (from leafs to root)
-	TransformEntry& entry = storage(handle);
+	TransformEntry& entry = storage[handle];
 	assert(entry.children.empty());
 	if (entry.parent.id_ >= 0) {
-		TransformEntry& parent = storage(entry.parent);
+		TransformEntry& parent = storage[entry.parent];
 		const auto iter = std::find(parent.children.begin(), parent.children.end(), handle);
 		assert(iter != parent.children.end());
 		parent.children.erase(iter);
@@ -57,10 +57,10 @@ void TransformStorage::Remove(Handle handle)
 
 void TransformStorage::Attach(Handle parent, Handle child)
 {
-	TransformEntry& parentEntry = storage(parent);
-	TransformEntry& childEntry = storage(child);
+	TransformEntry& parentEntry = storage[parent];
+	TransformEntry& childEntry = storage[child];
 	if (childEntry.parent.id_ >= 0) {
-		TransformEntry& oldParent = storage(childEntry.parent);
+		TransformEntry& oldParent = storage[childEntry.parent];
 		const auto iter = std::find(oldParent.children.begin(), oldParent.children.end(), child);
 		assert(iter != oldParent.children.end());
 		oldParent.children.erase(iter);
@@ -110,10 +110,10 @@ void TransformStorage::UpdateSince(TransformEntry& root)
 	while (!pending.empty()) {
 		Handle handle = pending.back();
 		pending.pop_back();
-		TransformEntry& entry = storage(handle);
+		TransformEntry& entry = storage[handle];
 		assert(entry.isDirty);
 		entry.isDirty = false;
-		const TransformEntry& parent = storage(entry.parent);
+		const TransformEntry& parent = storage[entry.parent];
 		entry.transform = Math::Transform(parent.transform.GetMatrix(), entry.transform.GetLocalMatrix());
 		pending.insert(pending.end(), entry.children.begin(), entry.children.end());
 	}

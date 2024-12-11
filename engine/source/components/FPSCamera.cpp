@@ -39,8 +39,8 @@ void FPSCamera::Update(float deltaTime, Compositer* parent)
 	Math::Vector3 up = Math::Vector3::Transform(Math::Vector3::UnitZ, q);
 
 	// Create look at matrix, set as view
-	Math::Matrix view = Math::Matrix::CreateLookAt(cameraPos, target, up);
-	SetViewMatrix((view * projMatr).Transpose());
+	viewMatr = Math::Matrix::CreateLookAt(cameraPos, target, up);
+	SetViewMatrix((viewMatr * projMatr).Transpose());
 	mPitchSpeed = 0.0f;
 }
 

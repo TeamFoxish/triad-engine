@@ -22,15 +22,31 @@ public:
 		return res;
 	}
 
-	T& operator()(Handle handle)
+	const T* Get(Handle handle) const
+	{
+		const T* res = nullptr;
+		storage.call(handle, [&res](const T& item) { res = &item; });
+		return res;
+	}
+
+	T& operator[](Handle handle) 
 	{
 		T* item = Get(handle);
 		assert(item);
 		return *item;
 	}
 
+	const T& operator[](Handle handle) const
+	{
+		const T* item = Get(handle);
+		assert(item);
+		return *item;
+	}
+
 	Storage::iterator begin() { return storage.begin(); }
+	Storage::const_iterator begin() const { return storage.begin(); }
 	Storage::iterator end() { return storage.end(); }
+	Storage::const_iterator end() const { return storage.end(); }
 
 private:
 	Storage storage;

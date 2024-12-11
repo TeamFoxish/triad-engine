@@ -13,6 +13,12 @@ struct PS_IN
 	float2 uv : TEXCOORD;
 };
 
+struct PS_OUTPUT
+{
+    float4 color: SV_Target0;
+    uint entityId: SV_Target1;
+};
+
 cbuffer PixelConstantBuffer : register(b0)
 {
 	struct DirectionalLight
@@ -36,6 +42,7 @@ cbuffer PixelConstantBuffer : register(b0)
 	float4 uAmbientLight;
 	int spotLightsNum;
 	int isTextureSet;
+	uint entityId;
 }
 
 cbuffer MaterialCB : register(b1)
@@ -86,21 +93,8 @@ PS_IN VSMain( VS_IN input )
 	return output;
 }
 
-float4 PSMain( PS_IN input ) : SV_Target
+PS_OUTPUT PSMain( PS_IN input ) : SV_Target
 {
-	/*
-	float4 albedo = tex.Sample(samplerState, input.uv);
-	clip(albedo.a - 0.01);
-	float3 normal = normalize(input.normal.xyz);
-	float3 viewDir = normalize(uCameraPos.xyz - input.worldPos.xyz);
-	float3 lightDir = -dirLight.mDirection.xyz;
-	float3 refVec = normalize(reflect(lightDir, normal));
-	float3 diffuse = max(0, dot(lightDir, normal)) * dirLight.mDiffuseColor.xyz;
-	float3 specular = dirLight.mSpecColor.xyz * pow(max(0.0, dot(refVec, viewDir)), uSpecPower);
-	
-	return albedo * float4(uAmbientLight.xyz + diffuse + specular, 1.0);
-	*/
-	
 	// Surface normal
 	float3 N = normalize(input.normal.xyz);
 	// Vector from surface to light
@@ -120,19 +114,22 @@ float4 PSMain( PS_IN input ) : SV_Target
 		Phong += Diffuse + Specular;
 	}
 	
-	float4 col = color;
+	PS_OUTPUT pix;
+	pix.color = color;
 	float4 texVal = 0;
 	if (isTextureSet == 1) {
-		col = texVal = tex.Sample(samplerState, input.uv);
+		pix.color = texVal = tex.Sample(samplerState, input.uv);
 	}
 	
 	// Final color is texture color times phong light (alpha = 1)
-	col *= float4(Phong, 1.0f);
+	pix.color *= float4(Phong, 1.0f);
 
 	int spotLightsNumClipped = min(spotLightsNum, NR_POINT_LIGHTS);
 	for (int i = 0; i < spotLightsNum; i++) {
-		col += CalcPointLight(pointLights[i], texVal, N, input.worldPos.xyz, V); 
+		pix.color += CalcPointLight(pointLights[i], texVal, N, input.worldPos.xyz, V); 
 	}
 
-    return col;
+	pix.entityId = entityId;
+
+    return pix;
 }

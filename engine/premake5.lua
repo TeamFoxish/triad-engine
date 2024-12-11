@@ -18,7 +18,7 @@ project("Engine")
   
   filter("configurations:Release*")
     libdirs({ "libs/**/release" })
-	links({ "assimp-vc143-mt", "freetype", "argumentum", "yaml-cpp", "angelscript", "spdlogd" })
+	links({ "assimp-vc143-mt", "freetype", "argumentum", "yaml-cpp", "angelscript", "spdlog" })
   
   filter {  }
   

@@ -186,16 +186,12 @@ RenderTarget* FrameGraphResources::FGTexture::BindWrite(RenderContext& ctx, cons
 {
 	assert(slot < D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT);
 	RenderTarget* res = ctx.activeRenderTargets[slot] = TransientResourcesStorage::Instance()->PullTextureRenderTarget(ctx, desc, tex);
-	// TODO: move away set render targets call to pipeline setup
-	ctx.context->OMSetRenderTargets(1, ctx.activeRenderTargets, ctx.activeDepthBuffuer);
 	return res;
 }
 
 auto FrameGraphResources::FGTexture::BindWrite(RenderContext& ctx, const Triad::Render::Api::DepthBufferDesc& desc) -> Triad::Render::Api::DepthBuffer*
 {
 	DepthBuffer* depthBuf = ctx.activeDepthBuffuer = TransientResourcesStorage::Instance()->PullTextureDepthBuffer(ctx, desc, tex);
-	// TODO: move away set render targets call to pipeline setup
-	ctx.context->OMSetRenderTargets(1, ctx.activeRenderTargets, depthBuf);
 	return depthBuf;
 }
 

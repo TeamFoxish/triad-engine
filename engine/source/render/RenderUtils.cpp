@@ -121,7 +121,7 @@ std::shared_ptr<Shader> RenderUtils::CreateQuadShader(Renderer* renderer)
 		}
 	};
 
-	return std::make_shared<Shader>(L"shaders/default_shader.hlsl", renderer->GetDevice(), inputElements, 1, cbVSDescs, 1, cbPSDescs, 1);
+	return std::make_shared<Shader>(L"shaders/default_shader.hlsl", (Shader::CreationFlags)(Shader::VERTEX_SH | Shader::PIXEL_SH), renderer->GetDevice(), inputElements, 1, cbVSDescs, 1, cbPSDescs, 1);
 }
 
 GeometryData::PTR RenderUtils::CreateQuadGeom(Renderer* renderer)
@@ -194,7 +194,7 @@ std::shared_ptr<Shader> RenderUtils::CreateAdvMeshShader(Renderer* renderer, int
 		}
 	};
 
-	return std::make_shared<Shader>(L"shaders/advanced_mesh_shader.hlsl", renderer->GetDevice(), inputElements, (int)std::size(inputElements), cbVSDescs, 1, cbPSDescs, 1);
+	return std::make_shared<Shader>(L"shaders/advanced_mesh_shader.hlsl", (Shader::CreationFlags)(Shader::VERTEX_SH | Shader::PIXEL_SH), renderer->GetDevice(), inputElements, (int)std::size(inputElements), cbVSDescs, 1, cbPSDescs, 1);
 }
 
 std::shared_ptr<GeometryData> RenderUtils::CreateCubeGeom(Renderer* renderer)

@@ -24,6 +24,9 @@ void ComponentStorage::EndUpdate()
 {
 	isUpdatingComponents = false;
 	components.insert(components.end(), pendingComponents.begin(), pendingComponents.end());
+	for (Component* comp : pendingComponents) {
+		idToComponent[comp->GetId()] = comp;
+	}
 	pendingComponents.clear();
 }
 
@@ -41,6 +44,7 @@ void ComponentStorage::AddComponent(Component* comp)
 		return;
 	}
 	components.push_back(comp);
+	idToComponent[comp->GetId()] = comp;
 }
 
 void ComponentStorage::RemoveComponent(Component* comp)
@@ -56,8 +60,20 @@ void ComponentStorage::RemoveComponent(Component* comp)
 	if (iter != components.end()) {
 		std::iter_swap(iter, components.end() - 1);
 		components.pop_back();
+		idToComponent.erase(comp->GetId());
 		return;
 	}
 
 	assert(false);
+}
+
+Component* ComponentStorage::GetComponentById(uint32_t id) const
+{
+	auto iter = idToComponent.find(id);
+	return iter != idToComponent.end() ? iter->second : nullptr;
+}
+
+void ComponentStorage::TEMP_AddChildComponentIdEntry(Component* comp)
+{
+	idToComponent[comp->GetId()] = comp;
 }

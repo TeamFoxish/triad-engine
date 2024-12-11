@@ -1,5 +1,5 @@
 class CompositeComponent : BaseComponent {
-
+    Transform@ transform = Transform();
     array<Component@> child;
 
     void Update(float deltaTime) {

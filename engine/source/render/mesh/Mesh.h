@@ -13,19 +13,16 @@ public:
 	using PTR = std::shared_ptr<Mesh>;
 
 	struct MeshNode {
-		std::vector<MeshNode> children;
 		std::vector<std::shared_ptr<GeometryData>> geoms;
-
-		// TODO: replace with Transform struct when ready
-		Math::Vector3 pos;
-		Math::Quaternion rot;
-		Math::Vector3 scale;
+		Math::Matrix localMatr;
 	};
 
 	~Mesh();
 
-	const MeshNode& GetRoot() const { return root; }
+	const std::vector<MeshNode>& GetNodes() const { return nodes; }
+
+	static Mesh::PTR CreateFromGeom(const std::shared_ptr<GeometryData>& geom);
 
 protected:
-	MeshNode root;
+	std::vector<MeshNode> nodes;
 };

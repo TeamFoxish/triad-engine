@@ -7,17 +7,15 @@
 
 #include "RenderContext.h"
 #include "RenderUtils.h"
-#include "DrawComponent.h"
 #include "mesh/MeshRenderer.h"
 #include "mesh/Mesh.h" // TODO: forward declare
+#include "DeferredRenderer.h" // TODO: forward declare
 
 class Window;
 class Light;
 struct Shader;
 
 class Renderer {
-	friend DrawComponent::DrawComponent(Game*, Compositer*);
-	friend DrawComponent::~DrawComponent();
 	friend class Light;
 
 public:
@@ -32,7 +30,7 @@ public:
 	void Draw();
 	void EndFrame();
 
-	void DrawScene();
+	void DrawSceneGeometry();
 	void DrawScreenQuad();
 
 	void ResizeBackBuff();
@@ -41,7 +39,7 @@ public:
 
 	void PopulateLightsBuffer(MeshRenderer::CBPS& buffer) const;
 
-	const Math::Matrix& GetViewMatrix() const { return viewMatr; }
+	const Math::Matrix& GetViewProjMatrix() const { return viewMatr; }
 	void SetViewMatrix(const Math::Matrix& view) { viewMatr = view; }
 
 	Mesh::PTR GetMesh(const std::string& path);
@@ -54,10 +52,9 @@ public:
 
 	ID3D11ShaderResourceView* GetColorPassSrt() const { return colorPassSrt; }
 
-private:
-	void AddComponent(DrawComponent* comp);
-	void RemoveComponent(DrawComponent* comp);
+	uint32_t GetEntityIdUnderCursor() const { return context.entityIdUnderCursor; }
 
+private:
 	void AddLight(Light* light);
 	void RemoveLight(Light* light);
 
@@ -65,8 +62,6 @@ private:
 
 private:
 	std::unique_ptr<RenderUtils> utils;
-
-	std::vector<DrawComponent*> components;
 
 	std::unordered_map<std::string, Mesh::PTR> meshes;
 
@@ -76,7 +71,7 @@ private:
 
 	RenderContext context;
 
-	Shader* texToBackBuffShader = nullptr; // TEMP
+	std::shared_ptr<Shader> texToBackBuffShader; // TEMP
 
 	ID3D11ShaderResourceView* colorPassSrt = nullptr; // TEMP
 
@@ -85,6 +80,8 @@ private:
 	Triad::Render::Api::RenderTarget* mainRtv = nullptr; // TEMP
 
 	Math::Matrix viewMatr;
+
+	std::unique_ptr<DeferredRenderer> deferredRenderer;
 
 	float clearColor[4]{ 0.1f, 0.1f, 0.1f, 1.0f };
 };

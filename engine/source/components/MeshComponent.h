@@ -1,32 +1,29 @@
 #pragma once
 
-#include "render/DrawComponent.h"
-#include "render/mesh/Mesh.h"
-#include "render/material/Material.h"
+#include "game/Component.h"
+#include "render/Renderable.h"
 #include "math/Math.h"
 
 class CompositeComponent;
 
-class MeshComponent : public DrawComponent {
+class MeshComponent : public Component {
 public:
 	MeshComponent(Game* game, Compositer* parent);
+	~MeshComponent();
 
-	void Draw(Renderer* renderer) override;
+	void SetMesh(const Mesh::PTR mesh) { GetRenderObj().mesh = mesh; }
 
-	void SetColor(const Math::Color& _color) { color = _color; }
-
-	void SetMesh(const Mesh::PTR _mesh) { mesh = _mesh; }
-
-	static MeshComponent* Build(Mesh::PTR mesh, CompositeComponent* parent);
+	std::weak_ptr<Material> GetMaterial() const { return GetRenderObj().material; }
+	void SetMaterial(const std::shared_ptr<Material> _material) { GetRenderObj().material = _material; }
 
 protected:
-	static MeshComponent* BuildMeshNode(const Mesh::MeshNode& node, CompositeComponent* parent);
+	Renderable& GetRenderObj() { return RenderableStorage::Instance().Get(renderObj); }
+	const Renderable& GetRenderObj() const { return RenderableStorage::Instance().Get(renderObj); }
 
 public:
 	float boundingSphereRadius = 0.0f;
 
 protected:
 	Compositer* parent;
-	Mesh::PTR mesh;
-	Math::Color color{ 1.0f, 1.0f, 1.0f, 1.0f };
+	RenderableStorage::Handle renderObj;
 };

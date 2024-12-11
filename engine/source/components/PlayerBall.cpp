@@ -32,28 +32,16 @@ void PlayerBall::Initialize(Compositer* parent)
 	Renderer* renderer = gRenderSys->GetRenderer();
 	meshSocket = new CompositeComponent(GetGame(), this);
 	MeshComponent* mesh = meshComp = new MeshComponent(GetGame(), meshSocket);
-	//mesh->SetShader(GetGame()->GetRenderer()->GetUtils()->GetMeshShader(renderer));
-	mesh->SetGeometry(renderer->GetUtils()->GetSphereGeom(renderer));
+	mesh->SetMesh(Mesh::CreateFromGeom(renderer->GetUtils()->GetSphereGeom(renderer)));
 
 	CompositeComponent* tempC = new CompositeComponent(GetGame(), meshSocket);
 	MeshComponent* cube = new MeshComponent(GetGame(), tempC);
-	//cube->SetShader(GetGame()->GetRenderer()->GetUtils()->GetMeshShader(renderer));
-	cube->SetGeometry(renderer->GetUtils()->GetCubeGeom(renderer));
-	cube->SetColor(Math::Color{1.0f, 0.0f, 0.0f});
+	cube->SetMesh(Mesh::CreateFromGeom(renderer->GetUtils()->GetCubeGeom(renderer)));
 	tempC->SetPosition(Math::Vector3{1.0f, 0.0f, 0.0f});
 	tempC->SetScale(Math::Vector3{2.0f, 0.2f, 0.2f});
 
 	attachSocket = new CompositeComponent(GetGame(), this);
 	GetGame()->player = this;
-
-	/*MeshComponent* rootMesh = nullptr;
-	MeshLoader::LoadMesh("assets/flop.fbx", meshSocket, &rootMesh);
-	Texture tex(0, L"assets/flopTex.png", renderer);
-	if (rootMesh) {
-		rootMesh->SetTexture(tex);
-	}
-	meshSocket->SetScale(Math::Vector3{ 0.01f });
-	meshSocket->SetRotation(Math::Quaternion::CreateFromYawPitchRoll(0.0f, Math::Pi / 2, 0.0f));*/
 
 	CompositeComponent::Initialize();
 }
@@ -89,11 +77,6 @@ void PlayerBall::ProceedInput(InputDevice* inpDevice)
 	}
 	for (int idx : newChilds) {
 		GetGame()->RemoveComponent(sceneObjects[idx]);
-		/*const Math::Matrix& local = attachSocket->GetWorldTransform(this);
-		const Math::Matrix& other = sceneObjects[idx]->GetWorldTransform();
-		const Math::Matrix res = other * local.Invert();
-		sceneObjects[idx]->SetWorldTransform(res);*/
-		//attachSocket->AddChild({sceneObjects[idx]});
 		attachSocket->AddChild(sceneObjects[idx]);
 	}
 	for (int i = (int)newChilds.size() - 1; i >= 0; --i) {

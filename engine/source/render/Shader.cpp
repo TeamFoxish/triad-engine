@@ -1,6 +1,10 @@
 #include "Shader.h"
 
-#include <iostream>
+#include "logs/Logs.h"
+
+#include "RenderContext.h"
+
+#include <codecvt>
 
 #include <d3d.h>
 #include <d3d11.h>
@@ -13,86 +17,111 @@
 #pragma comment(lib, "dxguid.lib")
 
 
-Shader::Shader(
-	const std::wstring& path, ID3D11Device* device,
-	const D3D11_INPUT_ELEMENT_DESC* inpDescs, int inpDescsNum,
-	const D3D_SHADER_MACRO* macros, int macrosCount) 
+static std::string ws2s(const std::wstring& wstr)
 {
-	ID3DBlob* vertexBC = nullptr;
-	ID3DBlob* errorVertexCode = nullptr;
-	auto res = D3DCompileFromFile(path.c_str(),
-		nullptr /*macros*/,
-		nullptr /*include*/,
-		"VSMain",
-		"vs_5_0",
-		D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,
-		0,
-		&vertexBC,
-		&errorVertexCode);
-
-	if (FAILED(res)) {
-		// If the shader failed to compile it should have written something to the error message.
-		if (errorVertexCode) {
-			char* compileErrors = (char*)(errorVertexCode->GetBufferPointer());
-
-			std::cout << compileErrors << std::endl;
-		}
-		// If there was  nothing in the error message then it simply could not find the shader file itself.
-		else
-		{
-			//MessageBox(hWnd, L"MyVeryFirstShader.hlsl", L"Missing Shader File", MB_OK);
-		}
-
-		//return 0;
-	}
-
-	//D3D_SHADER_MACRO Shader_Macros[] = { "TEST", "1", "TCOLOR", "float4(0.0f, 1.0f, 0.0f, 1.0f)", nullptr, nullptr };
-
-	ID3DBlob* pixelBC;
-	ID3DBlob* errorPixelCode;
-	res = D3DCompileFromFile(path.c_str(), macros /*macros*/, nullptr /*include*/, "PSMain", "ps_5_0", D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, &pixelBC, &errorPixelCode);
-
-	device->CreateVertexShader(
-		vertexBC->GetBufferPointer(),
-		vertexBC->GetBufferSize(),
-		nullptr, &vertShader);
-
-	device->CreatePixelShader(
-		pixelBC->GetBufferPointer(),
-		pixelBC->GetBufferSize(),
-		nullptr, &pixShader);
-
-	device->CreateInputLayout(
-		inpDescs,
-		inpDescsNum,
-		vertexBC->GetBufferPointer(),
-		vertexBC->GetBufferSize(),
-		&layout);
+	using convert_typeX = std::codecvt_utf8<wchar_t>;
+	std::wstring_convert<convert_typeX, wchar_t> converterX;
+	return converterX.to_bytes(wstr);
 }
 
 
 Shader::Shader(
-	const std::wstring& path, ID3D11Device* device,
+	const std::wstring& path, CreationFlags flags, ID3D11Device* device,
+	const D3D11_INPUT_ELEMENT_DESC* inpDescs, int inpDescsNum,
+	const D3D_SHADER_MACRO* macros, int macrosCount) 
+{
+	//D3D_SHADER_MACRO Shader_Macros[] = { "TEST", "1", "TCOLOR", "float4(0.0f, 1.0f, 0.0f, 1.0f)", nullptr, nullptr };
+
+	if (flags & VERTEX_SH) {
+		ID3DBlob* vertexBC = nullptr;
+		ID3DBlob* errorCode = nullptr;
+		auto res = D3DCompileFromFile(
+			path.c_str(),
+			nullptr /*macros*/,
+			nullptr /*include*/,
+			"VSMain",
+			"vs_5_0",
+			D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, // TODO: add debug flags only in debug
+			0,
+			&vertexBC,
+			&errorCode);
+
+		if (FAILED(res)) {
+			if (errorCode) {
+				char* compileErrors = (char*)(errorCode->GetBufferPointer());
+				LOG_ERROR("failed to compile vertex shader {}: {}", ws2s(path), compileErrors);
+			} else {
+				LOG_ERROR("failed to find vertex shader file {}", ws2s(path));
+			}
+		} else {
+			device->CreateVertexShader(
+				vertexBC->GetBufferPointer(),
+				vertexBC->GetBufferSize(),
+				nullptr, &vertShader);
+			device->CreateInputLayout(
+				inpDescs,
+				inpDescsNum,
+				vertexBC->GetBufferPointer(),
+				vertexBC->GetBufferSize(),
+				&layout);
+		}
+	}
+	if (flags & PIXEL_SH) {
+		ID3DBlob* pixelBC = nullptr;
+		ID3DBlob* errorCode = nullptr;
+		auto res = D3DCompileFromFile(
+			path.c_str(), 
+			macros /*macros*/, 
+			nullptr /*include*/, 
+			"PSMain", 
+			"ps_5_0", 
+			D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 
+			0, 
+			&pixelBC, 
+			&errorCode);
+
+		if (FAILED(res)) {
+			if (errorCode) {
+				char* compileErrors = (char*)(errorCode->GetBufferPointer());
+				LOG_ERROR("failed to compile pixel shader {}: {}", ws2s(path), compileErrors);
+			} else {
+				LOG_ERROR("failed to find pixel shader file {}", ws2s(path));
+			}
+		} else {
+			device->CreatePixelShader(
+				pixelBC->GetBufferPointer(),
+				pixelBC->GetBufferSize(),
+				nullptr, &pixShader);
+		}
+	}
+}
+
+
+Shader::Shader(
+	const std::wstring& path, CreationFlags flags, ID3D11Device* device,
 	const D3D11_INPUT_ELEMENT_DESC* inpDescs, int inpDescsNum,
 	const D3D11_BUFFER_DESC* vsCBDescs, int vsCBDescsNum,
 	const D3D11_BUFFER_DESC* psCBDescs, int psCBDescsNum,
 	const D3D_SHADER_MACRO* macros, int macrosCount) 
-	: Shader(path, device, inpDescs, inpDescsNum, macros, macrosCount)
+	: Shader(path, flags, device, inpDescs, inpDescsNum, macros, macrosCount)
 {
 	InitCB(device, vsCBDescs, vsCBDescsNum, psCBDescs, psCBDescsNum);
 }
 
-void Shader::Activate(ID3D11DeviceContext* context)
+void Shader::Activate(RenderContext& ctx, const Shader::PTR& thisShader)
 {
-	context->IASetInputLayout(layout);
-	context->VSSetShader(vertShader, nullptr, 0);
-	if (!cbVS.empty()) {
-		context->VSSetConstantBuffers(0, (uint32_t)cbVS.size(), &cbVS.front());
+	if (layout) {
+		ctx->IASetInputLayout(layout);
 	}
-	context->PSSetShader(pixShader, nullptr, 0);
-	if (!cbPS.empty()) {
-		context->PSSetConstantBuffers(0, (uint32_t)cbPS.size(), &cbPS.front());
+	ctx->VSSetShader(vertShader, nullptr, 0);
+	if (vertShader && !cbVS.empty()) {
+		ctx->VSSetConstantBuffers(0, (uint32_t)cbVS.size(), &cbVS.front());
 	}
+	ctx->PSSetShader(pixShader, nullptr, 0);
+	if (pixShader && !cbPS.empty()) {
+		ctx->PSSetConstantBuffers(0, (uint32_t)cbPS.size(), &cbPS.front());
+	}
+	ctx.activeShader = thisShader;
 }
 
 void Shader::InitCB(
@@ -100,7 +129,7 @@ void Shader::InitCB(
 	const D3D11_BUFFER_DESC* vsCBDescs, int vsCBDescsNum, 
 	const D3D11_BUFFER_DESC* psCBDescs, int psCBDescsNum)
 {
-	if (vsCBDescs && vsCBDescsNum > 0) {
+	if (vertShader && vsCBDescs && vsCBDescsNum > 0) {
 		cbVS.resize(vsCBDescsNum);
 		cbVSSizes.resize(vsCBDescsNum);
 		for (int i = 0; i < vsCBDescsNum; ++i) {
@@ -108,7 +137,7 @@ void Shader::InitCB(
 			cbVSSizes[i] = vsCBDescs[i].ByteWidth;
 		}
 	}
-	if (psCBDescs && psCBDescsNum > 0) {
+	if (pixShader && psCBDescs && psCBDescsNum > 0) {
 		cbPS.resize(psCBDescsNum);
 		cbPSSizes.resize(psCBDescsNum);
 		for (int i = 0; i < psCBDescsNum; ++i) {

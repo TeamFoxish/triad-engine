@@ -90,6 +90,14 @@ void Game::UpdateFrame()
 {
 	ProcessInput();
 	UpdateGame();
+	const Component::Id_T id = gRenderSys->GetEntityIdUnderCursor();
+	if (id > 0) {
+		Component* comp = scenes[0]->GetStorage().GetComponentById(gRenderSys->GetEntityIdUnderCursor());
+		if (comp) {
+			std::cout << "component under cursor: " << comp->GetName() << '\n';
+		}
+	}
+
 	GenerateOutput();
 }
 

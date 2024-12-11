@@ -51,7 +51,7 @@ GeometryData::GeometryData(
 	idxNum = idxSize / sizeof(uint32_t);
 }
 
-void GeometryData::Activate(ID3D11DeviceContext* context)
+void GeometryData::Activate(ID3D11DeviceContext* context) const
 {
 	context->IASetPrimitiveTopology(primitiveType);
 	context->IASetVertexBuffers(0, 1, &vertexBuf, &strides.front(), &offsets.front());

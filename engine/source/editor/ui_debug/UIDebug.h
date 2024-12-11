@@ -34,15 +34,21 @@ public:
 
 	static bool GetUIDebugFlag();
 
+	static int GetViewportX() { return viewportX; }
+	static int GetViewportY() { return viewportY; }
+
 	static inline bool useDefaultSettings = true;
 
 protected:
+	static void UpdateViewportPos();
 	static bool HandleViewportResize();
 
 protected:
 	static inline bool isInitted = false;
 	static inline bool isSceneFocused = false;
 
+	static inline int viewportX = 0;
+	static inline int viewportY = 0;
 	static inline int viewportWidth = -1;
 	static inline int viewportHeight = -1;
 

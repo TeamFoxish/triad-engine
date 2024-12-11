@@ -13,7 +13,6 @@ void SetUpdate(Update @updateCallback);
 void println(const string &in);
 void print(const string &in);
 
-
 class ref{}
 funcdef bool less(const ?&in a, const ?&in b);
 class array<T>{
@@ -69,7 +68,6 @@ class dictionary{
 	bool get(const string &in key, ? &out value) const;
 	bool get(const string &in key, int64 &out value) const;
 	bool get(const string &in key, double &out value) const;
-
 	?& opIndex(const string &in key);
 	const ?& opIndex(const string &in key) const;
 	//This method returns an array with all of the existing keys in the dictionary. The order of the keys in the array is undefined.
@@ -187,7 +185,7 @@ class Mesh{
 
 class Renderable{
 	Renderable(uint entityId, const Transform@ transform);
-	Renderable(const Renderable &in);
+	Renderable(const Renderable &in) delete;
 
 	Mesh mesh;
 	Material material;
