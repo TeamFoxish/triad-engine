@@ -6,11 +6,6 @@ float speed = 1.0f;
 float amplitude = 3.0f;
 
 void UpdateImpl(float deltaTime) {
-    time += deltaTime;
-    Vector3 pos = meshTest.transform.GetPosition();
-    pos.z = initialZ + sin(speed * time) * amplitude;
-    println("" + sin(speed * time));
-    meshTest.transform.SetPosition(pos);
     sceneRoot.Update(deltaTime);
 }
 
