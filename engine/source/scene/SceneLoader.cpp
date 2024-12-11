@@ -58,6 +58,9 @@ void SceneLoader::LinkPass()
 		LOG_INFO("Linked field \"{}\" to component \"{}\"", linkageRequest.fieldName, linkageRequest.ref);
 		_unlinkedComponentFiedls.pop();
 	}
+	for( const auto& [id, component] : _componentRegistry) {
+		delete component;
+	}
 	_componentRegistry.clear();
 	LOG_INFO("Scene linkage pass done");
 }

@@ -1,7 +1,11 @@
 class TestComponent : BaseComponent {
 
+    TestComponent() {
+        println("Test Component factory .");
+    }
+
     int someInt = 1;
-    float someFloat = 2.1;
+    float someFloat = 30.0;
     string someString = "Same";
     string material = "";
     TestClass testClass;

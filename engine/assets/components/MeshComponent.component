@@ -3,7 +3,10 @@ content:
   module: Engine
   overrides:
     someInt: 0
-    someFloat: 1.0
     someString: aboba
     material: res://materials/default_mesh.material
+    renderObj:
+      mesh:
+        tag: res://material/example.material
+
 type: component

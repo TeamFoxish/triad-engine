@@ -167,7 +167,7 @@ void Renderer::Shutdown()
 void Renderer::Draw()
 {
 	context.ClearState();
-	TestFrameGraph();
+//	TestFrameGraph();
 	context.ResetFrame();
 }
 

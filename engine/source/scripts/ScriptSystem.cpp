@@ -102,7 +102,9 @@ asIScriptObject *ScriptSystem::CreateComponentHandle(std::string* id)
 {
     ScriptObject* handle = new ScriptObject("Engine", "ComponentHandle");
     handle->SetField("id", id);
-    return handle->GetRaw();
+    asIScriptObject* raw = handle->GetRaw();
+    delete handle;
+    return raw;
 }
 
 void ScriptSystem::AddComponentToContext(ScriptObject *component, uint64_t id)

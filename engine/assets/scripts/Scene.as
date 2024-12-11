@@ -1,6 +1,8 @@
 class Scene : CompositeComponent {
     private string sceneName;
 
+    Scene(){}
+
     void Update(float deltaTime) {
         println(sceneName);
         if (child !is null) {

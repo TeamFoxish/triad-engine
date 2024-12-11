@@ -22,7 +22,7 @@ ScriptObject::ScriptObject(const std::string& module, const std::string& typeDec
     //     asITypeInfo* ti = _module->GetTypedefByIndex(i);
     //     LOG_INFO("Type: {} DECLARATION: {}", ti->GetTypeId(), ti->GetName());
     // }
-    _object = static_cast<asIScriptObject*>(engine->CreateUninitializedScriptObject(_type));
+    _object = static_cast<asIScriptObject*>(engine->CreateScriptObject(_type));
     int fieldsCount = _object->GetPropertyCount();
     for (int i = 0; i < fieldsCount; i++) {
         _fields[_object->GetPropertyName(i)] = i;
@@ -42,7 +42,6 @@ ScriptObject::ScriptObject(asIScriptObject *object)
 
 ScriptObject::~ScriptObject()
 {
-    _type->Release();
 }
 
 void ScriptObject::SetField(const std::string &name, void *value)
@@ -270,7 +269,7 @@ void ScriptObject::ApplyOverrides(const YAML::Node& overrides)
                 // Object does not exists
                 if (!customObject) {
                     asITypeInfo* customTypeInfo = engine->GetTypeInfoById(_object->GetPropertyTypeId(_fields[fieldName]));
-                    customObject = static_cast<asIScriptObject*>(engine->CreateUninitializedScriptObject(customTypeInfo));
+                    customObject = static_cast<asIScriptObject*>(engine->CreateScriptObject(customTypeInfo));
                 }
                 ScriptObject object = ScriptObject(customObject);
                 object.ApplyOverrides(override.second);

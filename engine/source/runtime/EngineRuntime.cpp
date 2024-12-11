@@ -66,6 +66,7 @@ bool EngineRuntime::Init(const InitParams& params)
 	gScriptSys->BuildModules();
 	ScriptObject* sceneRoot = SceneLoader::CreateScene(InitLoader::startUpSceneTag);
 	gScriptSys->SetScene(sceneRoot);
+	delete sceneRoot;
 
 	UIDebug::Init(window);
 

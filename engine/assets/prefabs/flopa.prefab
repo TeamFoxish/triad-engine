@@ -5,7 +5,6 @@ content:
       component: res://components/TestComponent.component
       overrides:
         someInt: 2
-        someFloat: 2.0
         someString: PrefabOverride
         material: res://materials/flopa.material
 type: prefab

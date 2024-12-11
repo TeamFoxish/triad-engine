@@ -1,9 +1,10 @@
 class BaseComponent : Component {
     Component@ parent;
     uint64 id;
+    string name;
 
     BaseComponent() {
-        AddToStorage(this);
+        println("Base component factory .");
     }
 
     void Update(float deltaTime) {

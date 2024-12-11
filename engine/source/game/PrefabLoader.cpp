@@ -52,6 +52,7 @@ ScriptObject* PrefabLoader::Create(ResTag* tag)
 		ScriptObject* component = ComponentLoader::CreateComponent(&componentTag);
 		component->ApplyOverrides(parameters["overrides"]);
 		asIScriptObject* valObj = component->GetRaw();
+		delete component;
 		child->InsertLast(&valObj);
 	}
 	root->SetField("child", child);
