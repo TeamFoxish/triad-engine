@@ -28,7 +28,7 @@ ScriptObject* SceneLoader::CreateScene(ResTag tag)
 	asIScriptEngine* engine = gScriptSys->GetRawEngine();
 	ScriptObject* root = new ScriptObject("Engine", "Scene");
 	asITypeInfo* childArrayType = engine->GetTypeInfoByDecl("array<Component@>");
-	CScriptArray* child = CScriptArray::Create(childArrayType, 16);
+	CScriptArray* child = CScriptArray::Create(childArrayType);
 
 	for (const auto& componentDesc : sceneDesc["objects"]) {
 		const std::string name = componentDesc.first.Scalar();
@@ -41,5 +41,23 @@ ScriptObject* SceneLoader::CreateScene(ResTag tag)
 	}
 	root->SetField("child", child);
 	root->SetField("name", new std::string(sceneDesc["name"].Scalar()));
+	LinkPass();
 	return root;
+}
+
+void SceneLoader::LinkPass()
+{
+	while (!_unlinkedComponentFiedls.empty()) {
+		LinkageRequest linkageRequest = _unlinkedComponentFiedls.front();
+		if (linkageRequest.isArrayField) {
+			// not implemented
+		} else {
+			ScriptObject* linkedComponent = _componentRegistry[linkageRequest.ref];
+			linkageRequest.object->SetField(linkageRequest.fieldName, linkedComponent->GetRaw());
+		}
+		LOG_INFO("Linked field \"{}\" to component \"{}\"", linkageRequest.fieldName, linkageRequest.ref);
+		_unlinkedComponentFiedls.pop();
+	}
+	_componentRegistry.clear();
+	LOG_INFO("Scene linkage pass done");
 }

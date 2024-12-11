@@ -1,6 +1,6 @@
 class BaseComponent : Component {
     Component@ parent;
-    string id;
+    uint64 id;
 
     BaseComponent() {
         AddToStorage(this);

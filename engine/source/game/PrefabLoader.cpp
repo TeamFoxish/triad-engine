@@ -43,7 +43,7 @@ ScriptObject* PrefabLoader::Create(ResTag* tag)
 	asIScriptEngine* engine = gScriptSys->GetRawEngine();
 	ScriptObject* root = new ScriptObject("Engine", "CompositeComponent");
 	asITypeInfo* childArrayType = engine->GetTypeInfoByDecl("array<Component@>");
-	CScriptArray* child = CScriptArray::Create(childArrayType, 16);
+	CScriptArray* child = CScriptArray::Create(childArrayType);
 
 	for (const auto& componentDesc : desc["components"]) {
 		const std::string name = componentDesc.first.Scalar();

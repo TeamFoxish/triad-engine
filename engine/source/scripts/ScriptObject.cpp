@@ -4,6 +4,7 @@
 #include "logs/Logs.h"
 #include <string>
 #include <iostream>
+#include "scene/SceneLoader.h"
 
 ScriptObject::ScriptObject(const std::string& module, const std::string& typeDecl) {
     asIScriptEngine* engine = gScriptSys->GetRawEngine();
@@ -151,10 +152,17 @@ void ScriptObject::SetField(const std::string &name, void *value)
                 *currentValueDictionary = *newValueDictionary;
                 break;
             }
-            asIScriptObject* newValue = gScriptSys->CreateComponentHandle(static_cast<std::string*>(value));
-            asIScriptObject* currentValueObject = static_cast<asIScriptObject*>(currentValuePointer);
-            *currentValueObject = *newValue;
-            break;
+            if (fieldType & asTYPEID_OBJHANDLE > 0) {
+                asIScriptObject* newValue = static_cast<asIScriptObject*>(value);
+                asIScriptObject** currentValueObject = static_cast<asIScriptObject**>(currentValuePointer);
+                *currentValueObject = newValue;
+                break;
+            } else {
+                asIScriptObject* newValue = static_cast<asIScriptObject*>(value);
+                asIScriptObject* currentValueObject = static_cast<asIScriptObject*>(currentValuePointer);
+                *currentValueObject = *newValue;
+                break;
+            }
         }
 
 }
@@ -207,34 +215,71 @@ void ScriptObject::ApplyOverrides(const YAML::Node& overrides)
     for (const auto& override: overrides) {
         std::string fieldName = override.first.Scalar();
         YAML::Node value = override.second;
+        // Case scalar value
         if (value.IsScalar()) {
-            void* val = parseOverrideValue(override.second.Scalar());
-            SetField(fieldName, val);
-            if (fieldName == "id") {
-                gScriptSys->AddComponentToContext(this, *static_cast<uint64_t*>(val));
-            }
-        }
-        if (value.IsMap()) {
-            CScriptArray* child = static_cast<CScriptArray*>(GetField("child"));
-            asITypeInfo* searchedType = engine->GetModule("Engine")->GetTypeInfoByDecl(fieldName.c_str());
-            asIScriptObject* searchedObject = nullptr;
-            int childSize = child->GetSize();
-            for (int i = 0; i < childSize; i++) {
-                asIScriptObject* childObject = *reinterpret_cast<asIScriptObject**>(child->At(i));
-                if (childObject != nullptr) {
-                    if ( childObject->GetTypeId() == searchedType->GetTypeId()) {
-                        searchedObject = childObject;
-                        break;
-                    }
+            std::string stringVal = override.second.Scalar();
+            // Assuming it's component ref, that will be linked in Link Pass
+            if (stringVal.starts_with("@")) {
+                SceneLoader::AddFieldToPendingState(this, fieldName, std::stoll(stringVal.substr(1)));
+            } else {
+                // Assuming it's primirive value
+                void* val = parseOverrideValue(stringVal);
+                SetField(fieldName, val);
+                // if we set id for component than we add this component to registry fir Link Pass
+                if (fieldName == "id") {
+                    SceneLoader::AddComponentToRegistry(*static_cast<uint64_t*>(val), this);
                 }
             }
-            if (searchedObject != nullptr) {
-                ScriptObject children = ScriptObject(searchedObject);
-                children.ApplyOverrides(override.second);
+        }
+        // Case map value
+        if (value.IsMap()) {
+            std::string firstFieldName = value.begin()->first.Scalar();
+            // Assuming it's array override
+            if (firstFieldName.starts_with("@")) {
+                CScriptArray* array = static_cast<CScriptArray*>(GetField(fieldName));
+                for (const auto& arrayOverride: value) {
+                    uint64_t index = std::stoll(arrayOverride.first.Scalar().substr(1));
+                    // Assuming it's array of primitives or component refs
+                    if (arrayOverride.second.IsScalar()) {
+                        std::string arrayStringVal = arrayOverride.second.Scalar();
+                        // Assuming it's array of component refs
+                         if (arrayStringVal.starts_with("@")) {
+                            SceneLoader::AddArrayFieldToPendingState(this, fieldName, index, std::stoll(arrayStringVal.substr(1)));
+                        } else {
+                            // Assuming it's array of primitives
+                            void* primitiveArrayVal = parseOverrideValue(arrayStringVal);
+                            array->SetValue(index, primitiveArrayVal);
+                        }
+                    } else {
+                        // Assuming it's array of custom types
+                        asIScriptObject* arrayCustomObject = *static_cast<asIScriptObject**>(array->At(index));
+                        // Object does not exists
+                        if (!arrayCustomObject) {
+                            arrayCustomObject = static_cast<asIScriptObject*>(engine->CreateUninitializedScriptObject(array->GetArrayObjectType()));
+                        }
+                        ScriptObject* arrayObject = new ScriptObject(arrayCustomObject);
+                        arrayObject->ApplyOverrides(arrayOverride.second);
+                        // TODO maybe stupid
+                        asIScriptObject* raw = arrayObject->GetRaw();
+                        array->SetValue(index, &raw);
+                    }
+                }
+            } else {
+                // Assuming it's custom type field override
+                asIScriptObject* customObject = static_cast<asIScriptObject*>(GetField(fieldName));
+                // Object does not exists
+                if (!customObject) {
+                    asITypeInfo* customTypeInfo = engine->GetTypeInfoById(_object->GetPropertyTypeId(_fields[fieldName]));
+                    customObject = static_cast<asIScriptObject*>(engine->CreateUninitializedScriptObject(customTypeInfo));
+                }
+                ScriptObject object = ScriptObject(customObject);
+                object.ApplyOverrides(override.second);
+                // TODO maybe stupid
+                SetField(fieldName, object.GetRaw());
             }
         }
         if (value.IsSequence()) {
-            
+            // not implemented yet
         }
     }
 }
