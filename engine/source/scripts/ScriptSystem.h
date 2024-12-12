@@ -8,25 +8,23 @@
 #include "ScriptRegistry.h"
 #include "ScriptObject.h"
 
-class ScriptLoader;
-class ScriptEngine;
-class ScriptRegistry;
-
 class ScriptSystem {
 private:
-    ScriptRegistry* _registry;
-    ScriptLoader* _loader;
-    ScriptEngine* _engine;
-    asITypeInfo* _stringType;
-    asITypeInfo* _arrayType;
-    asITypeInfo* _dictType;
+    ScriptRegistry* _registry = nullptr;
+    ScriptLoader _loader;
+    ScriptEngine* _engine = nullptr;
+    asIScriptContext* _context = nullptr;
+    asITypeInfo* _stringType = nullptr;
+    asITypeInfo* _arrayType = nullptr;
+    asITypeInfo* _dictType = nullptr;
 public:
     bool Init(RuntimeIface* runtime);
     void Term();
 
     ScriptEngine* GetEngine() { return this->_engine; }
     asIScriptEngine* GetRawEngine() { return this->_engine->GetEngine(); }
-    ScriptLoader* GetScriptLoader() { return this->_loader; }
+    asIScriptContext* GetContext() const { return _context; }
+    const ScriptLoader& GetScriptLoader() const { return _loader; }
     bool CallFunction(const std::string& module, const std::string& signature);
     bool CallFunction(const std::string &module, const std::string &signature, Consumer<asIScriptContext *> &&argsSetter);
     bool Update(float deltaTime);

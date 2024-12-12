@@ -17,7 +17,7 @@ content:
             id: 2
             someInt: 3
             someString: SceneOverride
-            material: res://materials/cheese.material
+            #material: res://materials/cheese.material
             testClass:
               resourceExample: resExample
             testComponent: "@3"

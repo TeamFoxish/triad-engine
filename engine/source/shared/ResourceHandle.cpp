@@ -5,6 +5,29 @@
 
 #include <new>
 
+void CResourceHandle::ApplyOverrides(const YAML::Node& _tag)
+{
+	if (!_tag.IsScalar()) {
+		return;
+	}
+	if (_tag.Scalar().empty()) {
+		tag = Strid();
+	}
+	tag = ToStrid(_tag.Scalar());
+}
+
+void CRenderable::ApplyOverrides(const YAML::Node& overrides)
+{
+	const YAML::Node& meshH = overrides["mesh"];
+	if (meshH) {
+		Set_mesh(CMeshHandle(ToStrid(meshH.Scalar())));
+	}
+	const YAML::Node& materialH = overrides["material"];
+	if (materialH) {
+		Set_material(CMaterialHandle(ToStrid(materialH.Scalar())));
+	}
+}
+
 // TODO: replace constructors with common mixin
 static void CMaterialHandleDefaultConstructor(CMaterialHandle* self)
 {

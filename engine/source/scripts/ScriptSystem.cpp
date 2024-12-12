@@ -26,18 +26,21 @@ void TermScript(RuntimeIface *runtime)
 bool ScriptSystem::Init(RuntimeIface *runtime)
 {
     _engine = new ScriptEngine();
+    _context = GetRawEngine()->CreateContext();
     _registry = new ScriptRegistry();
-    _loader = static_cast<ScriptLoader*>(Factory<ResourceLoader>::Create("script").get());
     if (!_registry->RegisterStdLibrary(_engine->GetEngine())) {
         std::cout << "Failed to register Std Script library." << std::endl;
         return false;
     }
-    _loader->LoadAll("./assets/scripts/");
+    _loader.LoadAll("./assets/scripts/");
     return true;
 }
 
 void ScriptSystem::Term()
 {
+    delete _registry;
+    _context->Release();
+    delete _engine;
 }
 
 bool ScriptSystem::CallFunction(const std::string &module, const std::string &signature)
@@ -95,7 +98,7 @@ asITypeInfo *ScriptSystem::GetDictionaryType()
 
 void ScriptSystem::BuildModules()
 {
-    _loader->Build();
+    _loader.Build();
 }
 
 asIScriptObject *ScriptSystem::CreateComponentHandle(std::string* id)

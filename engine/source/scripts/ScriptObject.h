@@ -13,6 +13,7 @@ public:
     ~ScriptObject();
     void SetField(const std::string& name, void* value);
     void* GetField(std::string name);
+    void AssignField(const std::string& name, void* value); // only for objects
     void ApplyOverrides(const YAML::Node& overrides);
     asIScriptObject* GetRaw() { return _object; };
 

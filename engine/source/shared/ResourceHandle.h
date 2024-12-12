@@ -14,7 +14,12 @@
 	}												\
 	TYPE NAME						                \
 
-class CResourceHandle {
+class CNativeObject {
+public:
+	virtual void ApplyOverrides(const YAML::Node& overrides) = 0;
+};
+
+class CResourceHandle : public CNativeObject {
 public:
 	CResourceHandle() = default;
 	CResourceHandle(ResTag _tag) 
@@ -24,6 +29,8 @@ public:
 
 	ResTag GetTag() const { return tag; }
 	virtual Strid GetType() const = 0;
+
+	void ApplyOverrides(const YAML::Node& tag) override;
 
 protected:
 	ResTag tag;
@@ -67,7 +74,7 @@ private:
 	std::shared_ptr<Mesh> cached;
 };
 
-class CRenderable {
+class CRenderable : public CNativeObject {
 	friend void RegisterResourceHandles();
 
 public:
@@ -100,6 +107,8 @@ public:
 		}
 		RenderableStorage::Instance().Remove(renderObj);
 	}
+
+	void ApplyOverrides(const YAML::Node& overrides) override;
 
 	Renderable& GetRenderObj() const { return RenderableStorage::Instance().Get(renderObj); }
 

@@ -7,7 +7,7 @@ class TestComponent : BaseComponent {
     int someInt = 1;
     float someFloat = 30.0;
     string someString = "Same";
-    string material = "";
+    Material material;
     TestClass testClass;
     TestComponent@ testComponent;
 
@@ -16,7 +16,6 @@ class TestComponent : BaseComponent {
         println("someString: " + someString);
         println("someInt: " + someInt);
         println("someFloat: " + someFloat);
-        println("material: " + material);
         if (testClass !is null) {
             testClass.Print();
         }

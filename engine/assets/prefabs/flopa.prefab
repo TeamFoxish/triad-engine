@@ -6,5 +6,10 @@ content:
       overrides:
         someInt: 2
         someString: PrefabOverride
-        material: res://materials/flopa.material
+    Mesh:
+      component: res://components/MeshComponent.component
+      overrides:
+        renderObj:
+          material: res://materials/flopa.material
+          mesh: res://meshes/flop.mesh
 type: prefab

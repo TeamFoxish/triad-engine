@@ -3,6 +3,4 @@ content:
   components:
     Test2:
       component: res://components/TestComponent.component
-      overrides:
-        material: res://materials/cheese.material
 type: prefab
