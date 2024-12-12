@@ -3,4 +3,10 @@ content:
   components:
     Test2:
       component: res://components/TestComponent.component
+    Mesh:
+      component: res://components/MeshComponent.component
+      overrides:
+        renderObj:
+          material: res://materials/cheese.material
+          mesh: res://meshes/cheese.mesh
 type: prefab

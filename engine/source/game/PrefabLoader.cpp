@@ -8,13 +8,7 @@
 #include "render/material/Material.h"
 
 #include "game/Game.h"
-#include "components/CompositeComponent.h"
-#include "components/ThirdPersonCamera.h"
-#include "components/MeshComponent.h"
 #include "components/PlayerBall.h"
-#include "components/DirectionalLightComponent.h"
-#include "components/PointLightComponent.h"
-#include "components/OrbiterComponent.h"
 #include "scripts/ScriptObject.h"
 #include "scripts/ScriptSystem.h"
 #include "scripts/ComponentLoader.h"
@@ -40,6 +34,14 @@ void PrefabLoader::Load(ResTag tag, const YAML::Node& desc)
 ScriptObject* PrefabLoader::Create(ResTag* tag)
 {
 	const YAML::Node desc = _prefabs[*tag];
+
+	// TEMP
+	if (desc["class"] && desc["class"].Scalar() == "player") {
+		auto player = new PlayerBall(gTempGame.get());
+		player->Initialize();
+		return nullptr;
+	}
+
 	asIScriptEngine* engine = gScriptSys->GetRawEngine();
 	ScriptObject* root = new ScriptObject("Engine", "CompositeComponent");
 	asITypeInfo* childArrayType = engine->GetTypeInfoByDecl("array<Component@>");

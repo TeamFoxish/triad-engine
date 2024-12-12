@@ -155,7 +155,7 @@ void ScriptObject::SetField(const std::string &name, void *value)
                 *currentValueDictionary = *newValueDictionary;
                 break;
             }
-            if (fieldType & asTYPEID_OBJHANDLE > 0) {
+            if ((fieldType & asTYPEID_OBJHANDLE) > 0) {
                 asIScriptObject* newValue = static_cast<asIScriptObject*>(value);
                 asIScriptObject** currentValueObject = static_cast<asIScriptObject**>(currentValuePointer);
                 *currentValueObject = newValue;
@@ -242,7 +242,7 @@ void ScriptObject::ApplyOverrides(const YAML::Node& overrides)
                 SceneLoader::AddFieldToPendingState(this, fieldName, std::stoll(stringVal.substr(1)));
             } else {
                 const int fieldTypeId = _object->GetPropertyTypeId(_fields[fieldName]);
-                if (Triad::Resource::IsTag(stringVal) && (fieldTypeId & asTYPEID_APPOBJECT) == asTYPEID_APPOBJECT) {
+                if (Triad::Resource::IsTag(stringVal) && (fieldTypeId & asTYPEID_APPOBJECT) == asTYPEID_APPOBJECT && fieldTypeId != gScriptSys->GetStringType()->GetTypeId()) {
                     // Parse value as resource handle
                     // native type registered by application, so no reflection, sir :)
                     auto* handle = static_cast<CResourceHandle*>(GetField(fieldName));

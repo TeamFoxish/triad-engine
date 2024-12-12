@@ -38,6 +38,7 @@
 
 Game::Game()
 {
+	scenes.push_back(std::make_unique<Scene>()); // TEMP
 }
 
 Game::~Game()

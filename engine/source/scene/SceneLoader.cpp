@@ -35,6 +35,9 @@ ScriptObject* SceneLoader::CreateScene(ResTag tag)
 		const YAML::Node parameters = componentDesc.second;
 		ResTag prefabTag = ResTag(ToStrid(parameters["prefab"].Scalar()));
 		ScriptObject* component = PrefabLoader::Create(&prefabTag);
+		if (!component) {
+			continue; // TEMP?
+		}
 		component->ApplyOverrides(parameters["overrides"]);
 		asIScriptObject* valObj = component->GetRaw();
 		child->InsertLast(&valObj);

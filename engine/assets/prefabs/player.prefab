@@ -1,4 +1,3 @@
 content:
   class: player
-  material: res://materials/default_mesh.material
 type: prefab
