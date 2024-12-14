@@ -59,6 +59,80 @@ static void RegisterVector3()
 }
 #pragma endregion
 
+#pragma region QUATERNION
+static void QuaternionDefaultConstructor(Math::Quaternion* self)
+{
+	new(self) Math::Quaternion();
+}
+
+static void QuaternionCopyConstructor(const Math::Quaternion& other, Math::Quaternion* self)
+{
+	new(self) Math::Quaternion(other);
+}
+
+static void QuaternionInitConstructor(float x, float y, float z, float w, Math::Quaternion* self)
+{
+	new(self) Math::Quaternion(x, y, z, w);
+}
+
+static void RegisterQaternion()
+{
+	using namespace DirectX;
+	using namespace Math;
+	auto engine = gScriptSys->GetRawEngine();
+	int r;
+
+	// Register the type
+	r = engine->RegisterObjectType("Quaternion", sizeof(Quaternion), asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS_CAK | asOBJ_APP_CLASS_ALLFLOATS); assert(r >= 0);
+
+	// Register the object properties
+	r = engine->RegisterObjectProperty("Quaternion", "float x", asOFFSET(Quaternion, x)); assert(r >= 0);
+	r = engine->RegisterObjectProperty("Quaternion", "float y", asOFFSET(Quaternion, y)); assert(r >= 0);
+	r = engine->RegisterObjectProperty("Quaternion", "float z", asOFFSET(Quaternion, z)); assert(r >= 0);
+	r = engine->RegisterObjectProperty("Quaternion", "float w", asOFFSET(Quaternion, w)); assert(r >= 0);
+
+	// Register the constructors
+	r = engine->RegisterObjectBehaviour("Quaternion", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(QuaternionDefaultConstructor), asCALL_CDECL_OBJLAST); assert(r >= 0);
+	r = engine->RegisterObjectBehaviour("Quaternion", asBEHAVE_CONSTRUCT, "void f(const Quaternion &in)", asFUNCTION(QuaternionCopyConstructor), asCALL_CDECL_OBJLAST); assert(r >= 0);
+	r = engine->RegisterObjectBehaviour("Quaternion", asBEHAVE_CONSTRUCT, "void f(float x, float y, float z, float w)", asFUNCTION(QuaternionInitConstructor), asCALL_CDECL_OBJLAST); assert(r >= 0);
+
+	// axis directions are fucked up :)
+	r = engine->RegisterGlobalFunction("Quaternion QuaternionFromPitchRollYaw(float pitch, float roll, float yaw)", asFUNCTIONPR(Quaternion::CreateFromYawPitchRoll, (float, float, float), Quaternion), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("Quaternion QuaternionFromAxisAngle(const Vector3 &in axis, float angle)", asFUNCTION(Quaternion::CreateFromAxisAngle), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("Quaternion QuaternionFromToRotation(const Vector3 &in a, const Vector3 &in b)", asFUNCTIONPR(Quaternion::FromToRotation, (const Vector3&, const Vector3&), Quaternion), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("Quaternion QuaternionFromLookRotation(const Vector3 &in forward, const Vector3 &in up)", asFUNCTIONPR(Quaternion::LookRotation, (const Vector3&, const Vector3&), Quaternion), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("Quaternion QuaternionConcatenate(const Quaternion &in a, const Quaternion &in b)", asFUNCTIONPR(Quaternion::Concatenate, (const Quaternion&, const Quaternion&), Quaternion), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("Quaternion Lerp(const Quaternion &in a, const Quaternion &in b, float t)", asFUNCTIONPR(Quaternion::Lerp, (const Quaternion&, const Quaternion&, float), Quaternion), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("Quaternion Slerp(const Quaternion &in a, const Quaternion &in b, float t)", asFUNCTIONPR(Quaternion::Slerp, (const Quaternion&, const Quaternion&, float), Quaternion), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("float QuaternionAngle(const Quaternion &in a, const Quaternion &in b)", asFUNCTION(Quaternion::Angle), asCALL_CDECL); assert(r >= 0);
+
+	r = engine->RegisterGlobalProperty("const Quaternion QuaternionIdentity", const_cast<Quaternion*>(&Quaternion::Identity));
+
+	// Register the operator overloads
+	r = engine->RegisterObjectMethod("Quaternion", "Quaternion &opAddAssign(const Quaternion &in)", asMETHODPR(Quaternion, operator+=, (const Quaternion&), Quaternion&), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Quaternion", "Quaternion &opSubAssign(const Quaternion &in)", asMETHODPR(Quaternion, operator-=, (const Quaternion&), Quaternion&), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Quaternion", "Quaternion &opMulAssign(const Quaternion &in)", asMETHODPR(Quaternion, operator*=, (const Quaternion&), Quaternion&), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Quaternion", "Quaternion &opMulAssign(float)", asMETHODPR(Quaternion, operator*=, (float), Quaternion&), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Quaternion", "Quaternion &opDivAssign(const Quaternion &in)", asMETHODPR(Quaternion, operator/=, (const Quaternion&), Quaternion&), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Quaternion", "Quaternion opNeg()", asMETHODPR(Quaternion, operator-, () const noexcept, Quaternion), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Quaternion", "bool opEquals(const Quaternion &in) const", asMETHODPR(Quaternion, operator==, (const Quaternion&) const noexcept, bool), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Quaternion", "Quaternion opAdd(const Quaternion &in) const", asFUNCTIONPR(operator+, (const Quaternion&, const Quaternion&) noexcept, Quaternion), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Quaternion", "Quaternion opSub(const Quaternion &in) const", asFUNCTIONPR(operator-, (const Quaternion&, const Quaternion&), Quaternion), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Quaternion", "Quaternion opMul(const Quaternion &in) const", asFUNCTIONPR(operator*, (const Quaternion&, const Quaternion&), Quaternion), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Quaternion", "Quaternion opMul(float) const", asFUNCTIONPR(operator*, (const Quaternion&, float), Quaternion), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Quaternion", "Quaternion opMul_r(float) const", asFUNCTIONPR(operator*, (float, const Quaternion&), Quaternion), asCALL_CDECL_OBJLAST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Quaternion", "Quaternion opDiv(const Quaternion &in) const", asFUNCTIONPR(operator/, (const Quaternion&, const Quaternion&), Quaternion), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+
+	// Register the object methods
+	r = engine->RegisterObjectMethod("Quaternion", "float Length() const", asMETHOD(Quaternion, Length), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Quaternion", "float LengthSq() const", asMETHOD(Quaternion, LengthSquared), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Quaternion", "void Inverse(Quaternion &out) const", asMETHOD(Quaternion, Inverse), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Quaternion", "Vector3 ToEuler() const", asMETHOD(Quaternion, ToEuler), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Quaternion", "void RotateTowards(const Quaternion &in, float maxAngle)", asMETHODPR(Quaternion, RotateTowards, (const Quaternion&, float), void), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Quaternion", "void Normalize()", asMETHODPR(Quaternion, Normalize, (), void), asCALL_THISCALL); assert(r >= 0);
+}
+#pragma endregion
+
 #pragma region TRANSFORM
 CTransformHandle* STransformHandleFactory(const CTransformHandle* parent)
 {
@@ -92,12 +166,21 @@ Math::Transform& CTransformHandle::GetTransform()
 void CTransformHandle::ApplyOverrides(const YAML::Node& overrides)
 {
 	Math::Vector3 pos = GetLocalPosition();
+	Math::Vector3 rot = GetLocalRotation().ToEuler();
 	Math::Vector3 scale = GetLocalScale();
 	if (const YAML::Node& posVal = overrides["position"]) {
 		pos.x = posVal["x"] ? posVal["x"].as<float>() : pos.x;
 		pos.y = posVal["y"] ? posVal["y"].as<float>() : pos.y;
 		pos.z = posVal["z"] ? posVal["z"].as<float>() : pos.z;
 		SetLocalPosition(pos);
+	}
+	if (const YAML::Node& rotVal = overrides["rotation"]) {
+		rot = Math::RadToDeg(rot);
+		rot.x = rotVal["x"] ? rotVal["x"].as<float>() : rot.x;
+		rot.y = rotVal["y"] ? rotVal["y"].as<float>() : rot.y;
+		rot.z = rotVal["z"] ? rotVal["z"].as<float>() : rot.z;
+		rot = Math::DegToRad(rot);
+		SetLocalRotation(Math::Quaternion::CreateFromYawPitchRoll(rot.x, rot.y, rot.z));
 	}
 	if (const YAML::Node& scaleVal = overrides["scale"]) {
 		scale.x = scaleVal["x"] ? scaleVal["x"].as<float>() : scale.x;
@@ -107,7 +190,7 @@ void CTransformHandle::ApplyOverrides(const YAML::Node& overrides)
 	}
 }
 
-void RegisterTransform() 
+static void RegisterTransform() 
 {
 	auto engine = gScriptSys->GetRawEngine();
 	int r = engine->RegisterObjectType("Transform", 0, asOBJ_REF); assert(r >= 0);
@@ -117,20 +200,40 @@ void RegisterTransform()
 
 	r = engine->RegisterObjectMethod("Transform", "Vector3 GetPosition() const", asMETHOD(CTransformHandle, GetPosition), asCALL_THISCALL); assert(r >= 0);
 	r = engine->RegisterObjectMethod("Transform", "void SetPosition(const Vector3 &in)", asMETHOD(CTransformHandle, SetPosition), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Transform", "Quaternion GetRotation() const", asMETHOD(CTransformHandle, GetRotation), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Transform", "void SetRotation(const Quaternion &in)", asMETHOD(CTransformHandle, SetRotation), asCALL_THISCALL); assert(r >= 0);
 	r = engine->RegisterObjectMethod("Transform", "Vector3 GetScale() const", asMETHOD(CTransformHandle, GetScale), asCALL_THISCALL); assert(r >= 0);
 	r = engine->RegisterObjectMethod("Transform", "void SetScale(const Vector3 &in)", asMETHOD(CTransformHandle, SetScale), asCALL_THISCALL); assert(r >= 0);
 	r = engine->RegisterObjectMethod("Transform", "Vector3 GetLocalPosition() const", asMETHOD(CTransformHandle, GetLocalPosition), asCALL_THISCALL); assert(r >= 0);
 	r = engine->RegisterObjectMethod("Transform", "void SetLocalPosition(const Vector3 &in)", asMETHOD(CTransformHandle, SetLocalPosition), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Transform", "Quaternion GetLocalRotation() const", asMETHOD(CTransformHandle, GetLocalRotation), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Transform", "void SetLocalRotation(const Quaternion &in)", asMETHOD(CTransformHandle, SetLocalRotation), asCALL_THISCALL); assert(r >= 0);
 	r = engine->RegisterObjectMethod("Transform", "Vector3 GetLocalScale() const", asMETHOD(CTransformHandle, GetLocalScale), asCALL_THISCALL); assert(r >= 0);
 	r = engine->RegisterObjectMethod("Transform", "void SetLocalScale(const Vector3 &in)", asMETHOD(CTransformHandle, SetLocalScale), asCALL_THISCALL); assert(r >= 0);
-	// TODO: add quaternions bindings
 }
 #pragma endregion
+
+static void RegisterHelpers() 
+{
+	using namespace DirectX;
+	using namespace Math;
+	auto engine = gScriptSys->GetRawEngine();
+	int r;
+
+	// constants
+	engine->RegisterGlobalProperty("const float Pi", const_cast<float*>(&Pi));
+
+	// helpers
+	engine->RegisterGlobalFunction("float DegToRad(float deg)", asFUNCTIONPR(DegToRad, (float), float), asCALL_CDECL);
+	engine->RegisterGlobalFunction("float RadToDeg(float rad)", asFUNCTIONPR(RadToDeg, (float), float), asCALL_CDECL);
+}
 
 bool MathScriptBindingsInit()
 {
 	RegisterVector3();
+	RegisterQaternion();
 	RegisterTransform();
+	RegisterHelpers();
 
 	return true;
 }

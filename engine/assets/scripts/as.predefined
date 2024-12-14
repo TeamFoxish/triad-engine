@@ -133,6 +133,10 @@ string formatFloat(double val, const string &in options = '', uint width = 0, ui
 array<string>@ split(const string &in delimiter) const;
 string join(const array<string> &in arr, const string &in delimiter);
 
+const float Pi;
+float DegToRad(float deg);
+float RadToDeg(float rad);
+
 class Vector3{
 	Vector3();
 	Vector3(const Vector3&in);
@@ -154,6 +158,44 @@ class Vector3{
 	float y;
 	float z;
 }
+
+class Quaternion{
+	Quaternion();
+	Quaternion(const Quaternion&in);
+	Quaternion(float x, float y, float z, float w);
+	Quaternion opNeg() const;
+	Quaternion opAdd(Quaternion) const;
+	Quaternion opSub(Quaternion) const;
+	Quaternion opMul(Quaternion) const;
+	Quaternion opMul(float) const;
+	Quaternion opMul_r(float) const;
+	Quaternion opDiv(Quaternion) const;
+	Quaternion& opAddAssign(Quaternion);
+	Quaternion& opSubAssign(Quaternion);
+	Quaternion& opMulAssign(Quaternion);
+	Quaternion& opMulAssign(float);
+	Quaternion& opDivAssign(Quaternion);
+	bool opEquals(const Quaternion&in) const;
+	float Length() const;
+	float LengthSq() const;
+	void Inverse(Quaternion &out) const;
+	Vector3 ToEuler() const;
+	void RotateTowards(const Quaternion &in, float maxAngle);
+	void Normalize();
+	float x;
+	float y;
+	float z;
+	float w;
+}
+
+Quaternion QuaternionFromPitchRollYaw(float pitch, float roll, float yaw); // in radians
+Quaternion QuaternionFromAxisAngle(const Vector3 &in axis, float angle); // angle in radians
+Quaternion QuaternionFromToRotation(const Vector3 &in a, const Vector3 &in b);
+Quaternion QuaternionFromLookRotation(const Vector3 &in forward, const Vector3 &in up);
+Quaternion QuaternionConcatenate(const Quaternion &in a, const Quaternion &in b);
+Quaternion Lerp(const Quaternion &in a, const Quaternion &in b, float t);
+Quaternion Slerp(const Quaternion &in a, const Quaternion &in b, float t);
+float QuaternionAngle(const Quaternion &in a, const Quaternion &in b);
 
 class Transform{
 	Transform(const Transform@ parent = null);

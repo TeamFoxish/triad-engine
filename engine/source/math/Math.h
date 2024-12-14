@@ -35,4 +35,26 @@ namespace Math {
 	{
 		return Min(max, Max(val, min));
 	}
+
+	inline constexpr float DegToRad(float deg)
+	{
+		constexpr float mult = Pi / 180;
+		return deg * mult;
+	}
+
+	inline Vector3 DegToRad(Vector3 euler)
+	{
+		return Vector3(DegToRad(euler.x), DegToRad(euler.y), DegToRad(euler.z));
+	}
+
+	inline constexpr float RadToDeg(float rad)
+	{
+		constexpr float mult = 180 / Pi;
+		return rad * mult;
+	}
+
+	inline Vector3 RadToDeg(Vector3 eulerRad)
+	{
+		return Vector3(RadToDeg(eulerRad.x), RadToDeg(eulerRad.y), RadToDeg(eulerRad.z));
+	}
 };
