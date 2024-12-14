@@ -5,20 +5,6 @@
 
 #include <new>
 
-#pragma region REF
-void CRef::AddRef()
-{
-	++refCount;
-}
-
-void CRef::Release()
-{
-	if (--refCount == 0) {
-		delete this;
-	}
-}
-#pragma endregion
-
 #pragma region VECTOR3
 static void Vector3DefaultConstructor(Math::Vector3* self)
 {
@@ -74,14 +60,18 @@ static void RegisterVector3()
 #pragma endregion
 
 #pragma region TRANSFORM
-CTransformHandle* STransformHandleFactory()
+CTransformHandle* STransformHandleFactory(const CTransformHandle* parent)
 {
-	return new CTransformHandle();
+	return new CTransformHandle(parent);
 }
 
-CTransformHandle::CTransformHandle()
-	: handle(SharedStorage::Instance().transforms.Add())
+CTransformHandle::CTransformHandle(const CTransformHandle* parent)
 {
+	if (parent) {
+		handle = SharedStorage::Instance().transforms.Add(parent->handle);
+		return;
+	}
+	handle = SharedStorage::Instance().transforms.Add();
 }
 
 CTransformHandle::~CTransformHandle()
@@ -99,11 +89,29 @@ Math::Transform& CTransformHandle::GetTransform()
 	return SharedStorage::Instance().transforms.AccessWrite(handle);
 }
 
+void CTransformHandle::ApplyOverrides(const YAML::Node& overrides)
+{
+	Math::Vector3 pos = GetLocalPosition();
+	Math::Vector3 scale = GetLocalScale();
+	if (const YAML::Node& posVal = overrides["position"]) {
+		pos.x = posVal["x"] ? posVal["x"].as<float>() : pos.x;
+		pos.y = posVal["y"] ? posVal["y"].as<float>() : pos.y;
+		pos.z = posVal["z"] ? posVal["z"].as<float>() : pos.z;
+		SetLocalPosition(pos);
+	}
+	if (const YAML::Node& scaleVal = overrides["scale"]) {
+		scale.x = scaleVal["x"] ? scaleVal["x"].as<float>() : scale.x;
+		scale.y = scaleVal["y"] ? scaleVal["y"].as<float>() : scale.y;
+		scale.z = scaleVal["z"] ? scaleVal["z"].as<float>() : scale.z;
+		SetLocalScale(scale);
+	}
+}
+
 void RegisterTransform() 
 {
 	auto engine = gScriptSys->GetRawEngine();
 	int r = engine->RegisterObjectType("Transform", 0, asOBJ_REF); assert(r >= 0);
-	r = engine->RegisterObjectBehaviour("Transform", asBEHAVE_FACTORY, "Transform@ f()", asFUNCTION(STransformHandleFactory), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterObjectBehaviour("Transform", asBEHAVE_FACTORY, "Transform@ f(const Transform@+)", asFUNCTION(STransformHandleFactory), asCALL_CDECL); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("Transform", asBEHAVE_ADDREF, "void f()", asMETHOD(CTransformHandle, AddRef), asCALL_THISCALL); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("Transform", asBEHAVE_RELEASE, "void f()", asMETHOD(CTransformHandle, Release), asCALL_THISCALL); assert(r >= 0);
 

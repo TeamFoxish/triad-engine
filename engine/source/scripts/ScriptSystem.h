@@ -38,6 +38,8 @@ public:
     asIScriptObject* CreateComponentHandle(std::string* id);
     void AddComponentToContext(ScriptObject* component, uint64_t id);
     void SetScene(ScriptObject* sceneRoot);
+
+    void LogCallstack();
 };
 
 bool InitScript(RuntimeIface* runtime);

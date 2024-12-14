@@ -1,6 +1,7 @@
-class TestComponent : BaseComponent {
+class TestComponent : Component {
 
-    TestComponent() {
+    TestComponent(ICompositer@ parent = null) {
+        super(@parent);
         println("Test Component factory .");
     }
 

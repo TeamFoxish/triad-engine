@@ -13,6 +13,10 @@ void FixedUpdateImpl(float deltaTime) {
     sceneRoot.FixedUpdate(deltaTime);
 }
 
+void ShutdownImpl() {
+    @sceneRoot = null;
+}
+
 void SetScene(Scene@ scene) {
     @sceneRoot = @scene;
 }
@@ -22,5 +26,6 @@ void init()
     println("Initializing scripts...");
     SetUpdate(UpdateImpl);
     SetFixedUpdate(FixedUpdateImpl);
+    SetShutdown(ShutdownImpl);
     println("Script initialization done !");
 }

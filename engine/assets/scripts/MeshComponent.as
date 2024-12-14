@@ -1,6 +1,7 @@
 class MeshComponent : CompositeComponent {
-    MeshComponent() {
-        renderObj = Renderable(0, transform);
+    MeshComponent(ICompositer@ parent) {
+        super(parent);
+        renderObj = Renderable(0, GetTransform());
     }
 
     protected Renderable renderObj;

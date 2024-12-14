@@ -7,6 +7,8 @@
 #include "scripts/ScriptRegistry.h"
 #include "scriptdictionary.h"
 
+#include "logs/Logs.h"
+
 std::unique_ptr<ScriptSystem> gScriptSys = nullptr;
 
 bool InitScript(RuntimeIface *runtime)
@@ -38,9 +40,18 @@ bool ScriptSystem::Init(RuntimeIface *runtime)
 
 void ScriptSystem::Term()
 {
+    asIScriptFunction* shutdownFunc = _registry->GetShutdownFuction();
+    const bool success = _engine->CallFunction(shutdownFunc);
+    if (!success) {
+        LOG_ERROR("failed to terminate script system. script Shutdown function returned false");
+        return;
+    }
     delete _registry;
+    _registry = nullptr;
     _context->Release();
+    _context = nullptr;
     delete _engine;
+    _engine = nullptr;
 }
 
 bool ScriptSystem::CallFunction(const std::string &module, const std::string &signature)
@@ -124,4 +135,23 @@ void ScriptSystem::SetScene(ScriptObject *sceneRoot)
         asIScriptObject* valObj = sceneRoot->GetRaw();
         context->SetArgObject(0, valObj);
     });
+}
+
+void ScriptSystem::LogCallstack()
+{
+    if (!_context) {
+        return;
+    }
+    LOG_DEBUG("Script callstack:");
+    for (asUINT n = 0; n < _context->GetCallstackSize(); n++)
+    {
+        asIScriptFunction* func;
+        const char* scriptSection;
+        int line, column;
+        func = _context->GetFunction(n);
+        line = _context->GetLineNumber(n, &column, &scriptSection);
+        LOG_DEBUG("{}:{}:{},{}\n", scriptSection,
+            func->GetDeclaration(),
+            line, column);
+    }
 }

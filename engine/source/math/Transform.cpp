@@ -123,7 +123,7 @@ void Transform::SetScale(Vector3 scale)
 Math::Matrix Math::Transform::GetLocalMatrix() const
 {
 	if (!hasParent) {
-		return worldMatr;
+		return GetMatrix();
 	}
 	Matrix localMatr = Matrix::CreateScale(localScale);
 	localMatr *= Matrix::CreateFromQuaternion(localRot);

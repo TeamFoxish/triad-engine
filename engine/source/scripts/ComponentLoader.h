@@ -16,7 +16,7 @@ public:
 	void Load(ResTag tag, const YAML::Node& desc) override;
 	void Unload(ResTag tag) override {};
 
-    static ScriptObject* CreateComponent(ResTag* tag);
+    static ScriptObject* CreateComponent(ResTag* tag, ScriptObject* parent = nullptr);
 
     static std::unique_ptr<ResourceLoader> CreateInstance()
 	{

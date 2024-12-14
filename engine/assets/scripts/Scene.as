@@ -1,21 +1,20 @@
 class Scene : CompositeComponent {
     private string sceneName;
 
-    Scene(){}
+    Scene(ICompositer@ parent){
+        super(parent);
+    }
 
     void Update(float deltaTime) {
         println(sceneName);
-        if (child !is null) {
-            for( uint n = 0; n < child.length(); n++ ) {
-                if (child[n] !is null) {
-                    child[n].Update(deltaTime);
+        const auto children = GetChildren(); // i can't hold reference to array ???
+        if (children !is null) {
+            for( uint n = 0; n < children.length(); n++ ) {
+                if (children[n] !is null) {
+                    children[n].Update(deltaTime);
                 }
             }
         }
-    }
-
-    Scene(string name) {
-        sceneName = name;
     }
 
     string GetName() { return sceneName; }

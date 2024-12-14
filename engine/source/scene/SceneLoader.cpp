@@ -25,24 +25,18 @@ void SceneLoader::Load(ResTag tag, const YAML::Node& desc)
 ScriptObject* SceneLoader::CreateScene(ResTag tag)
 {
 	const YAML::Node sceneDesc = _scenes[tag];
-	asIScriptEngine* engine = gScriptSys->GetRawEngine();
-	ScriptObject* root = new ScriptObject("Engine", "Scene");
-	asITypeInfo* childArrayType = engine->GetTypeInfoByDecl("array<Component@>");
-	CScriptArray* child = CScriptArray::Create(childArrayType);
+	ScriptObject* root = new ScriptObject("Engine", "Scene", {{asTYPEID_MASK_OBJECT, nullptr}}); // currently scene has no parent
 
 	for (const auto& componentDesc : sceneDesc["objects"]) {
 		const std::string name = componentDesc.first.Scalar();
 		const YAML::Node parameters = componentDesc.second;
 		ResTag prefabTag = ResTag(ToStrid(parameters["prefab"].Scalar()));
-		ScriptObject* component = PrefabLoader::Create(&prefabTag);
+		ScriptObject* component = PrefabLoader::Create(&prefabTag, root);
 		if (!component) {
 			continue; // TEMP?
 		}
 		component->ApplyOverrides(parameters["overrides"]);
-		asIScriptObject* valObj = component->GetRaw();
-		child->InsertLast(&valObj);
 	}
-	root->SetField("child", child);
 	root->SetField("name", new std::string(sceneDesc["name"].Scalar()));
 	LinkPass();
 	return root;

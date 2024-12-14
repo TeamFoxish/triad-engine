@@ -19,10 +19,14 @@ void ComponentLoader::Load(ResTag tag, const YAML::Node &desc)
     LOG_INFO("Resource \"Component\" with tag \"{}\" was indexed", tag.string());
 }
 
-ScriptObject *ComponentLoader::CreateComponent(ResTag *tag)
+ScriptObject *ComponentLoader::CreateComponent(ResTag *tag, ScriptObject* parent)
 {
     const YAML::Node desc = _components[*tag];
-    ScriptObject* component = new ScriptObject(desc["module"].Scalar(), desc["class"].Scalar());
+    ScriptObject::ArgsT args;
+    if (parent) {
+        args = {{asTYPEID_MASK_OBJECT, parent->GetRaw()}};
+    }
+    ScriptObject* component = new ScriptObject(desc["module"].Scalar(), desc["class"].Scalar(), std::move(args));
     component->ApplyOverrides(desc["overrides"]);
     return component;
 }

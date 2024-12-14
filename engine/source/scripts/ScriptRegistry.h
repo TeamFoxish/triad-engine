@@ -17,4 +17,5 @@ public:
     static asIScriptFunction* GetFunction(const std::string& moduleName, const std::string& signature);
     static asIScriptFunction* GetUpdateFunction();
     static asIScriptFunction* GetFixedUpdateFuction();
+    static asIScriptFunction* GetShutdownFuction();
 };

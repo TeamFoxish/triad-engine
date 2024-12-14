@@ -1,24 +1,36 @@
 #pragma once
 
+#include "Shared.h"
 #include "TransformStorage.h"
 
+// TODO: move to Shared.h
+// declaring virtual destructor breaks vtable for some reason, so apply CRTP pattern
+template <typename ChildT>
 class CRef {
 public:
 	CRef() = default;
 	// TODO: fix ability to copy?
 	CRef(const CRef&) = delete;
-	virtual ~CRef() = default;
 
-	void AddRef();
-	void Release();
+	void AddRef() 
+	{
+		++refCount;
+	}
+
+	void Release() 
+	{
+		if (--refCount == 0) {
+			delete static_cast<ChildT*>(this);
+		}
+	}
 
 private:
 	int refCount = 1;
 };
 
-class CTransformHandle : public CRef {
+class CTransformHandle : public CRef<CTransformHandle>, public CNativeObject {
 public:
-	CTransformHandle();
+	CTransformHandle(const CTransformHandle* parent = nullptr);
 	~CTransformHandle();
 
 	TransformStorage::Handle GetHandle() const { return handle; }
@@ -42,6 +54,8 @@ public:
 
 	Math::Vector3 GetLocalScale() const { return GetTransform().GetLocalScale(); }
 	void SetLocalScale(Math::Vector3 scale) { GetTransform().SetLocalScale(scale); }
+
+	void ApplyOverrides(const YAML::Node& overrides) override;
 
 protected:
 	TransformStorage::Handle handle;

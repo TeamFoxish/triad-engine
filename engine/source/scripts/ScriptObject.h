@@ -4,11 +4,15 @@
 #include <string>
 #include "scriptarray.h"
 #include <unordered_map>
+#include <vector>
 #include <yaml-cpp/yaml.h>
 
 class ScriptObject {
 public:
-    ScriptObject(const std::string& module, const std::string& typeDecl);
+    using TypeId = int;
+    using ArgsT = std::vector<std::pair<TypeId, void*>>; // should be implemented using varargs in future
+
+    ScriptObject(const std::string& module, const std::string& typeDecl, ArgsT&& args = {});
     ScriptObject(asIScriptObject* object);
     ~ScriptObject();
     void SetField(const std::string& name, void* value);
@@ -18,7 +22,10 @@ public:
     asIScriptObject* GetRaw() { return _object; };
 
 private:
+    asIScriptObject* Construct(ArgsT&& args = {});
+
+private:
     std::unordered_map<std::string, asUINT> _fields;
-    asITypeInfo* _type;
-    asIScriptObject* _object;
+    asITypeInfo* _type = nullptr;
+    asIScriptObject* _object = nullptr;
 };

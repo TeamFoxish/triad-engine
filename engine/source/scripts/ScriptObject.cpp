@@ -7,15 +7,17 @@
 #include "scene/SceneLoader.h"
 #include "shared/ResourceHandle.h"
 
-ScriptObject::ScriptObject(const std::string& module, const std::string& typeDecl) {
+ScriptObject::ScriptObject(const std::string& module, const std::string& typeDecl, ArgsT&& args) {
     asIScriptEngine* engine = gScriptSys->GetRawEngine();
     asIScriptModule* _module = engine->GetModule(module.c_str());
     if (!_module) {
         LOG_ERROR("Failed to find script module \"{}\"", module);
+        return;
     }
     _type = _module->GetTypeInfoByDecl(typeDecl.c_str());
     if (!_type) {
         LOG_ERROR("Failed to find script type \"{}\"", typeDecl);
+        return;
     }
     // asIScriptModule* _module = engine->GetModule("Engine");
     // asUINT classCount = _module->GetTypedefCount();
@@ -23,12 +25,21 @@ ScriptObject::ScriptObject(const std::string& module, const std::string& typeDec
     //     asITypeInfo* ti = _module->GetTypedefByIndex(i);
     //     LOG_INFO("Type: {} DECLARATION: {}", ti->GetTypeId(), ti->GetName());
     // }
-    _object = static_cast<asIScriptObject*>(engine->CreateScriptObject(_type));
+    if (args.empty()) {
+        _object = static_cast<asIScriptObject*>(engine->CreateScriptObject(_type));
+    } else {
+        _object = Construct(std::move(args));
+        if (_object == nullptr) {
+            LOG_ERROR("faild to find appropriate constructor for type {} with {} arguments", typeDecl, args.size());
+            return;
+        }
+    }
     int fieldsCount = _object->GetPropertyCount();
     for (int i = 0; i < fieldsCount; i++) {
         _fields[_object->GetPropertyName(i)] = i;
     }
 }
+
 // TODO check ref count
 ScriptObject::ScriptObject(asIScriptObject *object)
 {
@@ -43,6 +54,55 @@ ScriptObject::ScriptObject(asIScriptObject *object)
 
 ScriptObject::~ScriptObject()
 {
+}
+
+asIScriptObject* ScriptObject::Construct(ArgsT&& args)
+{
+    const asUINT factoriesCount = _type->GetFactoryCount();
+    for (asUINT i = 0; i < factoriesCount; ++i) {
+        asIScriptFunction* factory = _type->GetFactoryByIndex(i);
+        const asUINT paramsCount = factory->GetParamCount();
+        if (paramsCount != args.size()) {
+            continue;
+        }
+
+        // compare parameter and passed argument types
+        asUINT paramIdx = 0;
+        for (paramIdx; paramIdx < paramsCount; ++paramIdx) {
+            TypeId paramTypeId = -1;
+            factory->GetParam(paramIdx, &paramTypeId);
+            const TypeId argTypeId = args[paramIdx].first;
+            if ((paramTypeId & argTypeId) == 0) {
+                break;
+            }
+        }
+        if (paramIdx < paramsCount) {
+            continue; // inappropriate constructor
+        }
+
+        // push constructor to context
+        asIScriptContext* ctx = gScriptSys->GetContext();
+        ctx->Prepare(factory);
+
+        // set constructor arguments
+        for (asUINT j = 0; j < paramsCount; ++j) {
+            auto& [_, argValue] = args[j];
+            if (!argValue) {
+                continue;
+            }
+            ctx->SetArgObject(j, argValue);
+        }
+
+        // construct object
+        const int rc = ctx->Execute();
+        if (rc != asEXECUTION_FINISHED) {
+            LOG_ERROR("faild to construct object {}.{}: `{}`", ctx->GetExceptionFunction()->GetName(), ctx->GetExceptionLineNumber(), ctx->GetExceptionString());
+            return nullptr;
+        }
+
+        return *(asIScriptObject**)ctx->GetAddressOfReturnValue();
+    }
+    return nullptr;
 }
 
 void ScriptObject::SetField(const std::string &name, void *value)
@@ -247,7 +307,7 @@ void ScriptObject::ApplyOverrides(const YAML::Node& overrides)
                     // native type registered by application, so no reflection, sir :)
                     auto* handle = static_cast<CResourceHandle*>(GetField(fieldName));
                     handle->ApplyOverrides(value);
-                    return;
+                    continue;
                 } else {
                     // Assuming it's primitive value
                     void* val = parseOverrideValue(stringVal);
@@ -296,9 +356,14 @@ void ScriptObject::ApplyOverrides(const YAML::Node& overrides)
                 const int fieldTypeId = _object->GetPropertyTypeId(_fields[fieldName]);
                 if ((fieldTypeId & asTYPEID_APPOBJECT) == asTYPEID_APPOBJECT) {
                     // native type registered by application, so no reflection, sir :)
+                    if ((fieldTypeId & asTYPEID_OBJHANDLE) == asTYPEID_OBJHANDLE) {
+                        auto** obj = static_cast<CNativeObject**>(GetField(fieldName));
+                        (*obj)->ApplyOverrides(value);
+                        continue;
+                    }
                     auto* obj = static_cast<CNativeObject*>(GetField(fieldName));
                     obj->ApplyOverrides(value);
-                    return;
+                    continue;
                 }
                 
                 // Assuming it's custom type field override

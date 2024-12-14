@@ -9,6 +9,11 @@ content:
     Mesh:
       component: res://components/MeshComponent.component
       overrides:
+        transform:
+          scale:
+            x: 0.005
+            y: 0.005
+            z: 0.005
         renderObj:
           material: res://materials/flopa.material
           mesh: res://meshes/flop.mesh

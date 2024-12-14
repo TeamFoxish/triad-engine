@@ -1,6 +1,6 @@
 #pragma once
 
-#include "resource/Res.h"
+#include "Shared.h"
 #include "render/Renderable.h"
 #include "render/RenderResources.h"
 #include "MathScriptBindings.h"
@@ -13,11 +13,6 @@
 		NAME.Resolve(VAR);							\
 	}												\
 	TYPE NAME						                \
-
-class CNativeObject {
-public:
-	virtual void ApplyOverrides(const YAML::Node& overrides) = 0;
-};
 
 class CResourceHandle : public CNativeObject {
 public:

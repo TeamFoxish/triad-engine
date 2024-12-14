@@ -31,7 +31,7 @@ void PrefabLoader::Load(ResTag tag, const YAML::Node& desc)
 	LOG_INFO("Resource \"Prefab\" with tag \"{}\" was indexed", tag.string());
 }
 
-ScriptObject* PrefabLoader::Create(ResTag* tag)
+ScriptObject* PrefabLoader::Create(ResTag* tag, ScriptObject* parent)
 {
 	const YAML::Node desc = _prefabs[*tag];
 
@@ -43,20 +43,19 @@ ScriptObject* PrefabLoader::Create(ResTag* tag)
 	}
 
 	asIScriptEngine* engine = gScriptSys->GetRawEngine();
-	ScriptObject* root = new ScriptObject("Engine", "CompositeComponent");
-	asITypeInfo* childArrayType = engine->GetTypeInfoByDecl("array<Component@>");
-	CScriptArray* child = CScriptArray::Create(childArrayType);
+	ScriptObject::ArgsT args;
+	if (parent) {
+		args = {{asTYPEID_MASK_OBJECT, parent->GetRaw()}};
+	}
+	ScriptObject* root = new ScriptObject("Engine", "CompositeComponent", std::move(args)); // TODO: prefab may have a different scriptable type as root (not CompositeComponent)
 
 	for (const auto& componentDesc : desc["components"]) {
 		const std::string name = componentDesc.first.Scalar();
 		const YAML::Node parameters = componentDesc.second;
 		ResTag componentTag = ResTag(ToStrid(parameters["component"].Scalar()));
-		ScriptObject* component = ComponentLoader::CreateComponent(&componentTag);
+		ScriptObject* component = ComponentLoader::CreateComponent(&componentTag, root);
 		component->ApplyOverrides(parameters["overrides"]);
-		asIScriptObject* valObj = component->GetRaw();
 		delete component;
-		child->InsertLast(&valObj);
 	}
-	root->SetField("child", child);
 	return root;
 }

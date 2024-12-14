@@ -36,6 +36,7 @@ auto TransformStorage::Add(Handle parent) -> Handle
 	entry.transform = Math::Transform(Math::Matrix::Identity, Math::Matrix::Identity);
 	entry.parent = parent;
 	TransformEntry& parentEntry = storage[parent];
+	entry.isDirty = parentEntry.isDirty;
 	parentEntry.children.push_back(handle);
 	return handle;
 }
@@ -44,13 +45,15 @@ void TransformStorage::Remove(Handle handle)
 {
 	// transforms should be removed in upward order (from leafs to root)
 	TransformEntry& entry = storage[handle];
-	assert(entry.children.empty());
+	// assert(entry.children.empty()); // too hard to support such behavior (a lot of circular references in scripts)
 	if (entry.parent.id_ >= 0) {
-		TransformEntry& parent = storage[entry.parent];
-		const auto iter = std::find(parent.children.begin(), parent.children.end(), handle);
-		assert(iter != parent.children.end());
-		parent.children.erase(iter);
-		entry.parent = Handle{};
+		TransformEntry* parent = storage.Get(entry.parent);
+		if (parent) {
+			const auto iter = std::find(parent->children.begin(), parent->children.end(), handle);
+			assert(iter != parent->children.end());
+			parent->children.erase(iter);
+			entry.parent = Handle{};
+		}
 	}
 	storage.Remove(handle);
 }
@@ -105,6 +108,9 @@ void TransformStorage::UpdateSince(TransformEntry& root)
 {
 	assert(root.isDirty);
 	root.isDirty = false; // root is already updated
+	/*if (root.parent.id_ < 0) {
+		root.transform = Math::Transform(root.transform.GetLocalMatrix());
+	}*/
 	std::vector<Handle> pending;
 	pending.insert(pending.end(), root.children.begin(), root.children.end());
 	while (!pending.empty()) {

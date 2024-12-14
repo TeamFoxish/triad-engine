@@ -1,15 +1,9 @@
-class Component {
-    void Update(float deltaTime);
-    void FixedUpdate(float deltaTime);
-    void SetParent(Component@ _parent);
-    Component@ GetParent();
-}
-
-void InitComponent(Component @component);
 funcdef void FixedUpdate(float);
 void SetFixedUpdate(FixedUpdate @updateCallback);
 funcdef void Update(float);
 void SetUpdate(Update @updateCallback);
+funcdef void Shutdown();
+void SetShutdown(Shutdown @shutdownCallback);
 void println(const string &in);
 void print(const string &in);
 
@@ -162,7 +156,7 @@ class Vector3{
 }
 
 class Transform{
-	Transform();
+	Transform(const Transform@ parent = null);
     Vector3 GetPosition() const;
     void SetPosition(const Vector3 &in);
     Vector3 GetScale() const;

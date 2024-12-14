@@ -23,6 +23,7 @@
 
 asIScriptFunction* updateCallback = 0;
 asIScriptFunction* fixedUpdateCallback = 0;
+asIScriptFunction* shutdownCallback = 0;
 
 ENGINE_API void Print(const std::string& msg) {
     std::cout << msg;
@@ -46,13 +47,12 @@ ENGINE_API void SetOnFixedUpdate(asIScriptFunction* fixedUpdateFunc) {
     fixedUpdateCallback = fixedUpdateFunc;
 }
 
-ENGINE_API void InitComponent(asIScriptObject *obj);
-
-class Component;
-class Component {
-    Component* parent;
-    std::vector<Component> child;
-};
+ENGINE_API void SetOnShutdown(asIScriptFunction* shutdownFunc) {
+    if (shutdownCallback) {
+        shutdownCallback->Release();
+    }
+    shutdownCallback = shutdownFunc;
+}
 
 std::string PropToString(const char* name, int type, void* value) {
     std::string val;
@@ -72,22 +72,6 @@ std::string PropToString(const char* name, int type, void* value) {
 
     }
     return  "Name: " + std::string(name) + " Type: " + (ti == nullptr ? std::to_string(type) : ti->GetName()) + " Value: " + val;
-}
-
-ENGINE_API void InitComponent(asIScriptObject *obj)
-{
-    obj->AddRef();
-    asUINT propsCount = obj->GetPropertyCount();
-    for (asUINT i = 0; i < propsCount; i++) {
-        auto* propName = obj->GetPropertyName(i);
-        void* propValue = obj->GetAddressOfProperty(i);
-        int propType = obj->GetPropertyTypeId(i);
-        if (propName == "parent") {
-            continue;
-        }
-        std::cout << PropToString(propName, propType, propValue) << std::endl;
-    }
-    obj->Release();
 }
 
 ENGINE_API asIScriptObject* LoadScene(Strid sceneName) {
@@ -126,7 +110,7 @@ bool ScriptRegistry::RegisterCustomFunctions(asIScriptEngine *engine)
     // Setter for OnUpdate callback
     r = engine->RegisterGlobalFunction("void SetUpdate(Update @updateCallback)", asFUNCTION(SetOnUpdate), asCALL_CDECL);
     if (r < 0) {
-        std::cout << "Unrecoverable error while binging 'SetUpdate' update function setter." << std::endl;
+        std::cout << "Unrecoverable error while binding 'SetUpdate' update function setter." << std::endl;
         return false;
     }
 
@@ -140,25 +124,24 @@ bool ScriptRegistry::RegisterCustomFunctions(asIScriptEngine *engine)
     // Setter for FixedUpdate callback
     r = engine->RegisterGlobalFunction("void SetFixedUpdate(FixedUpdate @updateCallback)", asFUNCTION(SetOnFixedUpdate), asCALL_CDECL);
     if (r < 0) {
-        std::cout << "Unrecoverable error while binging 'SetFixedUpdate' fixed update function setter." << std::endl;
+        std::cout << "Unrecoverable error while binding 'SetFixedUpdate' fixed update function setter." << std::endl;
         return false;
     }
 
-    // Component initialization
-    r = engine->RegisterInterface("Component");
+    // Set FixedUpdate callback
+    r = engine->RegisterFuncdef("void Shutdown()");
     if (r < 0) {
-        std::cout << "Unrecoverable error while registering 'Component' interface." << std::endl;
+        std::cout << "Unrecoverable error while binding 'Shutdown' callback funcdef." << std::endl;
         return false;
     }
-    engine->RegisterInterfaceMethod("Component", "void Update(float deltaTime)");
-    engine->RegisterInterfaceMethod("Component", "void FixedUpdate(float deltaTime)");
-    engine->RegisterInterfaceMethod("Component", "void SetParent(Component@ _parent)");
-    engine->RegisterInterfaceMethod("Component", "Component@ GetParent()");
-    r = engine->RegisterGlobalFunction("void InitComponent(Component @component)", asFUNCTION(InitComponent), asCALL_CDECL);
+
+    // Setter for Shutdown callback
+    r = engine->RegisterGlobalFunction("void SetShutdown(Shutdown @shutdownCallback)", asFUNCTION(SetOnShutdown), asCALL_CDECL);
     if (r < 0) {
-        std::cout << "Unrecoverable error while binging 'InitComponent' init component function." << std::endl;
+        std::cout << "Unrecoverable error while binding 'SetShutdown' callback." << std::endl;
         return false;
     }
+
     return true;
 }
 
@@ -222,4 +205,9 @@ asIScriptFunction *ScriptRegistry::GetUpdateFunction()
 asIScriptFunction *ScriptRegistry::GetFixedUpdateFuction()
 {
     return fixedUpdateCallback;
+}
+
+asIScriptFunction* ScriptRegistry::GetShutdownFuction()
+{
+    return shutdownCallback;
 }

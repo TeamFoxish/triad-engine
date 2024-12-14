@@ -98,9 +98,9 @@ void EngineRuntime::Shutdown()
 	UIDebug::Destroy();
 	gTempGame->Shutdown();
 	// delete globalInputDevice; crushes
+	TermScript(this);
 	TermResource(this);
 	TermRender(this);
-	TermScript(this);
 	TermSharedStorage();
 	if (window) {
 		osDestroyWindow(window);
