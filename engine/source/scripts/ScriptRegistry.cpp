@@ -157,9 +157,11 @@ bool ScriptRegistry::RegisterStdLibrary(asIScriptEngine *engine)
     RegisterScriptDictionary(engine);
     RegisterScriptFile(engine);
     RegisterScriptFileSystem(engine);
+    engine->SetDefaultNamespace("Math");
     RegisterScriptMath(engine);
     RegisterScriptMathComplex(engine);
     RegisterScriptGrid(engine);
+    engine->SetDefaultNamespace("");
     RegisterExceptionRoutines(engine);
 
     extern bool MathScriptBindingsInit();

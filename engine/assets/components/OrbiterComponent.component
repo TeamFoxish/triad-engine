@@ -1,0 +1,4 @@
+content:
+  class: OrbiterComponent
+  module: Engine
+type: component
