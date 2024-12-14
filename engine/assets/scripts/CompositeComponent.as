@@ -1,6 +1,6 @@
 class CompositeComponent : Component, ICompositer {
     private array<Component@> children;
-    private Transform@ transform;
+    private Math::Transform@ transform;
 
     CompositeComponent(ICompositer@ _parent = null) {
         super(_parent);
@@ -8,10 +8,10 @@ class CompositeComponent : Component, ICompositer {
         if (GetParent() !is null) {
             println("parent was not null");
         }
-        @transform = Transform(GetParent() !is null ? GetParent().GetTransform() : null);
+        @transform = Math::Transform(GetParent() !is null ? GetParent().GetTransform() : null);
     }
 
-    Transform@ GetTransform() const { return transform; }
+    Math::Transform@ GetTransform() const { return transform; }
 
     const array<Component@>& GetChildren() const { return children; }
 

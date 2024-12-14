@@ -31,6 +31,12 @@ namespace Math {
 	}
 
 	template<typename T>
+	inline T Abs(T val)
+	{
+		return std::abs(val);
+	}
+
+	template<typename T>
 	inline T Clamp(T val, T min, T max) 
 	{
 		return Min(max, Max(val, min));
@@ -42,7 +48,7 @@ namespace Math {
 		return deg * mult;
 	}
 
-	inline Vector3 DegToRad(Vector3 euler)
+	inline constexpr Vector3 DegToRad(Vector3 euler)
 	{
 		return Vector3(DegToRad(euler.x), DegToRad(euler.y), DegToRad(euler.z));
 	}
@@ -53,7 +59,7 @@ namespace Math {
 		return rad * mult;
 	}
 
-	inline Vector3 RadToDeg(Vector3 eulerRad)
+	inline constexpr Vector3 RadToDeg(Vector3 eulerRad)
 	{
 		return Vector3(RadToDeg(eulerRad.x), RadToDeg(eulerRad.y), RadToDeg(eulerRad.z));
 	}

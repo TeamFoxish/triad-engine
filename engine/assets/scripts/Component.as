@@ -1,5 +1,5 @@
 interface ICompositer {
-    Transform@ GetTransform() const; // TODO: return by weak ref
+    Math::Transform@ GetTransform() const; // TODO: return by weak ref
     void AddChild(Component@ child);
     // TODO: RemoveChild
     // TODO: GetChild<>

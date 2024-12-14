@@ -6,6 +6,10 @@
 #include <new>
 
 #pragma region VECTOR3
+static constexpr Math::Vector3 Vector3Forward = {1.0f, 0.0f, 0.0f};
+static constexpr Math::Vector3 Vector3Right = {0.0f, -1.0f, 0.0f};
+static constexpr Math::Vector3 Vector3Up = {0.0f, 0.0f, 1.0f};
+
 static void Vector3DefaultConstructor(Math::Vector3* self)
 {
 	new(self) Math::Vector3();
@@ -19,6 +23,41 @@ static void Vector3CopyConstructor(const Math::Vector3& other, Math::Vector3* se
 static void Vector3InitConstructor(float x, float y, float z, Math::Vector3* self)
 {
 	new(self) Math::Vector3(x, y, z);
+}
+
+static float Vector3Dot(const Math::Vector3& a, const Math::Vector3& b)
+{
+	return a.Dot(b);
+}
+
+static Math::Vector3 Vector3Cross(const Math::Vector3& a, const Math::Vector3& b)
+{
+	return a.Cross(b);
+}
+
+static Math::Vector3 Vector3Clamp(const Math::Vector3& v, const Math::Vector3& min, const Math::Vector3& max)
+{
+	Math::Vector3 res;
+	v.Clamp(min, max, res);
+	return res;
+}
+
+static Math::Vector3 Vector3NormalizedCopy(Math::Vector3* self)
+{
+	Math::Vector3 res = *self;
+	res.Normalize();
+	return res;
+}
+
+static Math::Vector3 Vector3TransformCopy(const Math::Vector3* self, const Math::Quaternion& quat)
+{
+	return Math::Vector3::Transform(*self, quat);
+}
+
+static void Vector3Transform(Math::Vector3* self, const Math::Quaternion& quat)
+{
+	const Math::Vector3 temp = *self;
+	Math::Vector3::Transform(temp, quat, *self);
 }
 
 static void RegisterVector3()
@@ -56,6 +95,30 @@ static void RegisterVector3()
 
 	// Register the object methods
 	r = engine->RegisterObjectMethod("Vector3", "float Length() const", asMETHOD(Vector3, Length), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Vector3", "float LengthSq() const", asMETHOD(Vector3, LengthSquared), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Vector3", "void Clamp(const Vector3 &in min, const Vector3 &in max)", asMETHODPR(Vector3, Clamp, (const Vector3&, const Vector3&), void), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Vector3", "Vector3 Cross(const Vector3 &in other)", asMETHODPR(Vector3, Cross, (const Vector3&) const noexcept, Vector3), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Vector3", "float Dot(const Vector3 &in other)", asMETHOD(Vector3, Dot), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Vector3", "void Normalize()", asMETHOD(Vector3, Normalize), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Vector3", "Vector3 NormalizedCopy() const", asFUNCTION(Vector3NormalizedCopy), asCALL_CDECL_OBJLAST); assert(r >= 0);
+
+	// Register global functions
+	r = engine->RegisterGlobalFunction("float Vector3Distance(const Vector3 &in a, const Vector3 &in b)", asFUNCTION(Vector3::Distance), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("float Vector3DistanceSq(const Vector3 &in a, const Vector3 &in b)", asFUNCTION(Vector3::DistanceSquared), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("Vector3 Vector3Reflect(const Vector3 &in vec, const Vector3 &in normal)", asFUNCTIONPR(Vector3::Reflect, (const Vector3&, const Vector3&), Vector3), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("Vector3 Lerp(const Vector3 &in a, const Vector3 &in b, float t)", asFUNCTIONPR(Vector3::Lerp, (const Vector3&, const Vector3&, float), Vector3), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("Vector3 SmoothStep(const Vector3 &in a, const Vector3 &in b, float t)", asFUNCTIONPR(Vector3::SmoothStep, (const Vector3&, const Vector3&, float), Vector3), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("Vector3 Max(const Vector3 &in a, const Vector3 &in b)", asFUNCTIONPR(Vector3::Max, (const Vector3&, const Vector3&), Vector3), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("Vector3 Min(const Vector3 &in a, const Vector3 &in b)", asFUNCTIONPR(Vector3::Min, (const Vector3&, const Vector3&), Vector3), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("float Dot(const Vector3 &in a, const Vector3 &in b)", asFUNCTION(Vector3Dot), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("Vector3 Cross(const Vector3 &in a, const Vector3 &in b)", asFUNCTION(Vector3Cross), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("Vector3 Clamp(const Vector3 &in v, const Vector3 &in min, const Vector3 &in max)", asFUNCTION(Vector3Clamp), asCALL_CDECL); assert(r >= 0);
+
+	// Register global properties
+	r = engine->RegisterGlobalProperty("const Vector3 Vector3Forward", const_cast<Vector3*>(&Vector3Forward));
+	r = engine->RegisterGlobalProperty("const Vector3 Vector3Right", const_cast<Vector3*>(&Vector3Right));
+	r = engine->RegisterGlobalProperty("const Vector3 Vector3Up", const_cast<Vector3*>(&Vector3Up));
+	r = engine->RegisterGlobalProperty("const Vector3 Vector3Zero", const_cast<Vector3*>(&Vector3::Zero));
 }
 #pragma endregion
 
@@ -130,6 +193,11 @@ static void RegisterQaternion()
 	r = engine->RegisterObjectMethod("Quaternion", "Vector3 ToEuler() const", asMETHOD(Quaternion, ToEuler), asCALL_THISCALL); assert(r >= 0);
 	r = engine->RegisterObjectMethod("Quaternion", "void RotateTowards(const Quaternion &in, float maxAngle)", asMETHODPR(Quaternion, RotateTowards, (const Quaternion&, float), void), asCALL_THISCALL); assert(r >= 0);
 	r = engine->RegisterObjectMethod("Quaternion", "void Normalize()", asMETHODPR(Quaternion, Normalize, (), void), asCALL_THISCALL); assert(r >= 0);
+
+	// Register Vector3 Transform
+	r = engine->RegisterGlobalFunction("Vector3 Vector3Transform(const Vector3 &in v, const Quaternion &in quat)", asFUNCTIONPR(Vector3::Transform, (const Vector3&, const Quaternion&), Vector3), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Vector3", "Vector3 Transform(const Quaternion &in quat) const", asFUNCTION(Vector3TransformCopy), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Vector3", "void Transform(const Quaternion &in quat)", asFUNCTION(Vector3Transform), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 }
 #pragma endregion
 
@@ -213,6 +281,7 @@ static void RegisterTransform()
 }
 #pragma endregion
 
+#pragma region HELPERS
 static void RegisterHelpers() 
 {
 	using namespace DirectX;
@@ -221,19 +290,63 @@ static void RegisterHelpers()
 	int r;
 
 	// constants
-	engine->RegisterGlobalProperty("const float Pi", const_cast<float*>(&Pi));
+	r = engine->RegisterGlobalProperty("const float Pi", const_cast<float*>(&Pi)); assert(r >= 0);
 
 	// helpers
-	engine->RegisterGlobalFunction("float DegToRad(float deg)", asFUNCTIONPR(DegToRad, (float), float), asCALL_CDECL);
-	engine->RegisterGlobalFunction("float RadToDeg(float rad)", asFUNCTIONPR(RadToDeg, (float), float), asCALL_CDECL);
+	r = engine->RegisterGlobalFunction("float DegToRad(float deg)", asFUNCTIONPR(DegToRad, (float), float), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("float RadToDeg(float rad)", asFUNCTIONPR(RadToDeg, (float), float), asCALL_CDECL); assert(r >= 0);
+
+	r = engine->RegisterGlobalFunction("uint8 Max(uint8, uint8)", asFUNCTION(Max<asBYTE>), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("uint16 Max(uint16, uint16)", asFUNCTION(Max<asWORD>), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("uint Max(uint, uint)", asFUNCTION(Max<asUINT>), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("uint64 Max(uint64, uint64)", asFUNCTION(Max<asQWORD>), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("int8 Max(int8, int8)", asFUNCTION(Max<asINT8>), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("int16 Max(int16, int16)", asFUNCTION(Max<asINT16>), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("int Max(int, int)", asFUNCTION(Max<asINT32>), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("int64 Max(int64, int64)", asFUNCTION(Max<asINT64>), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("float Max(float, float)", asFUNCTION(Max<float>), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("double Max(double, double)", asFUNCTION(Max<double>), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("uint8 Min(uint8, uint8)", asFUNCTION(Max<asBYTE>), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("uint16 Min(uint16, uint16)", asFUNCTION(Max<asWORD>), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("uint Min(uint, uint)", asFUNCTION(Max<asUINT>), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("uint64 Min(uint64, uint64)", asFUNCTION(Max<asQWORD>), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("int8 Min(int8, int8)", asFUNCTION(Max<asINT8>), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("int16 Min(int16, int16)", asFUNCTION(Max<asINT16>), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("int Min(int, int)", asFUNCTION(Max<asINT32>), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("int64 Min(int64, int64)", asFUNCTION(Max<asINT64>), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("float Min(float, float)", asFUNCTION(Max<float>), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("double Min(double, double)", asFUNCTION(Max<double>), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("uint8 Clamp(uint8, uint8, uint8)", asFUNCTION(Clamp<asBYTE>), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("uint16 Clamp(uint16, uint16, uint16)", asFUNCTION(Clamp<asWORD>), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("uint Clamp(uint, uint, uint)", asFUNCTION(Clamp<asUINT>), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("uint64 Clamp(uint64, uint64, uint64)", asFUNCTION(Clamp<asQWORD>), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("int8 Clamp(int8, int8, int8)", asFUNCTION(Clamp<asINT8>), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("int16 Clamp(int16, int16, int16)", asFUNCTION(Clamp<asINT16>), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("int Clamp(int, int, int)", asFUNCTION(Clamp<asINT32>), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("int64 Clamp(int64, int64, int64)", asFUNCTION(Clamp<asINT64>), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("float Clamp(float, float, float)", asFUNCTION(Clamp<float>), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("double Clamp(double, double, double)", asFUNCTION(Clamp<double>), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("int8 Abs(int8)", asFUNCTION(Abs<asINT8>), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("int16 Abs(int16)", asFUNCTION(Abs<asINT16>), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("int Abs(int)", asFUNCTION(Abs<asINT32>), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("int64 Abs(int64)", asFUNCTION(Abs<asINT64>), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("float Abs(float)", asFUNCTION(Abs<float>), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("double Abs(double)", asFUNCTION(Abs<double>), asCALL_CDECL); assert(r >= 0);
 }
+#pragma endregion
 
 bool MathScriptBindingsInit()
 {
+	auto engine = gScriptSys->GetRawEngine();
+	int r;
+	r = engine->SetDefaultNamespace("Math"); assert(r >= 0);
+
 	RegisterVector3();
 	RegisterQaternion();
 	RegisterTransform();
 	RegisterHelpers();
+
+	r = engine->SetDefaultNamespace(""); assert(r >= 0);
 
 	return true;
 }

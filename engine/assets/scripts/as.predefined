@@ -133,9 +133,48 @@ string formatFloat(double val, const string &in options = '', uint width = 0, ui
 array<string>@ split(const string &in delimiter) const;
 string join(const array<string> &in arr, const string &in delimiter);
 
+namespace Math {
 const float Pi;
+
 float DegToRad(float deg);
 float RadToDeg(float rad);
+
+uint8 Max(uint8, uint8);
+uint16 Max(uint16, uint16);
+uint Max(uint, uint);
+uint64 Max(uint64, uint64);
+int8 Max(int8, int8);
+int16 Max(int16, int16);
+int Max(int, int);
+int64 Max(int64, int64);
+float Max(float, float);
+double Max(double, double);
+uint8 Min(uint8, uint8);
+uint16 Min(uint16, uint16);
+uint Min(uint, uint);
+uint64 Min(uint64, uint64);
+int8 Min(int8, int8);
+int16 Min(int16, int16);
+int Min(int, int);
+int64 Min(int64, int64);
+float Min(float, float);
+double Min(double, double);
+uint8 Clamp(uint8, uint8, uint8);
+uint16 Clamp(uint16, uint16, uint16);
+uint Clamp(uint, uint, uint);
+uint64 Clamp(uint64, uint64, uint64);
+int8 Clamp(int8, int8, int8);
+int16 Clamp(int16, int16, int16);
+int Clamp(int, int, int);
+int64 Clamp(int64, int64, int64);
+float Clamp(float, float, float);
+double Clamp(double, double, double);
+int8 Abs(int8);
+int16 Abs(int16);
+int Abs(int);
+int64 Abs(int64);
+float Abs(float);
+double Abs(double);
 
 class Vector3{
 	Vector3();
@@ -154,10 +193,36 @@ class Vector3{
 	Vector3& opDivAssign(float);
 	bool opEquals(const Vector3&in) const;
 	float Length() const;
+	float LengthSq() const;
+	void Clamp(const Vector3 &in min, const Vector3 &in max);
+	Vector3 Cross(const Vector3 &in other);
+	float Dot(const Vector3 &in other);
+	void Normalize();
+	Vector3 NormalizedCopy() const;
+	Vector3 Transform(const Quaternion &in quat) const;
+	void Transform(const Quaternion &in quat);
 	float x;
 	float y;
 	float z;
 }
+
+float Vector3Distance(const Vector3 &in a, const Vector3 &in b);
+float Vector3DistanceSq(const Vector3 &in a, const Vector3 &in b);
+Vector3 Vector3Reflect(const Vector3 &in vec, const Vector3 &in normal);
+Vector3 Lerp(const Vector3 &in a, const Vector3 &in b, float t);
+Vector3 SmoothStep(const Vector3 &in a, const Vector3 &in b, float t);
+Vector3 Max(const Vector3 &in a, const Vector3 &in b);
+Vector3 Min(const Vector3 &in a, const Vector3 &in b);
+float Dot(const Vector3 &in a, const Vector3 &in b);
+Vector3 Cross(const Vector3 &in a, const Vector3 &in b);
+Vector3 Clamp(const Vector3 &in v, const Vector3 &in min, const Vector3 &in max);
+
+Vector3 Vector3Transform(const Vector3 &in v, const Quaternion &in quat);
+
+const Vector3 Vector3Forward;
+const Vector3 Vector3Right;
+const Vector3 Vector3Up;
+const Vector3 Vector3Zero;
 
 class Quaternion{
 	Quaternion();
@@ -197,16 +262,23 @@ Quaternion Lerp(const Quaternion &in a, const Quaternion &in b, float t);
 Quaternion Slerp(const Quaternion &in a, const Quaternion &in b, float t);
 float QuaternionAngle(const Quaternion &in a, const Quaternion &in b);
 
+const Quaternion QuaternionIdentity;
+
 class Transform{
 	Transform(const Transform@ parent = null);
     Vector3 GetPosition() const;
     void SetPosition(const Vector3 &in);
+	Quaternion GetRotation() const;
+	void SetRotation(const Quaternion &in);
     Vector3 GetScale() const;
     void SetScale(const Vector3 &in);
     Vector3 GetLocalPosition() const;
     void SetLocalPosition(const Vector3 &in);
+	Quaternion GetLocalRotation() const;
+	void SetLocalRotation(const Quaternion &in);
     Vector3 GetLocalScale() const;
     void SetLocalScale(const Vector3 &in);
+}
 }
 
 class Material{
@@ -220,7 +292,7 @@ class Mesh{
 }
 
 class Renderable{
-	Renderable(uint entityId, const Transform@ transform);
+	Renderable(uint entityId, const Math::Transform@ transform);
 	Renderable(const Renderable &in) delete;
 
 	Mesh mesh;

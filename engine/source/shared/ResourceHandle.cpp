@@ -107,7 +107,7 @@ void RegisterResourceHandles()
 
 	r = engine->RegisterObjectType("Renderable", sizeof(CRenderable), asOBJ_VALUE | asGetTypeTraits<CRenderable>() | asOBJ_APP_CLASS_MORE_CONSTRUCTORS); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("Renderable", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(CRenderableDefaultConstructor), asCALL_CDECL_OBJLAST); assert(r >= 0);
-	r = engine->RegisterObjectBehaviour("Renderable", asBEHAVE_CONSTRUCT, "void f(uint, const Transform@+)", asFUNCTION(CRenderableConstructor), asCALL_CDECL_OBJLAST); assert(r >= 0);
+	r = engine->RegisterObjectBehaviour("Renderable", asBEHAVE_CONSTRUCT, "void f(uint, const Math::Transform@+)", asFUNCTION(CRenderableConstructor), asCALL_CDECL_OBJLAST); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("Renderable", asBEHAVE_CONSTRUCT, "void f(Renderable &in)", asFUNCTION(CRenderableCopyConstructor), asCALL_CDECL_OBJLAST); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("Renderable", asBEHAVE_DESTRUCT, "void f()", asFUNCTION(CRenderableDestructor), asCALL_CDECL_OBJLAST); assert(r >= 0);
 	r = engine->RegisterObjectMethod("Renderable", "Renderable &opAssign(Renderable &in)", asMETHODPR(CRenderable, operator=, (CRenderable&), CRenderable&), asCALL_THISCALL); assert(r >= 0);
