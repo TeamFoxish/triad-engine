@@ -9,6 +9,7 @@ class CompositeComponent : Component, ICompositer {
             println("parent was not null");
         }
         @transform = Math::Transform(GetParent() !is null ? GetParent().GetTransform() : null);
+        Scene::Tree::AddEntityTransform(GetId(), transform);
     }
 
     Math::Transform@ GetTransform() const { return transform; }
@@ -39,5 +40,11 @@ class CompositeComponent : Component, ICompositer {
         // TODO: adjust child transform if compositer
         // TODO: remove child from its parent component
         children.insertLast(child);
+    }
+
+    protected Scene::Entity CreateEntity() {
+        Scene::Entity entity = Component::CreateEntity();
+        entity.isComposite = true;
+        return entity;
     }
 };

@@ -11,7 +11,7 @@ content:
     flopa2:
       prefab: res://prefabs/flopa.prefab
       overrides:
-        id: 5
+        #id: 5
         transform:
           position:
             x: 3.0
@@ -29,7 +29,7 @@ content:
     cheese1: 
       prefab: res://prefabs/cheese.prefab
       overrides:
-        id: 6
+        #id: 6
         #child:
         #  "@0":
         #    id: 3

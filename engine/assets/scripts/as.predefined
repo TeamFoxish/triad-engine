@@ -327,6 +327,25 @@ class Transform{
 }
 }
 
+namespace Scene {
+typedef uint64 EntityId;
+const EntityId EntityInvalidId; // handle id = -1, gen = -1
+bool IsValidEntity(EntityId id);
+
+class Entity{
+	ref@ entity;
+	EntityId parent;
+    string name;
+    bool isComposite;
+}
+
+namespace Tree {
+    EntityId AddEntity(const Entity &in entity);
+    void AddEntityTransform(EntityId id, const Math::Transform@ transform);
+    void RemoveEntity(EntityId id);
+}
+}
+
 class Material{
 	Material();
 	Material(const string& tag);

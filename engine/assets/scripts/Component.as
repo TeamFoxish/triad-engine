@@ -1,4 +1,5 @@
 interface ICompositer {
+    Scene::EntityId GetId() const;
     Math::Transform@ GetTransform() const; // TODO: return by weak ref
     void AddChild(Component@ child);
     // TODO: RemoveChild
@@ -7,8 +8,9 @@ interface ICompositer {
 
 abstract class Component {
     private ICompositer@ parent; // TODO: hold parent as weak ref
-    private uint64 id;
+    private Scene::EntityId id;
     private string name;
+    private bool isDead = false;
 
     Component(ICompositer@ _parent = null) {
         println("Base component factory .");
@@ -16,6 +18,19 @@ abstract class Component {
         if (parent !is null) {
             parent.AddChild(this);
         }
+        id = Scene::Tree::AddEntity(CreateEntity());
+    }
+
+    ~Component() {
+        Destroy();
+    }
+
+    void Destroy() {
+        if (isDead) {
+            return;
+        }
+        isDead = true;
+        Scene::Tree::RemoveEntity(id);
     }
 
     void Update(float deltaTime) {
@@ -30,5 +45,16 @@ abstract class Component {
         return parent;
     }
 
-    uint64 GetId() const { return id; }
+    Scene::EntityId GetId() const { return id; }
+    
+    protected Scene::Entity CreateEntity() {
+        Scene::Entity entity;
+        @entity.entity = @this;
+        if (parent !is null) {
+            entity.parent = parent.GetId();
+        }
+        entity.name = name;
+        entity.isComposite = false;
+        return entity;
+    }
 };

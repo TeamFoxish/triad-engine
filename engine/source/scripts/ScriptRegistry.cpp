@@ -167,6 +167,9 @@ bool ScriptRegistry::RegisterStdLibrary(asIScriptEngine *engine)
     extern bool MathScriptBindingsInit();
     MathScriptBindingsInit();
 
+    extern void RegisterSceneBindings();
+    RegisterSceneBindings();
+
     extern void RegisterResourceHandles();
     RegisterResourceHandles();
 

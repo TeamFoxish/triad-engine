@@ -55,6 +55,8 @@ bool EngineRuntime::Init(const InitParams& params)
 		// TODO: log error message
 		return false;
 	}
+	extern void InitSceneTree();
+	InitSceneTree();
 	if(!InitScript(this)) {
 		// TODO: log error message
 		return false;
@@ -99,6 +101,8 @@ void EngineRuntime::Shutdown()
 	gTempGame->Shutdown();
 	// delete globalInputDevice; crushes
 	TermScript(this);
+	extern void TermSceneTree();
+	TermSceneTree();
 	TermResource(this);
 	TermRender(this);
 	TermSharedStorage();
