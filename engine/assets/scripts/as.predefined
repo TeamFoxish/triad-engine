@@ -340,7 +340,7 @@ class Entity{
 }
 
 namespace Tree {
-    EntityId AddEntity(const Entity &in entity);
+    EntityId AddEntity(Entity &in entity);
     void AddEntityTransform(EntityId id, const Math::Transform@ transform);
     void RemoveEntity(EntityId id);
 }

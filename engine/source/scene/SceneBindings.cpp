@@ -32,9 +32,11 @@ struct CEntityInfo {
     static void Destroy(CEntityInfo* self) { self->~CEntityInfo(); }
 };
 
-static EntityId AddEntityToSceneTree(const CEntityInfo& info)
+static EntityId AddEntityToSceneTree(CEntityInfo& info)
 {
-    SceneTree::Entity entity;
+    assert((info.entity.GetTypeId() & asTYPEID_SCRIPTOBJECT) > 0 && (info.entity.GetTypeId() & asTYPEID_OBJHANDLE) > 0);
+    
+    SceneTree::Entity entity(static_cast<asIScriptObject*>(info.entity.GetRef()));
     // TODO: assign info.entity
     entity.parent = info.parent.handle;
     entity.name = info.name;
@@ -87,7 +89,7 @@ void RegisterSceneBindings()
 
     engine->SetDefaultNamespace("Scene::Tree");
 
-    engine->RegisterGlobalFunction("EntityId AddEntity(const Entity &in entity)", asFUNCTION(AddEntityToSceneTree), asCALL_CDECL);
+    engine->RegisterGlobalFunction("EntityId AddEntity(Entity &in entity)", asFUNCTION(AddEntityToSceneTree), asCALL_CDECL);
     engine->RegisterGlobalFunction("void AddEntityTransform(EntityId id, const Math::Transform@+ transform)", asFUNCTION(AddEntityTransformToSceneTree), asCALL_CDECL);
     engine->RegisterGlobalFunction("void RemoveEntity(EntityId id)", asFUNCTION(RemoveEntityFromSceneTree), asCALL_CDECL);
 

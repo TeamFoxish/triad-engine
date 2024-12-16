@@ -3,6 +3,7 @@
 #include "misc/Handles.h"
 #include "misc/Delegates.h"
 #include "shared/TransformStorage.h"
+#include "scripts/ScriptObject.h"
 
 #include <memory>
 
@@ -13,6 +14,7 @@ public:
 	using Handle = Storage::Handle;
 
 	struct Entity {
+		ScriptObject obj;
 		Handle parent;
 		TransformStorage::Handle transform;
 		std::vector<Handle> children;
