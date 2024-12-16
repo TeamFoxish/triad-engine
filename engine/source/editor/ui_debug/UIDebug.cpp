@@ -58,8 +58,7 @@ void UIDebug::Init(Window* window)
     }
 
 #ifdef EDITOR
-	std::vector<Component*> components;
-	outliner.Init("scene", components);
+	outliner.Init();
 #endif // EDITOR
 }
 
@@ -130,64 +129,68 @@ void UIDebug::TestDraw()
                 isSceneFocused = ImGui::IsWindowFocused();
             }
 
-            // Gizmo
+            // Gizmo TODO: pls extract gizmo drawing to a separate function
             auto node = outliner.GetSelectedNode();
 
-            if (node.get() && node->name != "scene")
+            if (node.id_ >= 0 && node != outliner.GetRootNode())
             {
-                static ImGuizmo::OPERATION operation;
+                SceneTree::Entity& entity = gSceneTree->Get(node);
+                if (entity.isComposite && entity.transform.id_ >= 0) {
+                    static ImGuizmo::OPERATION operation;
 
-                {
-                    // ToDo: do real inspector
-                    ImGui::Begin("Inspector template");
-
-                    ImGui::SeparatorText("Transforms");
-
-                    if (ImGui::Button("Translate"))
                     {
-                        operation = ImGuizmo::OPERATION::TRANSLATE;
+                        // ToDo: do real inspector
+                        ImGui::Begin("Inspector template");
+
+                        ImGui::SeparatorText("Transforms");
+
+                        if (ImGui::Button("Translate"))
+                        {
+                            operation = ImGuizmo::OPERATION::TRANSLATE;
+                        }
+                        ImGui::SameLine();
+
+                        if (ImGui::Button("Rotate"))
+                        {
+                            operation = ImGuizmo::OPERATION::ROTATE;
+                        }
+                        ImGui::SameLine();
+
+                        if (ImGui::Button("Scale"))
+                        {
+                            operation = ImGuizmo::OPERATION::SCALE;
+                        }
+
+                        ImGui::SeparatorText("");
+
+                        ImGui::End();
                     }
-                    ImGui::SameLine();
 
-                    if (ImGui::Button("Rotate"))
-                    {
-                        operation = ImGuizmo::OPERATION::ROTATE;
-                    }
-                    ImGui::SameLine();
+                    ImGuizmo::SetOrthographic(false);
+                    ImGuizmo::SetDrawlist();
 
-                    if (ImGui::Button("Scale"))
-                    {
-                        operation = ImGuizmo::OPERATION::SCALE;
-                    }
+                    float w_width = (float)ImGui::GetWindowWidth();
+                    float w_height = (float)ImGui::GetWindowHeight();
+                    const float headerHeight = ImGui::GetTextLineHeightWithSpacing(); // https://github.com/CedricGuillemet/ImGuizmo/issues/109
+                    ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y + headerHeight, w_width, w_height);
 
-                    ImGui::SeparatorText("");
 
-                    ImGui::End();
+                    CameraComponent* camera = gTempGame->GetActiveCamera();
+
+                    // View
+                    Math::Matrix viewMatrix = camera->GetViewMatrix();
+
+                    // Projection
+                    Math::Matrix projectionMatrix = camera->GetProjectionMatrix();
+
+                    // Transform
+                    Math::Transform& trs = SharedStorage::Instance().transforms.AccessWrite(entity.transform);
+                    Math::Matrix matr = trs.GetMatrix(); // TODO: check if gizmo works for child entities
+
+                    ImGuizmo::Manipulate((float*)viewMatrix.m, (float*)projectionMatrix.m, operation, ImGuizmo::LOCAL, (float*)matr.m);
+
+                    trs.SetMatrix(matr);
                 }
-
-                ImGuizmo::SetOrthographic(false);
-                ImGuizmo::SetDrawlist();
-
-                float w_width = (float)ImGui::GetWindowWidth();
-                float w_height = (float)ImGui::GetWindowHeight();
-                const float headerHeight = ImGui::GetTextLineHeightWithSpacing(); // https://github.com/CedricGuillemet/ImGuizmo/issues/109
-                ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y + headerHeight, w_width, w_height);
-
-
-                CameraComponent* camera = gTempGame->GetActiveCamera();
-
-                // View
-                Math::Matrix viewMatrix = camera->GetViewMatrix();
-
-                // Projection
-                Math::Matrix projectionMatrix = camera->GetProjectionMatrix();
-
-                // Transform
-                Math::Matrix transform = node->component->_parent->GetWorldTransform();
-
-                ImGuizmo::Manipulate((float*)viewMatrix.m, (float*)projectionMatrix.m, operation, ImGuizmo::LOCAL, (float*)transform.m);
-
-                SharedStorage::Instance().transforms.AccessWrite(node->component->_parent->GetTransformHandle()).SetMatrix(transform);
             }
 
             ImGui::End();

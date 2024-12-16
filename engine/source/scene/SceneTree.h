@@ -20,6 +20,9 @@ public:
 		std::vector<Handle> children;
 		std::string name;
 		bool isComposite = false;
+#ifdef EDITOR
+		bool isSelected = false;
+#endif
 	};
 
 	SceneTree() = default;
