@@ -8,6 +8,7 @@
 
 #include "imgui.h"
 
+#include "logs/Logs.h"
 
 void Outliner::Init()
 {
@@ -89,7 +90,11 @@ void Outliner::DrawOutlinerNode(SceneTree::Handle node)
 
     ImGuiTreeNodeFlags flag = ImGuiTreeNodeFlags_OpenOnDoubleClick;
     flag |= (entity.isSelected) ? ImGuiTreeNodeFlags_Selected : 0;
-    flag |= (entity.children.empty()) ? ImGuiTreeNodeFlags_Leaf : 0;
+
+    // ToDo: will outliner draw only components without their children(?)
+    //flag |= (entity.children.empty()) ? ImGuiTreeNodeFlags_Leaf : 0;
+    flag |= ImGuiTreeNodeFlags_Leaf;
+    
 
     if (ImGui::TreeNodeEx(entity.name.c_str(), flag))
     {
@@ -101,10 +106,11 @@ void Outliner::DrawOutlinerNode(SceneTree::Handle node)
             entity.isSelected = true;
         }
 
-        for (SceneTree::Handle child : entity.children)
+        // TEMP
+        /*for (SceneTree::Handle child : entity.children)
         {
             DrawOutlinerNode(child);
-        }
+        }*/
 
         ImGui::TreePop();
     }

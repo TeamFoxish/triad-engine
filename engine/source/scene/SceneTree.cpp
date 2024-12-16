@@ -1,6 +1,9 @@
 #include "SceneTree.h"
+#include <format> // TEMP
 
 std::unique_ptr<SceneTree> gSceneTree;
+
+static uint32_t c_num = 0; // TEMP
 
 auto SceneTree::Add(Entity&& entity) -> Handle
 {
@@ -9,6 +12,7 @@ auto SceneTree::Add(Entity&& entity) -> Handle
     if (parent.id_ >= 0) {
 		Entity& parentEntity = storage[parent];
 		parentEntity.children.push_back(handle);
+		parentEntity.name = std::format("Component {}", c_num++); // TEMP
     }
 	if (root.id_ < 0) {
 		root = handle;
