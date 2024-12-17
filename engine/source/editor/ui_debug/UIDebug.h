@@ -12,12 +12,6 @@ class Component;
 class CompositeComponent;
 class Outliner;
 
-struct OutlinerNode
-{
-	std::string name = "empty node";
-	bool isSelected = false;
-	std::vector<OutlinerNode*> children;
-};
 
 class UIDebug
 {
@@ -26,6 +20,7 @@ public:
 
 	static void StartNewFrame();
 
+	// ToDo: rename
 	static void TestDraw();
 
 	static void Render();
@@ -38,6 +33,7 @@ public:
 	static int GetViewportY() { return viewportY; }
 
 	static inline bool useDefaultSettings = true;
+	static inline bool start_simulation = false;
 
 protected:
 	static void UpdateViewportPos();
@@ -53,6 +49,10 @@ protected:
 	static inline int viewportHeight = -1;
 
 #ifdef EDITOR
-	static inline Outliner outliner;
+private:
+	static void DrawGizmo();
+	
+public:
+	static inline Outliner outliner; // TODO: remove
 #endif // EDITOR
 };

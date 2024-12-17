@@ -23,7 +23,7 @@
 #include "scene/Scene.h"
 #include "components/CompositeComponent.h"
 #include "game/ComponentStorage.h"
-#include "components/CameraComponent.h"
+#include "components/EditorCamera.h"
 #include "shared/SharedStorage.h"
 
 void UIDebug::Init(Window* window)
@@ -58,7 +58,7 @@ void UIDebug::Init(Window* window)
     }
 
 #ifdef EDITOR
-	outliner.Init();
+    outliner.Init();
 #endif // EDITOR
 }
 
@@ -69,6 +69,10 @@ void UIDebug::StartNewFrame()
     ImGui::NewFrame();
     ImGuizmo::BeginFrame();
 }
+
+// TODO: move somewhere
+static std::string bName = "Start";
+static ImGuizmo::OPERATION operation = ImGuizmo::OPERATION::TRANSLATE;
 
 void UIDebug::TestDraw()
 {
@@ -95,28 +99,14 @@ void UIDebug::TestDraw()
         // File system
         {
             ImGui::Begin("File system");
+            // ToDo: change position of simulation buttoin
+            if (ImGui::Button(bName.c_str()))
+            {
+                start_simulation = !start_simulation;
+                bName = start_simulation ? "Pause" : "Start";
+            }
             ImGui::End();
         }
-
-        //// 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
-        //{
-        //	static float f = 0.0f;
-        //	static int counter = 0;
-        //
-        //	ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-        //	
-        //	ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-        //
-        //	ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-        //
-        //	if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-        //		counter++;
-        //	ImGui::SameLine();
-        //	ImGui::Text("counter = %d", counter);
-        //
-        //	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-        //	ImGui::End();
-        //}
 
         // Viewport in window
         {
@@ -129,68 +119,9 @@ void UIDebug::TestDraw()
                 isSceneFocused = ImGui::IsWindowFocused();
             }
 
-            // Gizmo TODO: pls extract gizmo drawing to a separate function
-            auto node = outliner.GetSelectedNode();
-
-            if (node.id_ >= 0 && node != outliner.GetRootNode())
+            if (outliner.gizmo_focused)
             {
-                SceneTree::Entity& entity = gSceneTree->Get(node);
-                if (entity.isComposite && entity.transform.id_ >= 0) {
-                    static ImGuizmo::OPERATION operation;
-
-                    {
-                        // ToDo: do real inspector
-                        ImGui::Begin("Inspector template");
-
-                        ImGui::SeparatorText("Transforms");
-
-                        if (ImGui::Button("Translate"))
-                        {
-                            operation = ImGuizmo::OPERATION::TRANSLATE;
-                        }
-                        ImGui::SameLine();
-
-                        if (ImGui::Button("Rotate"))
-                        {
-                            operation = ImGuizmo::OPERATION::ROTATE;
-                        }
-                        ImGui::SameLine();
-
-                        if (ImGui::Button("Scale"))
-                        {
-                            operation = ImGuizmo::OPERATION::SCALE;
-                        }
-
-                        ImGui::SeparatorText("");
-
-                        ImGui::End();
-                    }
-
-                    ImGuizmo::SetOrthographic(false);
-                    ImGuizmo::SetDrawlist();
-
-                    float w_width = (float)ImGui::GetWindowWidth();
-                    float w_height = (float)ImGui::GetWindowHeight();
-                    const float headerHeight = ImGui::GetTextLineHeightWithSpacing(); // https://github.com/CedricGuillemet/ImGuizmo/issues/109
-                    ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y + headerHeight, w_width, w_height);
-
-
-                    CameraComponent* camera = gTempGame->GetActiveCamera();
-
-                    // View
-                    Math::Matrix viewMatrix = camera->GetViewMatrix();
-
-                    // Projection
-                    Math::Matrix projectionMatrix = camera->GetProjectionMatrix();
-
-                    // Transform
-                    Math::Transform& trs = SharedStorage::Instance().transforms.AccessWrite(entity.transform);
-                    Math::Matrix matr = trs.GetMatrix(); // TODO: check if gizmo works for child entities
-
-                    ImGuizmo::Manipulate((float*)viewMatrix.m, (float*)projectionMatrix.m, operation, ImGuizmo::LOCAL, (float*)matr.m);
-
-                    trs.SetMatrix(matr);
-                }
+                DrawGizmo();
             }
 
             ImGui::End();
@@ -279,3 +210,76 @@ bool UIDebug::HandleViewportResize()
     // The window state has not changed.
     return true;
 }
+
+#ifdef EDITOR
+void UIDebug::DrawGizmo()
+{
+    auto node = outliner.GetSelectedNode();
+
+    if (node.id_ >= 0 && node != outliner.GetRootNode())
+    {
+        SceneTree::Entity& entity = gSceneTree->Get(node);
+        if (entity.isComposite && entity.transform.id_ >= 0) {
+
+            // ImGui window
+            {
+                ImGui::Begin("Gizmo options");
+
+                ImGui::SeparatorText("Transforms");
+
+                if (ImGui::Button("Translate"))
+                {
+                    operation = ImGuizmo::OPERATION::TRANSLATE;
+                }
+                ImGui::SameLine();
+
+                if (ImGui::Button("Rotate"))
+                {
+                    operation = ImGuizmo::OPERATION::ROTATE;
+                }
+                ImGui::SameLine();
+
+                if (ImGui::Button("Scale"))
+                {
+                    operation = ImGuizmo::OPERATION::SCALE;
+                }
+                ImGui::SameLine();
+
+                if (ImGui::Button("Stop"))
+                {
+                    outliner.gizmo_focused = false;
+                }
+
+                ImGui::SeparatorText("");
+
+                ImGui::End();
+            }
+
+            ImGuizmo::SetOrthographic(false);
+            ImGuizmo::SetDrawlist();
+
+            float w_width = (float)ImGui::GetWindowWidth();
+            float w_height = (float)ImGui::GetWindowHeight();
+            const float headerHeight = ImGui::GetTextLineHeightWithSpacing(); // https://github.com/CedricGuillemet/ImGuizmo/issues/109
+            ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y + headerHeight, w_width, w_height);
+
+
+            EditorCamera* camera = gTempGame->GetEditorCamera();
+
+            // View
+            Math::Matrix viewMatrix = camera->GetViewMatrix();
+
+            // Projection
+            Math::Matrix projectionMatrix = camera->GetProjectionMatrix();
+
+            // Transform
+            Math::Transform& trs = SharedStorage::Instance().transforms.AccessWrite(entity.transform);
+            Math::Matrix matr = trs.GetMatrix(); // TODO: check if gizmo works for child entities
+
+            ImGuizmo::Manipulate((float*)viewMatrix.m, (float*)projectionMatrix.m, operation, ImGuizmo::LOCAL, (float*)matr.m);
+
+            trs.SetMatrix(matr);
+        }
+    }
+}
+#endif // EDITOR

@@ -304,7 +304,7 @@ void LightVolumesPass::AddLightVolumesPass(RenderContext& ctx, FrameGraph& fg, F
 				auto sphereGeom = renderer->GetUtils()->GetSphereGeom(renderer);
 
 				CBPSVolumes cbPSVolumes;
-				cbPSVolumes.viewMatr = gTempGame->GetActiveCamera()->GetViewMatrix().Transpose();
+				cbPSVolumes.viewMatr = gTempGame->GetActiveCamera()->GetViewMatrix().Transpose(); // Do we need use EditorCamera instead here in editor(?)
 
 				Light::CBPS lightBuffer;
 				for (const auto& dirLightSrc : LightsStorage::Instance().dirLights.GetStorage()) {
@@ -313,6 +313,7 @@ void LightVolumesPass::AddLightVolumesPass(RenderContext& ctx, FrameGraph& fg, F
 				}
 				{
 					InversedProj inversedProj;
+					// Do we need use EditorCamera instead here in editor(?)
 					inversedProj.InverseProjection = gTempGame->GetActiveCamera()->GetProjectionMatrix().Invert().Transpose(); // cam inversed proj
 					inversedProj.ScreenDimensions = Math::Vector2{ctx.viewport.width, ctx.viewport.height};
 					lightVolumesShader->SetCBPS(ctx.context, 1, &inversedProj);

@@ -34,6 +34,10 @@
 #include "os/wnd.h"
 #endif
 
+#ifdef EDITOR
+#include "editor/ui_debug/UIDebug.h"
+#include "components/EditorCamera.h"
+#endif // EDITOR
 
 Game::Game()
 {
@@ -56,6 +60,14 @@ bool Game::Initialize()
 		std::cout << "Failed to handle Init event in scripts !" << std::endl;
 	}
 
+#ifdef EDITOR
+	CameraParamsPerspective perspective;
+	perspective.aspectRatio = gRenderSys->GetRenderer()->GetContext().viewport.width / gRenderSys->GetRenderer()->GetContext().viewport.height;
+
+	editorCam = new EditorCamera(this, perspective);
+	editorCam->Initialize();
+#endif
+
 	return true;
 }
 
@@ -73,6 +85,17 @@ void Game::ProcessInput()
 		isRunning = false;
 		return;
 	}
+
+#ifdef EDITOR
+	if (!UIDebug::start_simulation)
+	{
+		if (!UIDebug::outliner.gizmo_focused)
+		{
+			editorCam->ProceedInput(globalInputDevice);
+		}
+		return;
+	}
+#endif // EDITOR
 
 	for (const auto& pScene : scenes) {
 		for (Component* comp : pScene->GetComponents()) {
@@ -107,6 +130,7 @@ void Game::Restart()
 	LoadData();
 }
 
+// ToDo: remove or rewrite logic
 void Game::LoadData()
 {
 #if 0
@@ -258,6 +282,17 @@ void Game::UpdateGame()
 
 		frameNum = 0;
 	}
+
+#ifdef EDITOR
+	if (!UIDebug::start_simulation)
+	{
+		if (!UIDebug::outliner.gizmo_focused)
+		{
+			editorCam->Update(deltaTime);
+		}
+		return;
+	}
+#endif // EDITOR
 
 	if (!gScriptSys->Update(deltaTime)) {
         std::cout << "Failed to execute script update function." << std::endl;

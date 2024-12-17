@@ -134,14 +134,15 @@ void DeferredLightingPass::AddDeferredLightingPass(RenderContext& ctx, FrameGrap
 			}
 
 			CBPS cbPSLight;
-			cbPSLight.inverseViewMatr = gTempGame->GetActiveCamera()->GetViewMatrix().Invert().Transpose();
-			cbPSLight.viewMatr = gTempGame->GetActiveCamera()->GetViewMatrix().Transpose();
-			ThirdPersonCamera* cam = static_cast<ThirdPersonCamera*>(gTempGame->GetActiveCamera()); // TEMP
+			cbPSLight.inverseViewMatr = gTempGame->GetActiveCamera()->GetViewMatrix().Invert().Transpose();  // Do we need use EditorCamera instead here in editor(?)
+			cbPSLight.viewMatr = gTempGame->GetActiveCamera()->GetViewMatrix().Transpose();					 // Do we need use EditorCamera instead here in editor(?)
+			CameraComponent* cam = static_cast<CameraComponent*>(gTempGame->GetActiveCamera());				 // Do we need use EditorCamera instead here in editor(?)
 			cbPSLight.uCameraPos = Math::Vector4(cam->GetCameraPos());
 
 			shader->SetCBPS(ctx.context, 0, &cbPSLight);
 			{
 				InversedProj inversedProj;
+				// Do we need use EditorCamera instead here in editor(?)
 				inversedProj.InverseProjection = gTempGame->GetActiveCamera()->GetProjectionMatrix().Invert().Transpose(); // cam inversed proj
 				inversedProj.ScreenDimensions = Math::Vector2{ ctx.viewport.width, ctx.viewport.height };
 				shader->SetCBPS(ctx.context, 1, &inversedProj);

@@ -24,7 +24,7 @@ public:
 public:
 	SceneTree::Handle GetRootNode() const { return root; }
 	SceneTree::Handle GetSelectedNode() const { return selectedNode; }
-
+	static inline bool gizmo_focused = false;
 private:
 	void DrawOutlinerNode(SceneTree::Handle node);
 

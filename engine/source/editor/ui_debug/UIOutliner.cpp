@@ -30,7 +30,7 @@ void Outliner::Init()
 
 void Outliner::Update()
 {
-    if (globalInputDevice->IsKeyDown(Keys::LeftButton))
+    if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
     {
         uint32_t entityId = gRenderSys->GetEntityIdUnderCursor();
         union ConvHelper {
@@ -42,6 +42,12 @@ void Outliner::Update()
         {
             SetSelectedNode(entityId);
         }
+        gizmo_focused = true;
+    }
+    // ToDo: remove camera jerk when out of gizmo focus
+    else if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+    {
+        gizmo_focused = false;
     }
 }
 

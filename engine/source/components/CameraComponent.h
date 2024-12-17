@@ -56,10 +56,10 @@ public:
 	void SetProjectionMatrix(const Math::Matrix& matr) { projMatr = matr; }
 	const Math::Matrix& GetProjectionMatrix() const { return projMatr; }
 	const Math::Matrix& GetViewMatrix() const { return viewMatr; }
-
-protected:
+	virtual Math::Vector3 GetCameraPos() const { return Math::Vector3::Zero; }
 	void SetViewMatrix(const Math::Matrix& view);
 
+protected:
 	Math::Matrix projMatr;
 	Math::Matrix viewMatr;
 
