@@ -10,7 +10,6 @@
 #include "GeometryData.h"
 #include "mesh/MeshLoader.h"
 #include "TextureLoader.h"
-#include "Lights.h"
 #include "Shader.h"
 
 #include "input/InputDevice.h"
@@ -181,13 +180,6 @@ void Renderer::SetClearColor(const float* color)
 	memcpy(clearColor, color, sizeof(float) * 4);
 }
 
-void Renderer::PopulateLightsBuffer(MeshRenderer::CBPS& buffer) const
-{
-	for (const Light* light : lightSources) {
-		light->UpdateBuffer(buffer);
-	}
-}
-
 Mesh::PTR Renderer::GetMesh(const std::string& path)
 {
 	auto iter = meshes.find(path);
@@ -292,13 +284,6 @@ void Renderer::TestFrameGraph()
 	};
 	static GraphLogger _gLogger{fg};
 #endif
-}
-
-void Renderer::DrawSceneGeometry()
-{
-	for (const Renderable& renderObj : RenderableStorage::Instance().GetStorage()) {
-		MeshRenderer::DrawMesh(context, renderObj);
-	}
 }
 
 void Renderer::DrawScreenQuad()

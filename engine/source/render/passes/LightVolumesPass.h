@@ -23,7 +23,6 @@ protected:
 	struct ID3D11DepthStencilState* dsState2 = nullptr;
 	struct ID3D11RasterizerState* rastState2 = nullptr;
 	struct ID3D11BlendState* blendState = nullptr;
-	struct ID3D11Buffer* inversedProjBuf = nullptr;
 
 	std::shared_ptr<Shader> pureGeomShader;
 	std::shared_ptr<Shader> lightVolumesShader;

@@ -7,7 +7,6 @@
 #include "render/mesh/MeshLoader.h"
 #include "os/Window.h"
 #include "components/PointLightComponent.h"
-#include "render/Lights.h"
 
 #include "render/RenderSystem.h"
 

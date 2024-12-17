@@ -15,7 +15,6 @@
 #include "render/RenderUtils.h"
 #include "render/Shader.h"
 #include "render/mesh/MeshLoader.h"
-#include "render/Lights.h"
 #include "scene/Scene.h"
 
 #include "components/CompositeComponent.h"

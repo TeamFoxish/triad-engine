@@ -363,3 +363,23 @@ class Renderable{
 	Mesh mesh;
 	Material material;
 }
+
+class DirectionalLight{
+	DirectionalLight();
+	DirectionalLight(const Math::Transform@);
+
+	Math::Vector3 GetColor() const;
+	void SetColor(const Math::Vector3 &in color);
+}
+
+class PointLight{
+	PointLight();
+	PointLight(const Math::Transform@);
+
+	Math::Vector3 GetColor() const;
+	void SetColor(const Math::Vector3 &in color);
+	float GetIntensity() const;
+	void SetIntensity(float intensity);
+	float GetRadius() const;
+	void SetRadius(float radius);
+}

@@ -1,4 +1,6 @@
 content:
-  class: dir_light
-  material: res://materials/default_mesh.material
+  class: DirectionalLight
+  components:
+    Light:
+      component: res://components/DirectionalLightComponent.component
 type: prefab

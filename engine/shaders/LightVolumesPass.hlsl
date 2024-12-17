@@ -18,7 +18,20 @@ cbuffer VertexConstantBuffer : register(b0)
 
 cbuffer PixelConstantBuffer : register(b0)
 {
-	struct DirectionalLight
+	float4x4 viewMatr;
+	float uShininess; // TODO: remove?
+}
+
+cbuffer ScreenToViewParams : register(b1)
+{
+    float4x4 InverseProjection;
+    float2 ScreenDimensions;
+}
+
+cbuffer LightsBuffer : register(b2) 
+{
+    // TODO: extract dir light to a separate screen quad pass
+    struct DirectionalLight
 	{
 		float4 mDirection;
 		float4 mDiffuseColor;
@@ -33,14 +46,6 @@ cbuffer PixelConstantBuffer : register(b0)
     	float quadratic;
 		float _dummy;
 	} pointLight;
-	float4x4 viewMatr;
-	float uShininess; // TODO: remove?
-}
-
-cbuffer ScreenToViewParams : register(b1)
-{
-    float4x4 InverseProjection;
-    float2 ScreenDimensions;
 }
 
 // Convert clip space coordinates to view space
@@ -119,12 +124,8 @@ float4 PSMain( PS_IN input ) : SV_Target
 
 	// Surface normal
 	float3 N = normalize(normal.xyz);
-	// Vector from surface to light
-	float3 L = normalize(-dirLight.mDirection.xyz);
 	// Vector from surface to camera
 	float3 V = normalize(eyePos.xyz - P.xyz);
-	// Reflection of -L about N
-	float3 R = normalize(reflect(-L, N));
 
 	return CalcPointLight(pointLight, float4(albedoSpec.xyz, 1.0f), N, P.xyz, V, albedoSpec.w);
 }

@@ -173,6 +173,9 @@ bool ScriptRegistry::RegisterStdLibrary(asIScriptEngine *engine)
     extern void RegisterResourceHandles();
     RegisterResourceHandles();
 
+    extern void RegisterLightsBindings();
+    RegisterLightsBindings();
+
     return RegisterCustomFunctions(engine);
 }
 

@@ -7,7 +7,7 @@
 
 #include "RenderContext.h"
 #include "RenderUtils.h"
-#include "mesh/MeshRenderer.h"
+#include "light/Lights.h"
 #include "mesh/Mesh.h" // TODO: forward declare
 #include "DeferredRenderer.h" // TODO: forward declare
 
@@ -30,14 +30,11 @@ public:
 	void Draw();
 	void EndFrame();
 
-	void DrawSceneGeometry();
 	void DrawScreenQuad();
 
 	void ResizeBackBuff();
 
 	void SetClearColor(const float* color);
-
-	void PopulateLightsBuffer(MeshRenderer::CBPS& buffer) const;
 
 	const Math::Matrix& GetViewProjMatrix() const { return viewMatr; }
 	void SetViewMatrix(const Math::Matrix& view) { viewMatr = view; }

@@ -7,13 +7,6 @@ struct PS_IN
 #define NR_CASCADES 4
 cbuffer PixelConstantBuffer : register(b0)
 {
-	struct DirectionalLight
-	{
-		float4 mDirection;
-		float4 mDiffuseColor;
-		float4 mSpecColor;
-	} dirLight;
-    
     float4x4 inverseViewMatr;
 	float4x4 viewMatr;
 	float4 uCameraPos;
@@ -34,6 +27,26 @@ cbuffer ScreenToViewParams : register(b1)
 {
     float4x4 InverseProjection;
     float2 ScreenDimensions;
+}
+
+cbuffer LightsBuffer : register(b2) 
+{
+    // TODO: extract dir light to a separate screen quad pass
+    struct DirectionalLight
+	{
+		float4 mDirection;
+		float4 mDiffuseColor;
+		float4 mSpecColor;
+	} dirLight;
+	struct PointLight {
+    	float4 position;
+    	float4 diffuse;
+    	float4 specular;
+		float constant;
+    	float lin;
+    	float quadratic;
+		float _dummy;
+	} pointLight;
 }
 
 // Convert clip space coordinates to view space
