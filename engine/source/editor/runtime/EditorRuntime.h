@@ -22,6 +22,8 @@ public:
 	// TODO: replace with viewport?
 	Window* GetWindow() const override;
 
+	Math::Vector2 GetMousePosInViewport() const override;
+
 private:
 	std::unique_ptr<EngineRuntime> engRuntime;
 };

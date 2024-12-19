@@ -40,9 +40,6 @@ private:
 	void AddComponent(Component* comp);
 	void RemoveComponent(Component* comp);
 
-public:
-	class PlayerBall* player = nullptr;
-
 	// TODO: replace with unified scene root
 	std::vector<std::unique_ptr<Scene>> scenes;
 

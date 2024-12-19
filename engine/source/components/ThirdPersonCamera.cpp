@@ -8,7 +8,6 @@
 
 #include "shared/SharedStorage.h"
 #include "render/RenderSystem.h"
-#include "logs/Logs.h"
 
 ThirdPersonCamera::ThirdPersonCamera(Game* game, const Camera::Params& params, Compositer* target, Compositer* parent)
 	: CameraComponent(game, params, parent)
@@ -58,38 +57,9 @@ void ThirdPersonCamera::Update(float deltaTime, Compositer* parent)
 	up.Normalize();
 
 	const float dot = up.Dot(viewDir);
-	
-	//Math::Quaternion camRot = Math::Quaternion::LookRotation(viewDir, up);
-	//parentTrs.SetRotation(camRot);
 
-	//parentTrs.SetPosition(camPos);
-	/*Math::Vector3 viewDir = playerPos - camPos;
-	viewDir.Normalize();
-	Math::Vector3 right = viewDir;
-	right.y = 0.0f;
-	right.Normalize();
-	Math::Quaternion rot = Math::Quaternion::CreateFromAxisAngle(Math::Vector3::UnitY, Math::Pi / 2);
-	right = -Math::Vector3::Transform(right, rot);
-	Math::Vector3 up = right.Cross(viewDir);
-	Math::Quaternion camRot = Math::Quaternion::LookRotation(viewDir, up);
-	parentTrs.SetRotation(camRot);*/
-	//Math::Quaternion q = Math::Quaternion::CreateFromAxisAngle(parent->GetRight(), angleY);
-
-	//Math::Vector3 viewDir = playerPos - camPos;
-	//viewDir.Normalize();
-	//Math::Vector3 right = viewDir;
-	//right.z = 0.0f;
-	//right.Normalize();
-	//Math::Quaternion rot = Math::Quaternion::CreateFromAxisAngle(Math::Vector3::UnitZ, Math::Pi / 2);
-	//right = -Math::Vector3::Transform(right, rot);
-	//Math::Vector3 viewForward = viewDir;
-	//Math::Vector3 target = camPos + viewForward * 100.0f;
-	////Math::Vector3 up = Math::Vector3::Transform(Math::Vector3::UnitZ, q);
-	//Math::Vector3 up = right.Cross(viewDir);
-
-	//// Create look at matrix, set as view
+	// Create look at matrix, set as view
 	const Math::Matrix viewMatr = Math::Matrix::CreateLookAt(camPos, camPos + viewDir * 100.0f, up);
-	////Math::Transform& parentTrs = SharedStorage::Instance().transforms.AccessWrite(parentC->GetTransformHandle());
 	parentTrs.SetMatrix(viewMatr.Invert());
 
 	mPitchSpeed = 0.0f;
@@ -105,19 +75,19 @@ void ThirdPersonCamera::ProceedInput(InputDevice* inpDevice)
 	right = Math::Vector3::Transform(right, rot);
 	forward.Normalize();
 	right.Normalize();
-	if (inpDevice->IsKeyDown(Keys::D)) {
+	if (inpDevice->IsKeyHold(Keys::D)) {
 		Math::Vector3 pos = targetC->GetPosition() + right * 0.1f;
 		targetC->SetPosition(pos);
 	}
-	if (inpDevice->IsKeyDown(Keys::A)) {
+	if (inpDevice->IsKeyHold(Keys::A)) {
 		Math::Vector3 pos = targetC->GetPosition() - right * 0.1f;
 		targetC->SetPosition(pos);
 	}
-	if (inpDevice->IsKeyDown(Keys::W)) {
+	if (inpDevice->IsKeyHold(Keys::W)) {
 		Math::Vector3 pos = targetC->GetPosition() + forward * 0.1f;
 		targetC->SetPosition(pos);
 	}
-	if (inpDevice->IsKeyDown(Keys::S)) {
+	if (inpDevice->IsKeyHold(Keys::S)) {
 		Math::Vector3 pos = targetC->GetPosition() - forward * 0.1f;
 		targetC->SetPosition(pos);
 	}
@@ -133,10 +103,6 @@ void ThirdPersonCamera::ProceedMouseInput(const MouseMoveEventArgs& event)
 		const float angularSpeed = (event.Offset.x / MAX_MOUSE_SPEED) * MAX_ANGULAR_SPEED;
 		float angle = angularSpeed * dt;
 		angleX -= angle;
-		/*Math::Quaternion rot = parentC->GetRotation();
-		Math::Quaternion inc = Math::Quaternion::CreateFromAxisAngle(Math::Vector3::UnitZ, angle);
-		rot = Math::Quaternion::Concatenate(rot, inc);*/
-		//parentC->SetRotation(rot);
 	}
 	if (abs(event.Offset.y) > 0.01f) {
 		mPitchSpeed = (event.Offset.y / MAX_MOUSE_SPEED) * MAX_PITCH_SPEED;

@@ -34,6 +34,9 @@ MulticastDelegate<int, int> gViewportResized;
 
 bool EngineRuntime::Init(const InitParams& params)
 {
+	if (!gEngineRuntime) {
+		gEngineRuntime = this;
+	}
 	if (params.window.createWindow) {
 		window = osCreateWindow(cfgProjectName.GetRef().data(), params.window.width, params.window.height);
 		if (!window) {
@@ -116,4 +119,9 @@ void EngineRuntime::Shutdown()
 	if (window) {
 		osDestroyWindow(window);
 	}
+}
+
+Math::Vector2 EngineRuntime::GetMousePosInViewport() const
+{
+	return globalInputDevice->MousePosition;
 }

@@ -176,7 +176,6 @@ void UIDebug::UpdateViewportPos()
     vMax.y += viewportPos.y;
     viewportX = (int)(vMin.x - windowPos.x);
     viewportY = (int)(vMin.y - windowPos.y);
-    // TODO: adjust viewportY by ImGui::GetTextLineHeightWithSpacing()?
 }
 
 bool UIDebug::HandleViewportResize()

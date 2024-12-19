@@ -179,6 +179,9 @@ bool ScriptRegistry::RegisterStdLibrary(asIScriptEngine *engine)
     extern void RegisterCameraBindings();
     RegisterCameraBindings();
 
+    extern void RegisterInputBindings();
+    RegisterInputBindings();
+
     return RegisterCustomFunctions(engine);
 }
 

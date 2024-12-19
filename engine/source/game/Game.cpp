@@ -113,6 +113,7 @@ void Game::Shutdown()
 
 void Game::UpdateFrame()
 {
+	globalInputDevice->PrepareProceedInput();
 	ProcessInput();
 	UpdateGame();
 	const Component::Id_T id = gRenderSys->GetEntityIdUnderCursor();

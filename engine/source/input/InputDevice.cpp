@@ -16,8 +16,6 @@ InputDevice* globalInputDevice = nullptr;
 InputDevice::InputDevice(RuntimeIface* _runtime) 
 	: runtime(_runtime)
 {
-	keys = new std::unordered_set<Keys>();
-	
 	RAWINPUTDEVICE Rid[2];
 
 	Rid[0].usUsagePage = 0x01;
@@ -39,7 +37,12 @@ InputDevice::InputDevice(RuntimeIface* _runtime)
 
 InputDevice::~InputDevice()
 {
-	delete keys;
+}
+
+void InputDevice::PrepareProceedInput()
+{
+	justPressed.clear();
+	justUnpressed.clear();
 }
 
 void InputDevice::OnKeyDown(KeyboardInputEventArgs args)
@@ -52,9 +55,9 @@ void InputDevice::OnKeyDown(KeyboardInputEventArgs args)
 	if (args.MakeCode == 54) key = Keys::RightShift;
 	
 	if(Break) {
-		if(keys->count(key))	RemovePressedKey(key);
+		if(keys.count(key))	RemovePressedKey(key);
 	} else {
-		if (!keys->count(key))	AddPressedKey(key);
+		if (!keys.count(key)) AddPressedKey(key);
 	}
 }
 
@@ -98,16 +101,28 @@ void InputDevice::AddPressedKey(Keys key)
 	//if (!game->isActive) {
 	//	return;
 	//}
-	keys->insert(key);
+	keys.insert(key);
+	justPressed.insert(key);
 }
 
 void InputDevice::RemovePressedKey(Keys key)
 {
-	keys->erase(key);
+	keys.erase(key);
+	justUnpressed.insert(key);
 }
 
 bool InputDevice::IsKeyDown(Keys key)
 {
-	return keys->count(key);
+	return justPressed.count(key);
+}
+
+bool InputDevice::IsKeyHold(Keys key)
+{
+	return keys.count(key);
+}
+
+bool InputDevice::IsKeyUp(Keys key)
+{
+	return justUnpressed.count(key);
 }
 #endif
