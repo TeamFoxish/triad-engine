@@ -7,7 +7,10 @@
 #include "render/light/LightsStorage.h"
 #include "render/GeometryData.h"
 #include "render/mesh/MeshRenderer.h"
+#include "render/RenderSystem.h"
 #include "GBufferPass.h"
+
+#include "shared/SharedStorage.h"
 
 // TEMP
 #include "runtime/EngineRuntime.h"
@@ -133,18 +136,19 @@ void DeferredLightingPass::AddDeferredLightingPass(RenderContext& ctx, FrameGrap
 				break;
 			}
 
+			const CameraStorage::CameraEntry& activeCam = gRenderSys->cameraManager.GetActiveCamera();
+
 			CBPS cbPSLight;
-			cbPSLight.inverseViewMatr = gTempGame->GetActiveCamera()->GetViewMatrix().Invert().Transpose();  // Do we need use EditorCamera instead here in editor(?)
-			cbPSLight.viewMatr = gTempGame->GetActiveCamera()->GetViewMatrix().Transpose();					 // Do we need use EditorCamera instead here in editor(?)
-			CameraComponent* cam = static_cast<CameraComponent*>(gTempGame->GetActiveCamera());				 // Do we need use EditorCamera instead here in editor(?)
-			cbPSLight.uCameraPos = Math::Vector4(cam->GetCameraPos());
+			cbPSLight.inverseViewMatr = activeCam.camera.GetViewMatrix().Invert().Transpose();  // Do we need use EditorCamera instead here in editor(?)
+			cbPSLight.viewMatr = activeCam.camera.GetViewMatrix().Transpose();					 // Do we need use EditorCamera instead here in editor(?)
+			cbPSLight.uCameraPos = Math::Vector4(SharedStorage::Instance().transforms.AccessRead(activeCam.transform).GetPosition());
 
 			shader->SetCBPS(ctx.context, 0, &cbPSLight);
 			{
 				InversedProj inversedProj;
 				// Do we need use EditorCamera instead here in editor(?)
-				inversedProj.InverseProjection = gTempGame->GetActiveCamera()->GetProjectionMatrix().Invert().Transpose(); // cam inversed proj
-				inversedProj.ScreenDimensions = Math::Vector2{ ctx.viewport.width, ctx.viewport.height };
+				inversedProj.InverseProjection = activeCam.camera.GetProjectionMatrix().Invert().Transpose(); // cam inversed proj
+				inversedProj.ScreenDimensions = Math::Vector2{ctx.viewport.width, ctx.viewport.height};
 				shader->SetCBPS(ctx.context, 1, &inversedProj);
 			}
 			shader->SetCBPS(ctx.context, 2, &lightBuffer);

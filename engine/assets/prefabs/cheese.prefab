@@ -20,6 +20,11 @@ content:
     Mesh:
       component: res://components/MeshComponent.component
       overrides:
+        transform:
+          rotation:
+            x: 0.0
+            y: 90.0
+            z: 0.0
         renderObj:
           material: res://materials/cheese.material
           mesh: res://meshes/cheese.mesh

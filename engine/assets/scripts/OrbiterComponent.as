@@ -18,8 +18,8 @@ class OrbiterComponent : Component {
         angle += moveSpeed * deltaTime;
         Math::Vector3 pos;
         pos.x = center.x + Math::cos(angle) * radius;
-        pos.y = center.y + Math::sin(angle) * radius;
-        pos.z = center.z;
+        pos.y = center.y;
+        pos.z = center.z + Math::sin(angle) * radius;
         Math::Transform@ parentTrs = GetParent().GetTransform();
         parentTrs.SetLocalPosition(pos);
         const Math::Quaternion rot = parentTrs.GetLocalRotation();

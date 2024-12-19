@@ -265,9 +265,9 @@ Vector3 Clamp(const Vector3 &in v, const Vector3 &in min, const Vector3 &in max)
 
 Vector3 Vector3Transform(const Vector3 &in v, const Quaternion &in quat);
 
-const Vector3 Vector3Forward; // (1, 0, 0)
-const Vector3 Vector3Right;   // (0, -1, 0) :)
-const Vector3 Vector3Up;      // (0, 0, 1)
+const Vector3 Vector3Forward; // (0, 0, -1)
+const Vector3 Vector3Right;   // (1, 0, 0)
+const Vector3 Vector3Up;      // (0, 1, 0)
 const Vector3 Vector3Zero;    // (0, 0, 0)
 
 class Quaternion{
@@ -299,7 +299,7 @@ class Quaternion{
 	float w;
 }
 
-Quaternion QuaternionFromPitchRollYaw(float pitch, float roll, float yaw); // in radians
+Quaternion QuaternionFromYawPitchRoll(float yaw, float pitch, float roll); // in radians
 Quaternion QuaternionFromAxisAngle(const Vector3 &in axis, float angle); // angle in radians
 Quaternion QuaternionFromToRotation(const Vector3 &in a, const Vector3 &in b);
 Quaternion QuaternionFromLookRotation(const Vector3 &in forward, const Vector3 &in up);
@@ -382,4 +382,15 @@ class PointLight{
 	void SetIntensity(float intensity);
 	float GetRadius() const;
 	void SetRadius(float radius);
+}
+
+class Camera{
+	Camera();
+	Camera(const Math::Transform@);
+
+	void MakePerspective();
+	void MakeOrthographic();
+	void SetFov(float fovDeg);
+	void SetLookTrasnform(const Math::Vector3 &in camPos, const Math::Vector3 &in target, const Math::Vector3 &in up);
+	void SetActive();
 }

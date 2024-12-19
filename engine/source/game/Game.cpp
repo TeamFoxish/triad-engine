@@ -61,10 +61,11 @@ bool Game::Initialize()
 	}
 
 #ifdef EDITOR
-	CameraParamsPerspective perspective;
-	perspective.aspectRatio = gRenderSys->GetRenderer()->GetContext().viewport.width / gRenderSys->GetRenderer()->GetContext().viewport.height;
-
-	editorCam = new EditorCamera(this, perspective);
+	Camera::Params params;
+	RenderContext& ctx = gRenderSys->GetContext();
+	params.width = gRenderSys->GetContext().viewport.width;
+	params.height = gRenderSys->GetContext().viewport.height;
+	editorCam = new EditorCamera(this, params);
 	editorCam->Initialize();
 #endif
 
@@ -89,6 +90,7 @@ void Game::ProcessInput()
 #ifdef EDITOR
 	if (!UIDebug::start_simulation)
 	{
+		gRenderSys->cameraManager.SetActiveCamera(editorCam->GetCameraHandle());
 		if (!UIDebug::outliner.gizmo_focused)
 		{
 			editorCam->ProceedInput(globalInputDevice);
@@ -286,6 +288,7 @@ void Game::UpdateGame()
 #ifdef EDITOR
 	if (!UIDebug::start_simulation)
 	{
+		gRenderSys->cameraManager.SetActiveCamera(editorCam->GetCameraHandle());
 		if (!UIDebug::outliner.gizmo_focused)
 		{
 			editorCam->Update(deltaTime);
@@ -312,11 +315,6 @@ void Game::GenerateOutput()
 {
 	// should be called from engine side
 	// gRenderSys->GetRenderer()->Draw();
-}
-
-CompositeComponent* Game::GetCameraHolder()
-{
-	return static_cast<CompositeComponent*>(player);
 }
 
 void Game::AddComponent(Component* comp)

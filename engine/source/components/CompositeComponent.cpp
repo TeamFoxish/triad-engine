@@ -95,14 +95,15 @@ void CompositeComponent::SetScale(Math::Vector3 scale)
 
 Math::Vector3 CompositeComponent::GetForward() const
 {
-	const Math::Quaternion rotation = GetRotation();
-	return Math::Vector3::Transform(Math::Vector3::UnitX, rotation);
+	const Math::Quaternion rotation = SharedStorage::Instance().transforms.AccessRead(transformHandle).GetRotation();
+	//const Math::Quaternion rotation = GetRotation();
+	return Math::Vector3::Transform(Math::Vector3::Forward, rotation);
 }
 
 Math::Vector3 CompositeComponent::GetRight() const
 {
 	const Math::Quaternion rotation = GetRotation();
-	return Math::Vector3::Transform(Math::Vector3::UnitY, rotation);
+	return Math::Vector3::Transform(Math::Vector3::Right, rotation);
 }
 
 const Math::Matrix& CompositeComponent::GetWorldTransform(Compositer* parent)

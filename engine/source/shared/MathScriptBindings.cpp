@@ -6,10 +6,6 @@
 #include <new>
 
 #pragma region VECTOR3
-static constexpr Math::Vector3 Vector3Forward = {1.0f, 0.0f, 0.0f};
-static constexpr Math::Vector3 Vector3Right = {0.0f, -1.0f, 0.0f};
-static constexpr Math::Vector3 Vector3Up = {0.0f, 0.0f, 1.0f};
-
 static void Vector3DefaultConstructor(Math::Vector3* self)
 {
 	new(self) Math::Vector3();
@@ -115,9 +111,9 @@ static void RegisterVector3()
 	r = engine->RegisterGlobalFunction("Vector3 Clamp(const Vector3 &in v, const Vector3 &in min, const Vector3 &in max)", asFUNCTION(Vector3Clamp), asCALL_CDECL); assert(r >= 0);
 
 	// Register global properties
-	r = engine->RegisterGlobalProperty("const Vector3 Vector3Forward", const_cast<Vector3*>(&Vector3Forward));
-	r = engine->RegisterGlobalProperty("const Vector3 Vector3Right", const_cast<Vector3*>(&Vector3Right));
-	r = engine->RegisterGlobalProperty("const Vector3 Vector3Up", const_cast<Vector3*>(&Vector3Up));
+	r = engine->RegisterGlobalProperty("const Vector3 Vector3Forward", const_cast<Vector3*>(&Vector3::Forward));
+	r = engine->RegisterGlobalProperty("const Vector3 Vector3Right", const_cast<Vector3*>(&Vector3::Right));
+	r = engine->RegisterGlobalProperty("const Vector3 Vector3Up", const_cast<Vector3*>(&Vector3::Up));
 	r = engine->RegisterGlobalProperty("const Vector3 Vector3Zero", const_cast<Vector3*>(&Vector3::Zero));
 }
 #pragma endregion
@@ -160,7 +156,7 @@ static void RegisterQaternion()
 	r = engine->RegisterObjectBehaviour("Quaternion", asBEHAVE_CONSTRUCT, "void f(float x, float y, float z, float w)", asFUNCTION(QuaternionInitConstructor), asCALL_CDECL_OBJLAST); assert(r >= 0);
 
 	// axis directions are fucked up :)
-	r = engine->RegisterGlobalFunction("Quaternion QuaternionFromPitchRollYaw(float pitch, float roll, float yaw)", asFUNCTIONPR(Quaternion::CreateFromYawPitchRoll, (float, float, float), Quaternion), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("Quaternion QuaternionFromYawPitchRoll(float yaw, float pitch, float roll)", asFUNCTIONPR(Quaternion::CreateFromYawPitchRoll, (float, float, float), Quaternion), asCALL_CDECL); assert(r >= 0);
 	r = engine->RegisterGlobalFunction("Quaternion QuaternionFromAxisAngle(const Vector3 &in axis, float angle)", asFUNCTION(Quaternion::CreateFromAxisAngle), asCALL_CDECL); assert(r >= 0);
 	r = engine->RegisterGlobalFunction("Quaternion QuaternionFromToRotation(const Vector3 &in a, const Vector3 &in b)", asFUNCTIONPR(Quaternion::FromToRotation, (const Vector3&, const Vector3&), Quaternion), asCALL_CDECL); assert(r >= 0);
 	r = engine->RegisterGlobalFunction("Quaternion QuaternionFromLookRotation(const Vector3 &in forward, const Vector3 &in up)", asFUNCTIONPR(Quaternion::LookRotation, (const Vector3&, const Vector3&), Quaternion), asCALL_CDECL); assert(r >= 0);

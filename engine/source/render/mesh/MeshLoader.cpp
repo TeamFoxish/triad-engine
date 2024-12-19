@@ -58,7 +58,11 @@ bool MeshLoader::LoadMesh(const std::string& path, Renderer* renderer, Mesh::PTR
         aiProcess_Triangulate |
         aiProcess_JoinIdenticalVertices |
         aiProcess_SortByPType |
-        aiProcess_ConvertToLeftHanded/* | aiProcess_GenBoundingBoxes*/);
+        //aiProcess_MakeLeftHanded |
+        aiProcess_FlipUVs |
+        aiProcess_FlipWindingOrder |
+        0);
+        //aiProcess_ConvertToLeftHanded/* | aiProcess_GenBoundingBoxes*/);
 
     // If the import failed, report it
     if (nullptr == scene) {

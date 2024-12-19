@@ -36,9 +36,6 @@ public:
 
 	void SetClearColor(const float* color);
 
-	const Math::Matrix& GetViewProjMatrix() const { return viewMatr; }
-	void SetViewMatrix(const Math::Matrix& view) { viewMatr = view; }
-
 	Mesh::PTR GetMesh(const std::string& path);
 
 	Window* GetWindow() const { return window; }
@@ -75,8 +72,6 @@ private:
 	ID3D11DepthStencilState* pDSState; // TEMP
 
 	Triad::Render::Api::RenderTarget* mainRtv = nullptr; // TEMP
-
-	Math::Matrix viewMatr;
 
 	std::unique_ptr<DeferredRenderer> deferredRenderer;
 

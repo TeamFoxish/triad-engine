@@ -300,11 +300,12 @@ void LightVolumesPass::AddLightVolumesPass(RenderContext& ctx, FrameGraph& fg, F
 			RenderTarget* lightAccRtv = lightAcc.BindWrite(ctx, &rtvDesc, 0);
 
 			{
+				const CameraStorage::CameraEntry& activeCam = gRenderSys->cameraManager.GetActiveCamera();
 				Renderer* renderer = gRenderSys->GetRenderer();
 				auto sphereGeom = renderer->GetUtils()->GetSphereGeom(renderer);
 
 				CBPSVolumes cbPSVolumes;
-				cbPSVolumes.viewMatr = gTempGame->GetActiveCamera()->GetViewMatrix().Transpose(); // Do we need use EditorCamera instead here in editor(?)
+				cbPSVolumes.viewMatr = activeCam.camera.GetViewMatrix().Transpose(); // Do we need use EditorCamera instead here in editor(?)
 
 				Light::CBPS lightBuffer;
 				for (const auto& dirLightSrc : LightsStorage::Instance().dirLights.GetStorage()) {
@@ -312,9 +313,10 @@ void LightVolumesPass::AddLightVolumesPass(RenderContext& ctx, FrameGraph& fg, F
 					break;
 				}
 				{
+					// TODO: cache this buffer value since it doesn't change between passes
 					InversedProj inversedProj;
 					// Do we need use EditorCamera instead here in editor(?)
-					inversedProj.InverseProjection = gTempGame->GetActiveCamera()->GetProjectionMatrix().Invert().Transpose(); // cam inversed proj
+					inversedProj.InverseProjection = activeCam.camera.GetProjectionMatrix().Invert().Transpose(); // cam inversed proj
 					inversedProj.ScreenDimensions = Math::Vector2{ctx.viewport.width, ctx.viewport.height};
 					lightVolumesShader->SetCBPS(ctx.context, 1, &inversedProj);
 				}
@@ -336,7 +338,7 @@ void LightVolumesPass::AddLightVolumesPass(RenderContext& ctx, FrameGraph& fg, F
 					MeshRenderer::CBVS cbVS;
 					const Math::Transform& lightTrs = SharedStorage::Instance().transforms.AccessRead(lightSrc.transform);
 					cbVS.worldTransform = (Math::Matrix::CreateScale(lightSrc.light->GetRadius()) * Math::Matrix::CreateTranslation(lightTrs.GetPosition())).Transpose();
-					cbVS.viewProj = renderer->GetViewProjMatrix(); // already transposed
+					cbVS.viewProj = gRenderSys->cameraManager.GetViewProjTransposed(); // already transposed
 					pureGeomShader->SetCBVS(ctx.context, 0, &cbVS);
 					
 					ctx->OMSetRenderTargets(0, nullptr, depthBuf);

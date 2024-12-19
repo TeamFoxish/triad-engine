@@ -267,10 +267,10 @@ void UIDebug::DrawGizmo()
             EditorCamera* camera = gTempGame->GetEditorCamera();
 
             // View
-            Math::Matrix viewMatrix = camera->GetViewMatrix();
+            const Math::Matrix& viewMatrix = camera->GetViewMatrix();
 
             // Projection
-            Math::Matrix projectionMatrix = camera->GetProjectionMatrix();
+            const Math::Matrix& projectionMatrix = camera->GetProjectionMatrix();
 
             // Transform
             Math::Transform& trs = SharedStorage::Instance().transforms.AccessWrite(entity.transform);

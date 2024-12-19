@@ -26,7 +26,7 @@ void MeshRenderer::DrawGeometryOnly(RenderContext& ctx, const Renderable& obj)
 		return;
 	}
 	auto cbVS = MeshRenderer::CBVS{};
-	cbVS.viewProj = renderer->GetViewProjMatrix(); // already transposed
+	cbVS.viewProj = gRenderSys->cameraManager.GetViewProjTransposed(); // already transposed
 	auto cbPS = MeshRenderer::CBPSGeom{};
 	auto material = obj.material ? obj.material : RenderResources::Instance().materials.Get(ToStrid("res://materials/default_mesh.material")); // TEMP
 	cbPS.ambientColor = Math::Color{ 0.2f, 0.2f, 0.2f };

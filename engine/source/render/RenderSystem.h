@@ -2,6 +2,8 @@
 
 #include <memory>
 
+#include "camera/CameraManager.h"
+
 #include "misc/Delegates.h"
 
 class RuntimeIface;
@@ -24,6 +26,9 @@ public:
 	void EndFrame();
 
 	uint32_t GetEntityIdUnderCursor() const;
+
+public:
+	CameraManager cameraManager;
 
 protected:
 	std::unique_ptr<Renderer> rendererImpl;

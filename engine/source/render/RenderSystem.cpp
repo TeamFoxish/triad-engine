@@ -16,6 +16,9 @@ bool RenderSystem::Init(RuntimeIface* runtime)
 	InitRenderableStorage();
 	extern bool InitLightsStorage();
 	InitLightsStorage();
+	extern bool InitRenderStorage();
+	InitRenderStorage();
+	cameraManager.Init();
 	rendererImpl = std::make_unique<Renderer>();
 	if (!rendererImpl->Initialize(runtime->GetWindow())) {
 		return false;
@@ -43,6 +46,8 @@ void RenderSystem::Term()
 {
 	gViewportResized.Remove(viewportResizedHandle);
 	rendererImpl->Shutdown();
+	extern void TermRenderStorage();
+	TermRenderStorage();
 	extern void TermLightsStorage();
 	TermLightsStorage();
 	extern void TermRenderableStorage();
@@ -58,6 +63,7 @@ RenderContext& RenderSystem::GetContext() const
 
 void RenderSystem::StartFrame()
 {
+	cameraManager.UpdateCameras();
 	rendererImpl->Draw();
 }
 

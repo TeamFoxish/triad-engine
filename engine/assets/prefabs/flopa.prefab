@@ -10,10 +10,6 @@ content:
       component: res://components/MeshComponent.component
       overrides:
         transform:
-          rotation:
-            x: 0.0
-            y: 90.0
-            z: 0.0
           scale:
             x: 0.005
             y: 0.005
