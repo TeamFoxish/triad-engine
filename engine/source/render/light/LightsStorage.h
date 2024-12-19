@@ -33,6 +33,7 @@ struct LightsStorage {
 		}
 
 		LightT& Get(Handle handle) { return *storage[handle].light; }
+		LightSource& GetLightSource(Handle handle) { return storage[handle];  }
 
 		const Storage& GetStorage() const { return storage; }
 
