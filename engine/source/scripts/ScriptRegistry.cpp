@@ -147,8 +147,20 @@ bool ScriptRegistry::RegisterStdLibrary(asIScriptEngine *engine)
     extern bool MathScriptBindingsInit();
     MathScriptBindingsInit();
 
+    extern void RegisterSceneBindings();
+    RegisterSceneBindings();
+
     extern void RegisterResourceHandles();
     RegisterResourceHandles();
+
+    extern void RegisterLightsBindings();
+    RegisterLightsBindings();
+
+    extern void RegisterCameraBindings();
+    RegisterCameraBindings();
+
+    extern void RegisterInputBindings();
+    RegisterInputBindings();
 
     return RegisterCustomFunctions(engine);
 }

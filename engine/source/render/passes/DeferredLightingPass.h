@@ -21,7 +21,5 @@ protected:
 	void DrawFullScreenQuad(RenderContext& ctx);
 
 protected:
-	struct ID3D11Buffer* inversedProjBuf = nullptr;
-
 	std::shared_ptr<Shader> shader;
 };

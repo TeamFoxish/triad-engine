@@ -4,37 +4,17 @@
 #include "game/Game.h"
 
 #include "render/RenderSystem.h"
+#include "render/RenderStorage.h"
 
 #include "runtime/EngineRuntime.h" // TEMP
 
-CameraComponent::CameraComponent(Game* game, const CameraParams& params, Compositer* parent)
+CameraComponent::CameraComponent(Game* game, const Camera::Params& params, Compositer* parent)
 	: Component(game, parent)
-	, projMatr(params.MakeProjectionMatrix())
-	, cachedParams(params.Clone())
+	, handle(RenderStorage::Instance().cameras.Add(params, parent->GetTransformHandle()))
 {
-	game->SetActiveCamera(this);
-	gViewportResized.AddLambda([this](int width, int height) {
-		cachedParams->UpdateViewport(width, height);
-		projMatr = cachedParams->MakeProjectionMatrix();
-	});
 }
 
 CameraComponent::~CameraComponent()
 {
-	gViewportResized.Remove(viewportUpdateHandle);
-}
-
-void CameraComponent::SetViewMatrix(const Math::Matrix& view)
-{
-	gRenderSys->GetRenderer()->SetViewMatrix(view);
-}
-
-Math::Matrix CameraParamsPerspective::MakeProjectionMatrix() const
-{
-	return Math::Matrix::CreatePerspectiveFieldOfView(fov, aspectRatio, nearPlane, farPlane);
-}
-
-Math::Matrix CameraParamsOrthographic::MakeProjectionMatrix() const
-{
-	return Math::Matrix::CreateOrthographic(width, height, nearPlane, farPlane);
+	RenderStorage::Instance().cameras.Remove(handle);
 }

@@ -1,0 +1,4 @@
+content:
+  class: DirectionalLightComponent
+  module: Engine
+type: component

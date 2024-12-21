@@ -8,6 +8,8 @@
 #include "render/Renderer.h"
 #include "render/GeometryData.h"
 #include "render/mesh/MeshRenderer.h"
+#include "render/light/LightsStorage.h"
+#include "shared/SharedStorage.h"
 #include "GBufferPass.h"
 
 // TEMP
@@ -17,9 +19,6 @@
 
 __declspec(align(16))
 struct CBPSVolumes {
-	// TODO: extract dir light to full screen quad pass
-	MeshRenderer::CBPS::DirectionalLight dirLight;
-	MeshRenderer::CBPS::PointLight pointLight;
 	Math::Matrix viewMatr;
 	float uShininess = 32.0f; // TODO: remove?
 };
@@ -28,7 +27,6 @@ __declspec(align(16))
 struct InversedProj {
 	Math::Matrix InverseProjection;
 	Math::Vector2 ScreenDimensions;
-	Math::Vector2 _dummy;
 };
 
 LightVolumesPass::LightVolumesPass(RenderContext& ctx)
@@ -211,21 +209,26 @@ LightVolumesPass::LightVolumesPass(RenderContext& ctx)
 				D3D11_CPU_ACCESS_WRITE,		    // UINT CPUAccessFlags;
 				0,							    // UINT MiscFlags;
 				0,							    // UINT StructureByteStride;
+			},
+			{
+				sizeof(InversedProj),            // UINT ByteWidth;
+				D3D11_USAGE_DYNAMIC,		    // D3D11_USAGE Usage;
+				D3D11_BIND_CONSTANT_BUFFER,     // UINT BindFlags;
+				D3D11_CPU_ACCESS_WRITE,		    // UINT CPUAccessFlags;
+				0,							    // UINT MiscFlags;
+				0,							    // UINT StructureByteStride;
+			},
+			{
+				sizeof(Light::CBPS),            // UINT ByteWidth;
+				D3D11_USAGE_DYNAMIC,		    // D3D11_USAGE Usage;
+				D3D11_BIND_CONSTANT_BUFFER,     // UINT BindFlags;
+				D3D11_CPU_ACCESS_WRITE,		    // UINT CPUAccessFlags;
+				0,							    // UINT MiscFlags;
+				0,							    // UINT StructureByteStride;
 			}
 		};
 
-		lightVolumesShader = std::make_shared<Shader>(L"shaders/LightVolumesPass.hlsl", (Shader::CreationFlags)(Shader::VERTEX_SH | Shader::PIXEL_SH), ctx.device, inputElements, (int)std::size(inputElements), cbVSDescs, 1, cbPSDescs, 1);
-	}
-	{
-		const D3D11_BUFFER_DESC inversedProjDesc{
-			sizeof(InversedProj),	            // UINT ByteWidth;
-			D3D11_USAGE_DYNAMIC,		        // D3D11_USAGE Usage;
-			D3D11_BIND_CONSTANT_BUFFER,	        // UINT BindFlags;
-			D3D11_CPU_ACCESS_WRITE,		        // UINT CPUAccessFlags;
-			0,							        // UINT MiscFlags;
-			0,							        // UINT StructureByteStride;
-		};
-		ctx.device->CreateBuffer(&inversedProjDesc, nullptr, &inversedProjBuf);
+		lightVolumesShader = std::make_shared<Shader>(L"shaders/LightVolumesPass.hlsl", (Shader::CreationFlags)(Shader::VERTEX_SH | Shader::PIXEL_SH), ctx.device, inputElements, (int)std::size(inputElements), cbVSDescs, 1, cbPSDescs, (int)std::size(cbPSDescs));
 	}
 }
 
@@ -297,19 +300,31 @@ void LightVolumesPass::AddLightVolumesPass(RenderContext& ctx, FrameGraph& fg, F
 			RenderTarget* lightAccRtv = lightAcc.BindWrite(ctx, &rtvDesc, 0);
 
 			{
+				const CameraStorage::CameraEntry& activeCam = gRenderSys->cameraManager.GetActiveCamera();
 				Renderer* renderer = gRenderSys->GetRenderer();
-				auto cbPS = MeshRenderer::CBPS{}; // TEMP
-				renderer->PopulateLightsBuffer(cbPS); // TODO: TEMP E2
-
-				CBPSVolumes cbPSVolumes;
-				cbPSVolumes.dirLight = cbPS.dirLight;
-				cbPSVolumes.viewMatr = gTempGame->GetActiveCamera()->GetViewMatrix().Transpose();
-				Math::Matrix inversedProjMatr = gTempGame->GetActiveCamera()->GetProjectionMatrix().Invert().Transpose();
-
 				auto sphereGeom = renderer->GetUtils()->GetSphereGeom(renderer);
 
-				for (int i = 0; i < cbPS.spotLightsNum; ++i) {
-					cbPSVolumes.pointLight = cbPS.pointLights[i]; // TEMP
+				CBPSVolumes cbPSVolumes;
+				cbPSVolumes.viewMatr = activeCam.camera.GetViewMatrix().Transpose(); // Do we need use EditorCamera instead here in editor(?)
+
+				Light::CBPS lightBuffer;
+				for (const auto& dirLightSrc : LightsStorage::Instance().dirLights.GetStorage()) {
+					dirLightSrc.light->UpdateBuffer(lightBuffer, dirLightSrc.transform); // TEMP untill dir light gets extracted to a separate full screen pass
+					break;
+				}
+				{
+					// TODO: cache this buffer value since it doesn't change between passes
+					InversedProj inversedProj;
+					// Do we need use EditorCamera instead here in editor(?)
+					inversedProj.InverseProjection = activeCam.camera.GetProjectionMatrix().Invert().Transpose(); // cam inversed proj
+					inversedProj.ScreenDimensions = Math::Vector2{ctx.viewport.width, ctx.viewport.height};
+					lightVolumesShader->SetCBPS(ctx.context, 1, &inversedProj);
+				}
+
+				const auto& lightsStorage = LightsStorage::Instance().pointLights.GetStorage();
+				for (const auto& lightSrc : lightsStorage) {
+					// fill light constant buffer
+					lightSrc.light->UpdateBuffer(lightBuffer, lightSrc.transform);
 
 					// STENCIL PASS
 					ctx->ClearDepthStencilView(depthBuf, D3D11_CLEAR_STENCIL, 1.0f, 1);
@@ -319,11 +334,11 @@ void LightVolumesPass::AddLightVolumesPass(RenderContext& ctx, FrameGraph& fg, F
 
 					sphereGeom->Activate(ctx.context);
 					
+					// fill vertex constant buffer
 					MeshRenderer::CBVS cbVS;
-					cbVS.worldTransform = (Math::Matrix::CreateScale(25.0f) * Math::Matrix::CreateTranslation(Math::Vector3(cbPS.pointLights[i].position))).Transpose();
-					//cbVS.worldTransform = Math::Matrix::CreateTranslation(Math::Vector3(cbPS.pointLights[i].position)).Transpose();
-					//cbVS.viewProj = renderer->GetViewProjMatrix();
-					cbVS.viewProj = renderer->GetViewProjMatrix();
+					const Math::Transform& lightTrs = SharedStorage::Instance().transforms.AccessRead(lightSrc.transform);
+					cbVS.worldTransform = (Math::Matrix::CreateScale(lightSrc.light->GetRadius()) * Math::Matrix::CreateTranslation(lightTrs.GetPosition())).Transpose();
+					cbVS.viewProj = gRenderSys->cameraManager.GetViewProjTransposed(); // already transposed
 					pureGeomShader->SetCBVS(ctx.context, 0, &cbVS);
 					
 					ctx->OMSetRenderTargets(0, nullptr, depthBuf);
@@ -337,9 +352,12 @@ void LightVolumesPass::AddLightVolumesPass(RenderContext& ctx, FrameGraph& fg, F
 					ctx->RSSetState(rastState2);
 					float blendFactor[] = {1.0f, 1.0f, 1.0f, 1.0f};
 					ctx->OMSetBlendState(blendState, blendFactor, 0xffffffff);
+
 					lightVolumesShader->Activate(ctx, lightVolumesShader);
+					lightVolumesShader->SetCBVS(ctx.context, 0, &cbVS);
 					lightVolumesShader->SetCBPS(ctx.context, 0, &cbPSVolumes);
-					ctx->PSSetConstantBuffers(1, 1, &inversedProjBuf);
+					lightVolumesShader->SetCBPS(ctx.context, 2, &lightBuffer);
+
 					ctx->PSSetShaderResources(0, 1, &albedoSpecSrt);
 					ctx->PSSetShaderResources(1, 1, &normalSrt);
 
@@ -356,18 +374,6 @@ void LightVolumesPass::AddLightVolumesPass(RenderContext& ctx, FrameGraph& fg, F
 					depthBufCopy.BindRead(ctx, srvDesc, 2);
 
 					sphereGeom->Activate(ctx.context);
-					
-					lightVolumesShader->SetCBVS(ctx.context, 0, &cbVS);
-					
-					{
-						InversedProj inversedProj;
-						inversedProj.InverseProjection = inversedProjMatr; // cam inversed proj
-						inversedProj.ScreenDimensions = Math::Vector2{ctx.viewport.width, ctx.viewport.height};
-						D3D11_MAPPED_SUBRESOURCE subres;
-						ctx->Map(inversedProjBuf, 0, D3D11_MAP_WRITE_DISCARD, 0, &subres);
-						memcpy(subres.pData, &inversedProj, sizeof(inversedProj));
-						ctx->Unmap(inversedProjBuf, 0);
-					}
 					ctx->DrawIndexed(sphereGeom->idxNum, 0, 0);
 				}
 			}

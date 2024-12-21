@@ -7,11 +7,13 @@
 #include "os/Window.h"
 #include "RenderContext.h"
 #include "Renderable.h"
+#include "RenderSystem.h"
 #include "GeometryData.h"
 #include "mesh/MeshLoader.h"
 #include "TextureLoader.h"
-#include "Lights.h"
 #include "Shader.h"
+
+#include "logs/Logs.h"
 
 #include "input/InputDevice.h"
 
@@ -167,6 +169,10 @@ void Renderer::Shutdown()
 void Renderer::Draw()
 {
 	context.ClearState();
+	if (!gRenderSys->cameraManager.HasActiveCamera()) {
+		LOG_WARN("unable to draw a frame since no active camera was set");
+		return;
+	}
 	TestFrameGraph();
 	context.ResetFrame();
 }
@@ -179,13 +185,6 @@ void Renderer::EndFrame()
 void Renderer::SetClearColor(const float* color)
 {
 	memcpy(clearColor, color, sizeof(float) * 4);
-}
-
-void Renderer::PopulateLightsBuffer(MeshRenderer::CBPS& buffer) const
-{
-	for (const Light* light : lightSources) {
-		light->UpdateBuffer(buffer);
-	}
 }
 
 Mesh::PTR Renderer::GetMesh(const std::string& path)
@@ -292,13 +291,6 @@ void Renderer::TestFrameGraph()
 	};
 	static GraphLogger _gLogger{fg};
 #endif
-}
-
-void Renderer::DrawSceneGeometry()
-{
-	for (const Renderable& renderObj : RenderableStorage::Instance().GetStorage()) {
-		MeshRenderer::DrawMesh(context, renderObj);
-	}
 }
 
 void Renderer::DrawScreenQuad()

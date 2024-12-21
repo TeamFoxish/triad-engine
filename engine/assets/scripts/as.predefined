@@ -265,9 +265,9 @@ Vector3 Clamp(const Vector3 &in v, const Vector3 &in min, const Vector3 &in max)
 
 Vector3 Vector3Transform(const Vector3 &in v, const Quaternion &in quat);
 
-const Vector3 Vector3Forward; // (1, 0, 0)
-const Vector3 Vector3Right;   // (0, -1, 0) :)
-const Vector3 Vector3Up;      // (0, 0, 1)
+const Vector3 Vector3Forward; // (0, 0, -1)
+const Vector3 Vector3Right;   // (1, 0, 0)
+const Vector3 Vector3Up;      // (0, 1, 0)
 const Vector3 Vector3Zero;    // (0, 0, 0)
 
 class Quaternion{
@@ -299,7 +299,7 @@ class Quaternion{
 	float w;
 }
 
-Quaternion QuaternionFromPitchRollYaw(float pitch, float roll, float yaw); // in radians
+Quaternion QuaternionFromYawPitchRoll(float yaw, float pitch, float roll); // in radians
 Quaternion QuaternionFromAxisAngle(const Vector3 &in axis, float angle); // angle in radians
 Quaternion QuaternionFromToRotation(const Vector3 &in a, const Vector3 &in b);
 Quaternion QuaternionFromLookRotation(const Vector3 &in forward, const Vector3 &in up);
@@ -325,7 +325,26 @@ class Transform{
     Vector3 GetLocalScale() const;
     void SetLocalScale(const Vector3 &in);
 }
+} // Math
+
+namespace Scene {
+typedef uint64 EntityId;
+const EntityId EntityInvalidId; // handle id = -1, gen = -1
+bool IsValidEntity(EntityId id);
+
+class Entity{
+	ref@ entity;
+	EntityId parent;
+    string name;
+    bool isComposite;
 }
+
+namespace Tree {
+    EntityId AddEntity(Entity &in entity);
+    void AddEntityTransform(EntityId id, const Math::Transform@ transform);
+    void RemoveEntity(EntityId id);
+}
+} // Scene
 
 class Material{
 	Material();
@@ -344,3 +363,214 @@ class Renderable{
 	Mesh mesh;
 	Material material;
 }
+
+class DirectionalLight{
+	DirectionalLight();
+	DirectionalLight(const Math::Transform@);
+
+	Math::Vector3 GetColor() const;
+	void SetColor(const Math::Vector3 &in color);
+}
+
+class PointLight{
+	PointLight();
+	PointLight(const Math::Transform@);
+
+	Math::Vector3 GetColor() const;
+	void SetColor(const Math::Vector3 &in color);
+	float GetIntensity() const;
+	void SetIntensity(float intensity);
+	float GetRadius() const;
+	void SetRadius(float radius);
+}
+
+class Camera{
+	Camera();
+	Camera(const Math::Transform@);
+
+	void MakePerspective();
+	void MakeOrthographic();
+	void SetFov(float fovDeg);
+	void SetLookTrasnform(const Math::Vector3 &in camPos, const Math::Vector3 &in target, const Math::Vector3 &in up);
+	void SetActive();
+}
+
+namespace Input{
+bool IsKeyDown(Key key);
+bool IsKeyHold(Key key);
+bool IsKeyUp(Key key);
+
+void GetMousePosition(float &out x, float &out y);
+void GetMouseOffset(float &out x, float &out y);
+
+enum Key{
+	None,
+	LeftButton,
+	RightButton,
+	MiddleButton,
+	MouseButtonX1,
+	MouseButtonX2,
+	MouseButtonX3,
+	WheelUp,
+	WheelDown,
+	Back,
+	Tab,
+	Enter,
+	Pause,
+	CapsLock,
+	Kana,
+	Kanji,
+	Escape,
+	ImeConvert,
+	ImeNoConvert,
+	Space,
+	PageUp,
+	PageDown,
+	End,
+	Home,
+	Left,
+	Up,
+	Right,
+	Down,
+	Select,
+	Print,
+	Execute,
+	PrintScreen,
+	Insert,
+	Delete,
+	Help,
+	D0,
+	D1,
+	D2,
+	D3,
+	D4,
+	D5,
+	D6,
+	D7,
+	D8,
+	D9,
+	A,
+	B,
+	C,
+	D,
+	E,
+	F,
+	G,
+	H,
+	I,
+	J,
+	K,
+	L,
+	M,
+	N,
+	O,
+	P,
+	Q,
+	R,
+	S,
+	T,
+	U,
+	V,
+	W,
+	X,
+	Y,
+	Z,
+	LeftWindows,
+	RightWindows,
+	Apps,
+	Sleep,
+	NumPad0,
+	NumPad1,
+	NumPad2,
+	NumPad3,
+	NumPad4,
+	NumPad5,
+	NumPad6,
+	NumPad7,
+	NumPad8,
+	NumPad9,
+	Multiply,
+	Add,
+	Separator,
+	Subtract,
+	Decimal,
+	Divide,
+	F1,
+	F2,
+	F3,
+	F4,
+	F5,
+	F6,
+	F7,
+	F8,
+	F9,
+	F10,
+	F11,
+	F12,
+	F13,
+	F14,
+	F15,
+	F16,
+	F17,
+	F18,
+	F19,
+	F20,
+	F21,
+	F22,
+	F23,
+	F24,
+	NumLock,
+	Scroll,
+	LeftShift,
+	RightShift,
+	LeftControl,
+	RightControl,
+	LeftAlt,
+	RightAlt,
+	BrowserBack,
+	BrowserForward,
+	BrowserRefresh,
+	BrowserStop,
+	BrowserSearch,
+	BrowserFavorites,
+	BrowserHome,
+	VolumeMute,
+	VolumeDown,
+	VolumeUp,
+	MediaNextTrack,
+	MediaPreviousTrack,
+	MediaStop,
+	MediaPlayPause,
+	LaunchMail,
+	SelectMedia,
+	LaunchApplication1,
+	LaunchApplication2,
+	OemSemicolon,
+	OemPlus,
+	OemComma,
+	OemMinus,
+	OemPeriod,
+	OemQuestion,
+	OemTilde,
+	ChatPadGreen,
+	ChatPadOrange,
+	OemOpenBrackets,
+	OemPipe,
+	OemCloseBrackets,
+	OemQuotes,
+	Oem8,
+	OemBackslash,
+	ProcessKey,
+	OemCopy,
+	OemAuto,
+	OemEnlW,
+	Attn,
+	Crsel,
+	Exsel,
+	EraseEof,
+	Play,
+	Zoom,
+	Pa1,
+	OemClear
+}
+} // Input

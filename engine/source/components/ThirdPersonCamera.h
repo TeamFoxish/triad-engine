@@ -5,7 +5,7 @@
 
 class ThirdPersonCamera : public CameraComponent {
 public:
-	ThirdPersonCamera(Game* game, const CameraParams& params, Compositer* parent = nullptr);
+	ThirdPersonCamera(Game* game, const Camera::Params& params, Compositer* target, Compositer* parent = nullptr);
 
 	void Initialize(Compositer* parent = nullptr) override;
 	void Update(float deltaTime, Compositer* parent = nullptr) override;
@@ -22,10 +22,6 @@ public:
 	float GetRadius() const { return radius; }
 	void SetRadius(float _radius) { radius = _radius; }
 
-	Math::Vector3 GetForwardVector(Compositer* parent) const override;
-
-	Math::Vector3 GetCameraPos() const;
-
 private:
 	// Rotation/sec speed of pitch
 	float mPitchSpeed;
@@ -38,5 +34,6 @@ private:
 	float angleY = 0.0f;
 	float radius = 10.0f;
 
+	Compositer* targetC;
 	Compositer* parentC;
 };

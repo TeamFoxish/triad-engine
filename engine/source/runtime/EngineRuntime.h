@@ -22,6 +22,8 @@ public:
 
 	Window* GetWindow() const override { return window; }
 
+	Math::Vector2 GetMousePosInViewport() const override;
+
 private:
 	Window* window = nullptr;
 };

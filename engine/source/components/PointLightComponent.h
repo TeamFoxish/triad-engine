@@ -1,14 +1,15 @@
 #pragma once
 
 #include "game/Component.h"
-#include "render/Lights.h"
+#include "render/light/LightsStorage.h"
 
 class PointLightComponent : public Component {
 public:
 	PointLightComponent(Game* game, Compositer* parent);
+	~PointLightComponent();
 
-	PointLight& GetLightSource() { return pointLight; }
+	PointLight& GetLightSource() { return LightsStorage::Instance().pointLights.Get(handle); }
 
 protected:
-	PointLight pointLight;
+	LightsStorage::StorageImpl<PointLight>::Handle handle;
 };

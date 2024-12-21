@@ -25,8 +25,6 @@ public:
 protected:
 	void DrawSceneGeometry(RenderContext& ctx);
 
-	void DrawSceneLighting(RenderContext& ctx);
-
 	void QueryEntityUnderCursor(RenderContext& ctx, FrameGraphResources::FGTexture& idsTexture, FrameGraphResources::FGTexture& idsCopy);
 
 protected:

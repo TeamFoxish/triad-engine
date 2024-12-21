@@ -4,11 +4,13 @@
 #include "fg/FrameGraph.hpp"
 #include "fg/Blackboard.hpp"
 
-#include "render/RenderSystem.h"
-#include "render/Renderer.h"
+#include "render/light/LightsStorage.h"
 #include "render/GeometryData.h"
 #include "render/mesh/MeshRenderer.h"
+#include "render/RenderSystem.h"
 #include "GBufferPass.h"
+
+#include "shared/SharedStorage.h"
 
 // TEMP
 #include "runtime/EngineRuntime.h"
@@ -17,7 +19,6 @@
 
 __declspec(align(16))
 struct CBPS {
-	MeshRenderer::CBPS::DirectionalLight dirLight;
 	Math::Matrix inverseViewMatr;
 	Math::Matrix viewMatr;
 	Math::Vector4 uCameraPos;
@@ -42,20 +43,25 @@ DeferredLightingPass::DeferredLightingPass(RenderContext& ctx)
 		    D3D11_CPU_ACCESS_WRITE,		// UINT CPUAccessFlags;
 		    0,							// UINT MiscFlags;
 		    0,							// UINT StructureByteStride;
+		},
+		{
+			sizeof(InversedProj),	// UINT ByteWidth;
+			D3D11_USAGE_DYNAMIC,		// D3D11_USAGE Usage;
+			D3D11_BIND_CONSTANT_BUFFER, // UINT BindFlags;
+			D3D11_CPU_ACCESS_WRITE,		// UINT CPUAccessFlags;
+			0,							// UINT MiscFlags;
+			0,							// UINT StructureByteStride;
+		},
+		{
+			sizeof(Light::CBPS),	// UINT ByteWidth;
+			D3D11_USAGE_DYNAMIC,		// D3D11_USAGE Usage;
+			D3D11_BIND_CONSTANT_BUFFER, // UINT BindFlags;
+			D3D11_CPU_ACCESS_WRITE,		// UINT CPUAccessFlags;
+			0,							// UINT MiscFlags;
+			0,							// UINT StructureByteStride;
 		}
     };
-    shader = std::make_shared<Shader>(L"shaders/DeferredLightingPass.hlsl", (Shader::CreationFlags)(Shader::VERTEX_SH | Shader::PIXEL_SH), ctx.device, nullptr, 0, nullptr, 0, cbPSDescs, 1);
-	{
-		const D3D11_BUFFER_DESC inversedProjDesc{
-			sizeof(InversedProj),	            // UINT ByteWidth;
-			D3D11_USAGE_DYNAMIC,		        // D3D11_USAGE Usage;
-			D3D11_BIND_CONSTANT_BUFFER,	        // UINT BindFlags;
-			D3D11_CPU_ACCESS_WRITE,		        // UINT CPUAccessFlags;
-			0,							        // UINT MiscFlags;
-			0,							        // UINT StructureByteStride;
-		};
-		ctx.device->CreateBuffer(&inversedProjDesc, nullptr, &inversedProjBuf);
-	}
+    shader = std::make_shared<Shader>(L"shaders/DeferredLightingPass.hlsl", (Shader::CreationFlags)(Shader::VERTEX_SH | Shader::PIXEL_SH), ctx.device, nullptr, 0, nullptr, 0, cbPSDescs, (int)std::size(cbPSDescs));
 }
 
 void DeferredLightingPass::AddDeferredLightingPass(RenderContext& ctx, FrameGraph& fg, FrameGraphBlackboard& bboard)
@@ -124,29 +130,28 @@ void DeferredLightingPass::AddDeferredLightingPass(RenderContext& ctx, FrameGrap
 			rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 			RenderTarget* rtv = sceneColor.BindWrite(ctx, &rtvDesc, 0);
 
-			Renderer* renderer = gRenderSys->GetRenderer();
-			auto cbPS = MeshRenderer::CBPS{}; // TEMP
-			renderer->PopulateLightsBuffer(cbPS); // TODO: TEMP E2
+			Light::CBPS lightBuffer;
+			for (const auto& dirLightSrc : LightsStorage::Instance().dirLights.GetStorage()) {
+				dirLightSrc.light->UpdateBuffer(lightBuffer, dirLightSrc.transform); // TEMP untill dir light gets extracted to a separate full screen pass
+				break;
+			}
+
+			const CameraStorage::CameraEntry& activeCam = gRenderSys->cameraManager.GetActiveCamera();
 
 			CBPS cbPSLight;
-			cbPSLight.dirLight = cbPS.dirLight;
-			cbPSLight.inverseViewMatr = gTempGame->GetActiveCamera()->GetViewMatrix().Invert().Transpose();
-			cbPSLight.viewMatr = gTempGame->GetActiveCamera()->GetViewMatrix().Transpose();
-			ThirdPersonCamera* cam = static_cast<ThirdPersonCamera*>(gTempGame->GetActiveCamera()); // TEMP
-			cbPSLight.uCameraPos = Math::Vector4(cam->GetCameraPos());
+			cbPSLight.inverseViewMatr = activeCam.camera.GetViewMatrix().Invert().Transpose();  // Do we need use EditorCamera instead here in editor(?)
+			cbPSLight.viewMatr = activeCam.camera.GetViewMatrix().Transpose();					 // Do we need use EditorCamera instead here in editor(?)
+			cbPSLight.uCameraPos = Math::Vector4(SharedStorage::Instance().transforms.AccessRead(activeCam.transform).GetPosition());
 
 			shader->SetCBPS(ctx.context, 0, &cbPSLight);
-			ctx->PSSetConstantBuffers(1, 1, &inversedProjBuf);
-
 			{
 				InversedProj inversedProj;
-				inversedProj.InverseProjection = gTempGame->GetActiveCamera()->GetProjectionMatrix().Invert().Transpose(); // cam inversed proj
-				inversedProj.ScreenDimensions = Math::Vector2{ ctx.viewport.width, ctx.viewport.height };
-				D3D11_MAPPED_SUBRESOURCE subres;
-				ctx->Map(inversedProjBuf, 0, D3D11_MAP_WRITE_DISCARD, 0, &subres);
-				memcpy(subres.pData, &inversedProj, sizeof(inversedProj));
-				ctx->Unmap(inversedProjBuf, 0);
+				// Do we need use EditorCamera instead here in editor(?)
+				inversedProj.InverseProjection = activeCam.camera.GetProjectionMatrix().Invert().Transpose(); // cam inversed proj
+				inversedProj.ScreenDimensions = Math::Vector2{ctx.viewport.width, ctx.viewport.height};
+				shader->SetCBPS(ctx.context, 1, &inversedProj);
 			}
+			shader->SetCBPS(ctx.context, 2, &lightBuffer);
 
 			ctx.TEMP_UpdateRenderTargetsNum();
 			ctx->OMSetRenderTargets(ctx.activeRenderTargetNum, ctx.activeRenderTargets, ctx.activeDepthBuffuer);

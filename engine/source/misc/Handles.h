@@ -11,6 +11,7 @@ public:
 	using Handle = thh::handle_t;
 
 	Handle Add(const T& item) { return storage.add(item); }
+	Handle Add(T&& item) { return storage.add(std::move(item)); }
 	void Remove(Handle handle) { storage.remove(handle); }
 
 	T* Get(Handle handle) 

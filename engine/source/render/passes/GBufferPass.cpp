@@ -235,13 +235,6 @@ void GBufferPass::DrawSceneGeometry(RenderContext& ctx)
 	}
 }
 
-void GBufferPass::DrawSceneLighting(RenderContext& ctx)
-{
-	for (const Renderable& renderObj : RenderableStorage::Instance().GetStorage()) {
-		MeshRenderer::DrawMesh(ctx, renderObj);
-	}
-}
-
 void GBufferPass::QueryEntityUnderCursor(RenderContext& ctx, FrameGraphResources::FGTexture& idsTexture, FrameGraphResources::FGTexture& idsCopy)
 {
 	// copy entities id texture region and cache entity id under the cursor

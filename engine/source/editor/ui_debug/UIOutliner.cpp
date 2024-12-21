@@ -8,29 +8,17 @@
 
 #include "imgui.h"
 
+#include "logs/Logs.h"
 
-void Outliner::Init(std::string root_name, std::vector<Component*> components)
+void Outliner::Init()
 {
-    root = std::make_shared<OutlinerNode>();
-    selectedNode = root;
-
-    root->name = root_name;
-    root->isSelected = true;
-
-    for (Component* component : components)
-    {
-        //component->GetId();
-        if (component->isComposite)
-        {
-            std::shared_ptr<OutlinerNode> ptr(CreateOutlinerNode_CC(component));
-            root->children.push_back(ptr);
-        }
-        else
-        {
-            std::shared_ptr<OutlinerNode> ptr(CreateOutlinerNode_Component(component));
-            root->children.push_back(ptr);
-        }
+    root = gSceneTree->GetRoot();
+    if (root.id_ < 0) {
+        return; // scene empty
     }
+    selectedNode = root;
+    SceneTree::Entity& rootEntity = gSceneTree->Get(root);
+    rootEntity.isSelected = true;
 }
 
 //void Outliner::Update(std::vector<Component*> components)
@@ -42,33 +30,53 @@ void Outliner::Init(std::string root_name, std::vector<Component*> components)
 
 void Outliner::Update()
 {
-    if (globalInputDevice->IsKeyDown(Keys::LeftButton))
+    if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
     {
         uint32_t entityId = gRenderSys->GetEntityIdUnderCursor();
-        if (entityId != selectedNode->id)
+        union ConvHelper {
+            uint32_t orig = 0;
+            decltype(selectedNode.id_) target;
+        } helper;
+        helper.orig = entityId;
+        if (helper.target != selectedNode.id_) // TODO: check if actually works (note: entity ids are not set in renderables currently)
         {
             SetSelectedNode(entityId);
         }
+        gizmo_focused = true;
+    }
+    // ToDo: remove camera jerk when out of gizmo focus
+    else if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+    {
+        gizmo_focused = false;
     }
 }
 
 void Outliner::Draw()
 {
     ImGui::Begin("Outliner");
+    if (root.id_ < 0) {
+        ImGui::End();
+        return;
+    }
+
+    SceneTree::Entity& rootEntity = gSceneTree->Get(root);
+    assert(rootEntity.isComposite);
 
     ImGuiTreeNodeFlags flag = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnDoubleClick;
-    flag |= (root->isSelected) ? ImGuiTreeNodeFlags_Selected : 0;
+    flag |= (rootEntity.isSelected) ? ImGuiTreeNodeFlags_Selected : 0;
 
-    if (ImGui::TreeNodeEx(root->name.c_str(), flag))
+    //if (ImGui::TreeNodeEx(rootEntity.name.c_str(), flag))
+    if (ImGui::TreeNodeEx("Scene", flag))
     {
-        if (ImGui::IsItemClicked() && (selectedNode->name != root->name))
+        if (ImGui::IsItemClicked() && (selectedNode != root))
         {
-            selectedNode->isSelected = false;
+            SceneTree::Entity& selected = gSceneTree->Get(selectedNode);
+            selected.isSelected = false;
             selectedNode = root;
-            selectedNode->isSelected = true;
+            rootEntity.isSelected = true;
         }
 
-        for (auto child : root->children)
+        for (SceneTree::Handle child : rootEntity.children)
         {
             DrawOutlinerNode(child);
         }
@@ -79,105 +87,73 @@ void Outliner::Draw()
     ImGui::End();
 }
 
-std::shared_ptr<Outliner::OutlinerNode> Outliner::GetSelectedNode() const
+void Outliner::DrawOutlinerNode(SceneTree::Handle node)
 {
-    return selectedNode;
-}
-
-Outliner::OutlinerNode* Outliner::CreateOutlinerNode_CC(Component* component)
-{
-    CompositeComponent* cc = dynamic_cast<CompositeComponent*>(component);
-
-    OutlinerNode* node = new OutlinerNode;
-    node->id = cc->GetId();
-    node->name = cc->GetName();
-    node->isSelected = false;
-    node->component = component;
-
-    for (Component* child : cc->GetChildren())
-    {
-        if (child->isComposite)
-        {
-            std::shared_ptr<OutlinerNode> ptr(CreateOutlinerNode_CC(child));
-            node->children.push_back(ptr);
-        }
-        else
-        {
-            std::shared_ptr<OutlinerNode> ptr(CreateOutlinerNode_Component(child));
-            node->children.push_back(ptr);
-        }
+    SceneTree::Entity& entity = gSceneTree->Get(node);
+    if (!entity.isComposite) {
+        return;
     }
 
-    return node;
-}
-
-Outliner::OutlinerNode* Outliner::CreateOutlinerNode_Component(Component* component)
-{
-    OutlinerNode* node = new OutlinerNode;
-
-    node->id = component->GetId();
-    node->name = component->GetName();
-    node->isSelected = false;
-    node->component = component;
-
-    return node;
-}
-
-void Outliner::DrawOutlinerNode(std::shared_ptr<OutlinerNode> node)
-{
     ImGuiTreeNodeFlags flag = ImGuiTreeNodeFlags_OpenOnDoubleClick;
-    flag |= (node->isSelected) ? ImGuiTreeNodeFlags_Selected : 0;
-    flag |= (node->children.empty()) ? ImGuiTreeNodeFlags_Leaf : 0;
+    flag |= (entity.isSelected) ? ImGuiTreeNodeFlags_Selected : 0;
 
-    if (ImGui::TreeNodeEx(node->name.c_str(), flag))
+    // ToDo: will outliner draw only components without their children(?)
+    //flag |= (entity.children.empty()) ? ImGuiTreeNodeFlags_Leaf : 0;
+    flag |= ImGuiTreeNodeFlags_Leaf;
+    
+
+    if (ImGui::TreeNodeEx(entity.name.c_str(), flag))
     {
-        if (ImGui::IsItemClicked() && (selectedNode->name != node->name))
+        if (ImGui::IsItemClicked() && (selectedNode != node))
         {
-            selectedNode->isSelected = false;
+            SceneTree::Entity& selected = gSceneTree->Get(selectedNode);
+            selected.isSelected = false;
             selectedNode = node;
-            selectedNode->isSelected = true;
+            entity.isSelected = true;
         }
 
-        for (auto child : node->children)
+        // TEMP
+        /*for (SceneTree::Handle child : entity.children)
         {
             DrawOutlinerNode(child);
-        }
+        }*/
 
         ImGui::TreePop();
     }
 }
 
-bool Outliner::FindNodeById(uint32_t entityId, std::shared_ptr<OutlinerNode> node)
+bool Outliner::FindNodeById(uint32_t entityId, SceneTree::Handle node)
 {
-    if (node->id == entityId)
-    {
-        //LOG_DEBUG("Selected node was updated. Id:{}", node->id);
-        selectedNode->isSelected = false;
-        selectedNode = node;
-        selectedNode->isSelected = true;
-        return true;
-    }
+    //if (node->id == entityId)
+    //{
+    //    //LOG_DEBUG("Selected node was updated. Id:{}", node->id);
+    //    selectedNode->isSelected = false;
+    //    selectedNode = node;
+    //    selectedNode->isSelected = true;
+    //    return true;
+    //}
 
-    for (auto child : node->children)
-    {
-        if (FindNodeById(entityId, child))
-        {
-            return true;
-        }
-    }
+    //for (auto child : node->children)
+    //{
+    //    if (FindNodeById(entityId, child))
+    //    {
+    //        return true;
+    //    }
+    //}
 
-    return false;
+    //return false;
+    return true;
 }
 
 void Outliner::SetSelectedNode(uint32_t entityId)
 {
-    for (auto child : root->children)
+    /*for (auto child : root->children)
     {
         if (FindNodeById(entityId, child))
         {
             break;
         }
-    }
+    }*/
 }
 
 #endif // EDITOR

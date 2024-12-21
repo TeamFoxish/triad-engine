@@ -7,7 +7,6 @@
 #include "render/mesh/MeshLoader.h"
 #include "os/Window.h"
 #include "components/PointLightComponent.h"
-#include "render/Lights.h"
 
 #include "render/RenderSystem.h"
 
@@ -21,9 +20,13 @@ PlayerBall::PlayerBall(Game* game)
 
 void PlayerBall::Initialize(Compositer* parent)
 {
-	CameraParamsPerspective perspective;
-	perspective.aspectRatio = gRenderSys->GetRenderer()->GetContext().viewport.width / gRenderSys->GetRenderer()->GetContext().viewport.height;
-	camera = new ThirdPersonCamera(GetGame(), perspective, this);
+	CompositeComponent* camHolder = new CompositeComponent(GetGame(), this);
+
+	Camera::Params params;
+	RenderContext& ctx = gRenderSys->GetContext();
+	params.width = gRenderSys->GetContext().viewport.width;
+	params.height = gRenderSys->GetContext().viewport.height;
+	camera = new ThirdPersonCamera(GetGame(), params, this, camHolder);
 
 	PointLightComponent* pointLight = new PointLightComponent(GetGame(), this);
 	pointLight->GetLightSource().SetColor(Math::Color{1.0f, 0.9f, 0.5f});
@@ -41,7 +44,6 @@ void PlayerBall::Initialize(Compositer* parent)
 	tempC->SetScale(Math::Vector3{2.0f, 0.2f, 0.2f});
 
 	attachSocket = new CompositeComponent(GetGame(), this);
-	GetGame()->player = this;
 
 	CompositeComponent::Initialize();
 }
@@ -56,7 +58,7 @@ void PlayerBall::ProceedInput(InputDevice* inpDevice)
 	}
 	const float moveDist = moveVec.Length();
 	moveVec.Normalize();
-	const Math::Vector3 up = {0.0f, 0.0f, 1.0f};
+	const Math::Vector3 up = Math::Vector3::Up;
 	const Math::Vector3 right = Math::Vector3::Transform(moveVec, Math::Quaternion::CreateFromAxisAngle(up, -Math::Pi / 2));
 	const Math::Vector3 rightLocal = Math::Vector3::Transform(right, meshSocket->GetRotation());
 	const Math::Quaternion rot = Math::Quaternion::CreateFromAxisAngle(right, -moveDist);

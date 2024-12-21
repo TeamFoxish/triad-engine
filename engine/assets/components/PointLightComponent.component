@@ -1,0 +1,4 @@
+content:
+  class: PointLightComponent
+  module: Engine
+type: component

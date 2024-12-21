@@ -1,0 +1,4 @@
+content:
+  class: CameraComponent
+  module: Engine
+type: component

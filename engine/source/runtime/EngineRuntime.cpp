@@ -22,6 +22,8 @@
 
 #include "scripts/ScriptSystem.h"
 #include "scripts/ScriptObject.h"
+#include "logs/Logs.h"
+
 
 ConfigVar<std::string_view> cfgProjectName("/Project/Name", "DefaultProjectName");
 ConfigVar<std::string_view> cfgInitResource("/Project/Resource/InitResource", "res://init.resource");
@@ -32,10 +34,14 @@ MulticastDelegate<int, int> gViewportResized;
 
 bool EngineRuntime::Init(const InitParams& params)
 {
+	if (!gEngineRuntime) {
+		gEngineRuntime = this;
+	}
 	if (params.window.createWindow) {
 		window = osCreateWindow(cfgProjectName.GetRef().data(), params.window.width, params.window.height);
 		if (!window) {
-			// TODO: log error message
+			// TODO: change message(?)
+			LOG_ERROR("Failed on window creation");
 			return false;
 		}
 	}
@@ -44,19 +50,25 @@ bool EngineRuntime::Init(const InitParams& params)
 
 	// init systems
 	if (!InitSharedStorage()) {
-		// TODO: log error message
+		// TODO: change message(?)
+		LOG_ERROR("Failed on SharedStorage Initialization");
 		return false;
 	}
 	if (!InitRender(this)) {
-		// TODO: log error message
+		// TODO: change message(?)
+		LOG_ERROR("Failed on SharedStorage Initialization");
 		return false;
 	}
 	if (!InitResource(this)) {
-		// TODO: log error message
+		// TODO: change message(?)
+		LOG_ERROR("Failed on Reaource Initialization");
 		return false;
 	}
+	extern void InitSceneTree();
+	InitSceneTree();
 	if(!InitScript(this)) {
-		// TODO: log error message
+		// TODO: change message(?)
+		LOG_ERROR("Failed on Script Initialization");
 		return false;
 	}
 
@@ -79,7 +91,7 @@ void EngineRuntime::Run()
 	if (success) {
 		while (gTempGame->isRunning) {
 			gTempGame->UpdateFrame();
-
+			
 			SharedStorage::Instance().transforms.Update();
 
 			UIDebug::StartNewFrame();
@@ -99,10 +111,17 @@ void EngineRuntime::Shutdown()
 	gTempGame->Shutdown();
 	// delete globalInputDevice; crushes
 	TermScript(this);
+	extern void TermSceneTree();
+	TermSceneTree();
 	TermResource(this);
 	TermRender(this);
 	TermSharedStorage();
 	if (window) {
 		osDestroyWindow(window);
 	}
+}
+
+Math::Vector2 EngineRuntime::GetMousePosInViewport() const
+{
+	return globalInputDevice->MousePosition;
 }

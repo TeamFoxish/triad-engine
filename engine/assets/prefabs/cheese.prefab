@@ -6,11 +6,25 @@ content:
       overrides:
         moveSpeed: 1.5
         rotSpeed: 3.0
+    Light:
+      component: res://components/PointLightComponent.component
+      overrides:
+        light:
+          color:
+            r: 0.0
+            g: 1.0
+            b: 1.0
+          intensity: 15.0
     Test2:
       component: res://components/TestComponent.component
     Mesh:
       component: res://components/MeshComponent.component
       overrides:
+        transform:
+          rotation:
+            x: 0.0
+            y: 90.0
+            z: 0.0
         renderObj:
           material: res://materials/cheese.material
           mesh: res://meshes/cheese.mesh

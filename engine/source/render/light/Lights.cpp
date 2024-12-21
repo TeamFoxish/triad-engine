@@ -1,11 +1,12 @@
 #include "Lights.h"
 
-#include "Renderer.h"
+#include "render/Renderer.h"
 #include "game/Game.h"
 #include "game/Component.h"
 #include "game/Component.h"
 
 #include "render/RenderSystem.h"
+#include "shared/SharedStorage.h"
 
 Light::Light(Renderer* renderer, Compositer* parent)
 	: parentRef(parent)
@@ -33,11 +34,14 @@ DirectionalLight::DirectionalLight(Renderer* renderer, Compositer* parent)
 {
 }
 
-void DirectionalLight::UpdateBuffer(MeshRenderer::CBPS& buffer) const
+void DirectionalLight::UpdateBuffer(CBPS& buffer, TransformStorage::Handle transform) const
 {
 	buffer.dirLight.mDiffuseColor = color;
 	buffer.dirLight.mSpecColor = specularColor;
-	buffer.dirLight.mDirection = Math::Vector4(parentRef->GetForward());
+
+	const Math::Transform& lightTrs = SharedStorage::Instance().transforms.AccessRead(transform);
+	Math::Vector3 forward = Math::Vector3::UnitX;
+	buffer.dirLight.mDirection = Math::Vector4(Math::Vector3::Transform(forward, lightTrs.GetRotation()));
 }
 
 PointLight::PointLight(Renderer* renderer, Compositer* parent)
@@ -45,16 +49,13 @@ PointLight::PointLight(Renderer* renderer, Compositer* parent)
 {
 }
 
-void PointLight::UpdateBuffer(MeshRenderer::CBPS& buffer) const
+void PointLight::UpdateBuffer(CBPS& buffer, TransformStorage::Handle transform) const
 {
-	if (buffer.spotLightsNum >= MeshRenderer::CBPS::NR_POINT_LIGHTS) {
-		return;
-	}
-
-	MeshRenderer::CBPS::PointLight& pointL = buffer.pointLights[buffer.spotLightsNum];
+	CBPS::PointLight& pointL = buffer.pointLight;
+	const Math::Transform& lightTrs = SharedStorage::Instance().transforms.AccessRead(transform);
+	pointL.position = Math::Vector4(lightTrs.GetPosition());
 	pointL.diffuse = color * intensity;
 	pointL.specular = specularColor;
-	pointL.position = Math::Vector4(parentRef->GetPosition());
 	switch (attenuation) {
 	case Constant:
 		pointL.constant = 1.0f;
@@ -68,5 +69,4 @@ void PointLight::UpdateBuffer(MeshRenderer::CBPS& buffer) const
 	default:
 		assert(false);
 	}
-	buffer.spotLightsNum++;
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "math/Math.h"
+
 class RuntimeIface {
 public:
 	struct InitParams {
@@ -16,4 +18,8 @@ public:
 	virtual void Shutdown() = 0;
 
 	virtual class Window* GetWindow() const = 0;
+
+	virtual Math::Vector2 GetMousePosInViewport() const = 0;
 };
+
+inline RuntimeIface* gEngineRuntime = nullptr;

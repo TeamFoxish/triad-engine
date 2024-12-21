@@ -1,14 +1,15 @@
 #pragma once
 
 #include "game/Component.h"
-#include "render/Lights.h"
+#include "render/light/LightsStorage.h"
 
 class DirectionalLightComponent : public Component {
 public:
 	DirectionalLightComponent(Game* game, Compositer* parent);
+	~DirectionalLightComponent();
 
-	DirectionalLight& GetLightSource() { return dirLight; }
+	DirectionalLight& GetLightSource() { return LightsStorage::Instance().dirLights.Get(handle); }
 
 protected:
-	DirectionalLight dirLight;
+	LightsStorage::StorageImpl<DirectionalLight>::Handle handle;
 };
