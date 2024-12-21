@@ -19,7 +19,7 @@ using Strid = sid::string_id<sid::default_database>;
 // allows the use of string literal operators "***"_id, "***"_id64
 using namespace sid::literals;
 
-inline Strid ToStrid(const std::string& str)
+inline Strid ToStrid(std::string_view str)
 {
-	return Strid(sid::string_info{str.c_str(), str.length()});
+	return Strid(sid::string_info{str.data(), str.length()});
 }

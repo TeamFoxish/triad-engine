@@ -1,0 +1,4 @@
+content:
+  class: SingleSoundComponent
+  module: Engine
+type: component

@@ -4,7 +4,6 @@ class PointLightComponent : CompositeComponent {
     PointLightComponent(ICompositer@ parent) {
         super(parent);
         light = PointLight(GetTransform());
-        println("wtf");
     }
 
     const PointLight& GetLight() const { return light; }

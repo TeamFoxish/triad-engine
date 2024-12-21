@@ -25,6 +25,10 @@ public:
 	Math::Vector2 GetMousePosInViewport() const override;
 
 private:
+	void HandleSimulationStart();
+	void HandleSimulationEnd();
+
+private:
 	std::unique_ptr<EngineRuntime> engRuntime;
 };
 

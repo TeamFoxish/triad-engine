@@ -6,6 +6,10 @@ content:
       overrides:
         moveSpeed: 1.5
         rotSpeed: 3.0
+    Sound:
+      component: res://components/SingleSoundComponent.component
+      overrides:
+        eventName: event:/Bubbles/Bubble3D
     Light:
       component: res://components/PointLightComponent.component
       overrides:

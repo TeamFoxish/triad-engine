@@ -9,10 +9,16 @@ class HandleStorage {
 public:
 	using Storage = thh::handle_vector_t<T>;
 	using Handle = thh::handle_t;
+	using Index = int32_t;
+
+	Index Length() const { return storage.size(); }
+	Handle GetHandleFromIdx(Index idx) const { return storage.handle_from_index(idx); }
 
 	Handle Add(const T& item) { return storage.add(item); }
 	Handle Add(T&& item) { return storage.add(std::move(item)); }
 	void Remove(Handle handle) { storage.remove(handle); }
+
+	void Clear() { storage.clear(); }
 
 	T* Get(Handle handle) 
 	{ 
@@ -43,6 +49,9 @@ public:
 		assert(item);
 		return *item;
 	}
+
+	T& operator[](Index idx) { return storage[idx]; }
+	const T& operator[](Index idx) const { return storage[idx]; }
 
 	Storage::iterator begin() { return storage.begin(); }
 	Storage::const_iterator begin() const { return storage.begin(); }

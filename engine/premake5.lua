@@ -14,11 +14,11 @@ project("Engine")
   
   filter("configurations:Debug*")
     libdirs({ "libs/**/debug" })
-	links({ "assimp-vc143-mtd", "freetyped", "argumentumd", "yaml-cppd", "angelscriptd", "spdlogd" })
+	links({ "assimp-vc143-mtd", "freetyped", "argumentumd", "yaml-cppd", "angelscriptd", "spdlogd", "fmodL_vc", "fmodstudioL_vc" })
   
   filter("configurations:Release*")
     libdirs({ "libs/**/release" })
-	links({ "assimp-vc143-mt", "freetype", "argumentum", "yaml-cpp", "angelscript", "spdlog" })
+	links({ "assimp-vc143-mt", "freetype", "argumentum", "yaml-cpp", "angelscript", "spdlog", "fmod_vc", "fmodstudio_vc" })
   
   filter {  }
   

@@ -395,6 +395,32 @@ class Camera{
 	void SetActive();
 }
 
+namespace Sound{
+class Event{
+	Event();
+
+	bool IsValid() const; // never access invalid event
+	void Play();
+	void Restart();
+	void Stop(bool allowFadeOut = true);
+	void Pause();
+	void Resume();
+    void SetPaused(bool pause);
+    float GetVolume() const;
+    void SetVolume(float volume);
+    float GetPitch() const;
+    void SetPitch(float pitch);
+    float GetParameter(const string &in name) const;
+    void SetParameter(const string &in name, float value);
+    bool Is3D() const;
+    void Set3DAttributes(const Math::Transform@ transform) const;
+}
+
+namespace System{
+    Event PlayEvent(const string &in name);
+}
+}
+
 namespace Input{
 bool IsKeyDown(Key key);
 bool IsKeyHold(Key key);
