@@ -36,10 +36,14 @@ project("Engine")
 
   filter("configurations:Debug*")
    postbuildcommands {
-    "{COPYFILE} " .. scriptDir .. "/assimp-vc143-mtd.dll %{cfg.targetdir}/assimp-vc143-mtd.dll"
+    "{COPYFILE} " .. scriptDir .. "/assimp-vc143-mtd.dll %{cfg.targetdir}/assimp-vc143-mtd.dll",
+    "{COPYFILE} " .. scriptDir .. "/fmodL.dll %{cfg.targetdir}/fmodstudioL.dll",
+    "{COPYFILE} " .. scriptDir .. "/fmodL.dll %{cfg.targetdir}/fmodL.dll"
   }
   filter("configurations:Release*")
    postbuildcommands {
-    "{COPYFILE} " .. scriptDir .. "/assimp-vc143-mt.dll %{cfg.targetdir}/assimp-vc143-mt.dll"
+    "{COPYFILE} " .. scriptDir .. "/assimp-vc143-mt.dll %{cfg.targetdir}/assimp-vc143-mt.dll",
+    "{COPYFILE} " .. scriptDir .. "/fmodL.dll %{cfg.targetdir}/fmodstudio.dll",
+    "{COPYFILE} " .. scriptDir .. "/fmodL.dll %{cfg.targetdir}/fmod.dll"
   }
   
