@@ -1,13 +1,5 @@
-interface ICompositer {
-    Math::Transform@ GetTransform() const; // TODO: return by weak ref
-    void AddChild(Component@ child);
-    // TODO: RemoveChild
-    // TODO: GetChild<>
-}
-
 abstract class Component {
     private ICompositer@ parent; // TODO: hold parent as weak ref
-    private uint64 id;
     private string name;
 
     Component(ICompositer@ _parent = null) {
@@ -29,6 +21,4 @@ abstract class Component {
     ICompositer@ GetParent() {
         return parent;
     }
-
-    uint64 GetId() const { return id; }
 };

@@ -25,6 +25,8 @@
 #include "game/ComponentStorage.h"
 #include "components/CameraComponent.h"
 #include "shared/SharedStorage.h"
+#include "scripts/ScriptSystem.h"
+#include "scripts/ScriptObject.h"
 
 void UIDebug::Init(Window* window)
 {

@@ -21,6 +21,10 @@ void SetScene(Scene@ scene) {
     @sceneRoot = @scene;
 }
 
+Scene@ GetScene() {
+    return sceneRoot;
+}
+
 void init()
 {
     println("Initializing scripts...");

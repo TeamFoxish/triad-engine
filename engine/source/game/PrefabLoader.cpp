@@ -55,7 +55,7 @@ ScriptObject* PrefabLoader::Create(ResTag* tag, ScriptObject* parent)
 		ResTag componentTag = ResTag(ToStrid(parameters["component"].Scalar()));
 		ScriptObject* component = ComponentLoader::CreateComponent(&componentTag, root);
 		component->ApplyOverrides(parameters["overrides"]);
-		delete component;
+		component->SetField("name", name);
 	}
 	return root;
 }

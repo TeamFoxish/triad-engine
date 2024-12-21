@@ -27,6 +27,7 @@ public:
     const ScriptLoader& GetScriptLoader() const { return _loader; }
     bool CallFunction(const std::string& module, const std::string& signature);
     bool CallFunction(const std::string &module, const std::string &signature, Consumer<asIScriptContext *> &&argsSetter);
+    bool CallFunctionAndGet(const std::string &module, const std::string &signature, Consumer<asIScriptContext*>&& retValueGetter);
     bool Update(float deltaTime);
     bool FixedUpdate(float deltaTime);
     bool PostInitEvent();

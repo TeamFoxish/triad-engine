@@ -6,6 +6,8 @@
 #include <iostream>
 #include "scene/SceneLoader.h"
 #include "shared/ResourceHandle.h"
+#include "scripts/ComponentLoader.h"
+#include "game/PrefabLoader.h"
 
 ScriptObject::ScriptObject(const std::string& module, const std::string& typeDecl, ArgsT&& args) {
     asIScriptEngine* engine = gScriptSys->GetRawEngine();
@@ -96,7 +98,10 @@ asIScriptObject* ScriptObject::Construct(ArgsT&& args)
         // construct object
         const int rc = ctx->Execute();
         if (rc != asEXECUTION_FINISHED) {
-            LOG_ERROR("faild to construct object {}.{}: `{}`", ctx->GetExceptionFunction()->GetName(), ctx->GetExceptionLineNumber(), ctx->GetExceptionString());
+            LOG_ERROR("faild to construct object \"{}\". Exception on line number \"{}\": \"{}\"", 
+                ctx->GetExceptionFunction()->GetName(),
+                ctx->GetExceptionLineNumber(),
+                ctx->GetExceptionString());
             return nullptr;
         }
 
@@ -231,6 +236,174 @@ void ScriptObject::SetField(const std::string &name, void *value)
     }
 }
 
+void ScriptObject::SetField(const std::string &name, const std::string& value)
+{
+    int fieldNumber = _fields[name];
+    void* currentValuePointer = _object->GetAddressOfProperty(fieldNumber);
+    asUINT fieldType = _object->GetPropertyTypeId(fieldNumber);
+    switch (fieldType) {
+        case asTYPEID_VOID:
+        {
+            currentValuePointer = nullptr;
+            break;
+        }
+        case asTYPEID_BOOL:
+        {
+            bool* currentValueBool = static_cast<bool*>(currentValuePointer);
+            if (value == "true") {
+                *currentValueBool = true;
+            } else {
+                *currentValueBool = false;
+            }
+            break;
+        }
+        case asTYPEID_INT8:
+        {
+            int8_t* currentValueInt8 = static_cast<int8_t*>(currentValuePointer);
+            *currentValueInt8 = std::stoi(value);
+            break;
+        }
+        case asTYPEID_INT16:
+        {
+            int16_t* currentValueInt16 = static_cast<int16_t*>(currentValuePointer);
+            *currentValueInt16 = std::stoi(value);
+            break;
+        }
+        case asTYPEID_INT32:
+        {
+            int32_t* currentValueInt32 = static_cast<int32_t*>(currentValuePointer);
+            *currentValueInt32 = std::stol(value);
+            break;
+        }
+        case asTYPEID_INT64:
+        {
+            int64_t* currentValueInt64 = static_cast<int64_t*>(currentValuePointer);
+            *currentValueInt64 = std::stoll(value);
+            break;
+        }
+        case asTYPEID_UINT8:
+        {
+            uint8_t* currentValueUint8 = static_cast<uint8_t*>(currentValuePointer);
+            *currentValueUint8 = std::stoul(value);
+            break;
+        }
+        case asTYPEID_UINT16:
+        {
+            uint16_t* currentValueUint16 = static_cast<uint16_t*>(currentValuePointer);
+            *currentValueUint16 = std::stoul(value);
+            break;
+        }
+        case asTYPEID_UINT32:
+        {
+            uint32_t* currentValueUint32 = static_cast<uint32_t*>(currentValuePointer);
+            *currentValueUint32 = std::stoul(value);
+            break;
+        }
+        case asTYPEID_UINT64:
+        {
+            uint64_t* currentValueUint64 = static_cast<uint64_t*>(currentValuePointer);
+            *currentValueUint64 = std::stoull(value);
+            break;
+        }
+        case asTYPEID_FLOAT:
+        {
+            float* currentValueFloat = static_cast<float*>(currentValuePointer);
+            *currentValueFloat = std::stof(value);
+            break;
+        }
+        case asTYPEID_DOUBLE:
+        {
+            double* currentValueDouble = static_cast<double*>(currentValuePointer);
+            *currentValueDouble = std::stod(value);
+            break;
+        }
+        default:
+        {
+            if (fieldType == gScriptSys->GetStringType()->GetTypeId()) {
+                std::string* currentValueString = static_cast<std::string*>(currentValuePointer);
+                *currentValueString = value;
+                break;
+            }
+        }
+    }
+}
+
+void* ScriptObject::ParseStringByType(const std::string &value, asUINT fieldType)
+{
+    switch (fieldType) {
+        case asTYPEID_VOID:
+        {
+            return nullptr;
+        }
+        case asTYPEID_BOOL:
+        {
+            bool boolVal = false;
+            if (value == "true") {
+                boolVal = true;
+            }
+            return &boolVal;
+        }
+        case asTYPEID_INT8:
+        {
+            int8_t int8Val = std::stoi(value);
+            return &int8Val;
+
+        }
+        case asTYPEID_INT16:
+        {
+            int16_t int16Val = std::stoi(value);
+            return &int16Val;
+        }
+        case asTYPEID_INT32:
+        {
+            int32_t int32Val = std::stol(value);
+            return &int32Val;
+        }
+        case asTYPEID_INT64:
+        {
+            int64_t int64Val = std::stoll(value);
+            return &int64Val;
+        }
+        case asTYPEID_UINT8:
+        {
+            uint8_t uint8Val = std::stoul(value);
+            return &uint8Val;
+        }
+        case asTYPEID_UINT16:
+        {
+            uint16_t uint16Val = std::stoul(value);
+            return &uint16Val;
+        }
+        case asTYPEID_UINT32:
+        {
+            uint32_t uint32Val = std::stoul(value);
+            return &uint32Val;
+        }
+        case asTYPEID_UINT64:
+        {
+            uint64_t uint64Val = std::stoull(value);
+            return &uint64Val;
+        }
+        case asTYPEID_FLOAT:
+        {
+            float floatVal = std::stof(value);
+            return &floatVal;
+        }
+        case asTYPEID_DOUBLE:
+        {
+            double doubleVal = std::stod(value);
+            return &doubleVal;
+        }
+        default:
+        {
+            if (fieldType == gScriptSys->GetStringType()->GetTypeId()) {
+                std::string stringVal = value;
+                return &stringVal;
+            }
+        }
+    }
+}
+
 void *ScriptObject::GetField(std::string name)
 {
     return _object->GetAddressOfProperty(_fields[name]);
@@ -241,51 +414,178 @@ void ScriptObject::AssignField(const std::string& name, void* value)
     const int fieldIdx = _fields[name];
     void* currentValuePointer = _object->GetAddressOfProperty(fieldIdx);
     if (!currentValuePointer) {
-        LOG_ERROR("unable to assign object value for field {} with type {}. target field value was null", name, _type->GetName());
+        LOG_ERROR("Unable to assign object value for field {} with type {}. target field value was null", name, _type->GetName());
         return;
     }
     asIScriptEngine* engine = gScriptSys->GetRawEngine();
     const int rc = engine->AssignScriptObject(currentValuePointer, value, _type);
     if (rc < 0) {
-        LOG_ERROR("unable to assign object value for field {} with type {}. target field value was null", name, _type->GetName());
+        LOG_ERROR("Unable to assign object value for field {} with type {}. target field value was null", name, _type->GetName());
     }
 }
 
-void* parseOverrideValue(const std::string& val) {
-    try {
-        std::size_t pos;
-        long long intResult = std::stoll(val, &pos);
-        if (pos == val.size()) {
-            return new int64_t(intResult);
-        }
-    } catch (const std::exception&) {
-        // Not an integer
+const std::string ScriptObject::GetComponentPath() {
+    std::string path = *static_cast<std::string*>(GetField("name"));
+    asIScriptObject* parentObj = *static_cast<asIScriptObject**>(GetField("parent"));
+    while (parentObj) {
+        ScriptObject parent = ScriptObject(parentObj);
+        std::string parentName = *static_cast<std::string*>(parent.GetField("name"));
+        path = parentName + "/" + path;
+        parentObj = *static_cast<asIScriptObject**>(GetField("parent"));
     }
+    return path;
+}
 
-    // Check if the string represents a floating-point number
-    try {
-        std::size_t pos;
-        float floatResult = std::stof(val, &pos);
-        if (pos == val.size()) {
-            return new float(floatResult);
+void ScriptObject::OverrideSimpleField(const std::string& fieldName, const std::string& value) {
+    SetField(fieldName, value);
+}
+
+void ScriptObject::OverrideArray(const std::string& fieldName, const YAML::Node& node) {
+    CScriptArray* array = static_cast<CScriptArray*>(GetField(fieldName));
+    for (const auto& arrayOverride: node) {
+        uint64_t index = std::stoll(arrayOverride.first.Scalar().substr(1));
+        // Assuming it's array of primitives or component refs
+        if (arrayOverride.second.IsScalar()) {
+            std::string arrayStringVal = arrayOverride.second.Scalar();
+            // Assuming it's array of component refs
+            if (arrayStringVal.starts_with("@")) {
+                SceneLoader::AddArrayFieldToPendingState(this, fieldName, index, arrayStringVal.substr(1));
+                continue;
+            } else {
+                // Assuming it's array of primitives
+                void* primitiveArrayVal = ParseStringByType(arrayStringVal, array->GetElementTypeId());
+                array->SetValue(index, primitiveArrayVal);
+                continue;
+            }
+        } else {
+             const int fieldTypeId = _object->GetPropertyTypeId(_fields[fieldName]);
+            if ((fieldTypeId & asTYPEID_APPOBJECT) == asTYPEID_APPOBJECT) {
+                // Native (App/cpp) object
+                if ((fieldTypeId & asTYPEID_OBJHANDLE) == asTYPEID_OBJHANDLE) {
+                    // Handle case
+                    auto** obj = static_cast<CNativeObject**>(array->At(index));
+                    (*obj)->ApplyOverrides(node);
+                } else {
+                    // Plain object case
+                    auto* obj = static_cast<CNativeObject*>(array->At(index));
+                    obj->ApplyOverrides(node);
+                }
+            } else {
+                // Script object
+                asIScriptObject* customObject;
+                if ((fieldTypeId & asTYPEID_OBJHANDLE) == asTYPEID_OBJHANDLE) {
+                    customObject = *static_cast<asIScriptObject**>(GetField(fieldName));
+                } else {
+                    customObject = static_cast<asIScriptObject*>(GetField(fieldName));
+                }
+                if (!customObject) {
+                    // Object does not exists
+                    asIScriptEngine* engine = gScriptSys->GetRawEngine();
+                    asITypeInfo* customTypeInfo = engine->GetTypeInfoById(_object->GetPropertyTypeId(_fields[fieldName]));
+                    customObject = static_cast<asIScriptObject*>(engine->CreateScriptObject(customTypeInfo));
+                }
+                ScriptObject object = ScriptObject(customObject);
+                object.ApplyOverrides(node);
+                // TODO maybe stupid
+                array->SetValue(index, object.GetRaw());
+            }
         }
-    } catch (const std::exception&) {
-        // Not a floating-point number
     }
+}
 
-    // Check if the string represents a double number
-    try {
-        std::size_t pos;
-        double doubleResult = std::stod(val, &pos);
-        if (pos == val.size()) {
-            return new double(doubleResult);
+void ScriptObject::OverrideChildren(const YAML::Node& node) {
+    CScriptArray* array = static_cast<CScriptArray*>(GetField("children"));
+    for(const auto& arrayNode: node) {
+        const std::string& childComponentName = arrayNode.first.Scalar().substr(1);
+        for (int i = 0; i < array->GetSize(); i++) {
+            asIScriptObject* childRaw = *static_cast<asIScriptObject**>(array->At(i));
+            if (childRaw == nullptr) {
+                continue;
+            }
+            ScriptObject child = ScriptObject(childRaw);
+            std::string* name = static_cast<std::string*>(child.GetField("name"));
+            if (*name == childComponentName) {
+                child.ApplyOverrides(node);
+                return;
+            }
         }
-    } catch (const std::exception&) {
-        // Not a double-point number
+        if (arrayNode.second["prefab"]) {
+            const YAML::Node parameters = arrayNode.second;
+            YAML::Node prefabNode = parameters["prefab"];
+            YAML::Node componentNode = parameters["component"];
+            ResTag objectTag;
+            if (prefabNode.IsDefined()) {
+                objectTag = ResTag(ToStrid(prefabNode.Scalar()));
+            }
+            if (componentNode.IsDefined()) {
+                objectTag = ResTag(ToStrid(componentNode.Scalar()));
+            }
+            ScriptObject* component = PrefabLoader::Create(&objectTag, this);
+            if (!component) {
+                LOG_WARN("Failed to load component or prefab \"{}\"", objectTag.string());
+                continue;
+            }
+            component->ApplyOverrides(parameters["overrides"]);
+            component->SetField("name", childComponentName);
+        }
+        if (arrayNode.second["component"]) {
+            const YAML::Node parameters = arrayNode.second;
+            ResTag componentTag = ResTag(ToStrid(parameters["component"].Scalar()));
+            ScriptObject* component = ComponentLoader::CreateComponent(&componentTag, this);
+            component->ApplyOverrides(parameters["overrides"]);
+            component->SetField("name", childComponentName);
+        }
     }
+}
 
-    // Otherwise, treat it as a string
-    return new std::string(val);
+void ScriptObject::OverrideObject(const std::string& fieldName, const YAML::Node& node) {
+    const int fieldTypeId = _object->GetPropertyTypeId(_fields[fieldName]);
+
+    if ((fieldTypeId & asTYPEID_APPOBJECT) == asTYPEID_APPOBJECT) {
+        // Native (App/cpp) object
+        OverrideNativeObject(fieldName, fieldTypeId, node);
+    } else {
+        // Script object
+        asIScriptObject* customObject;
+        if ((fieldTypeId & asTYPEID_OBJHANDLE) == asTYPEID_OBJHANDLE) {
+            customObject = *static_cast<asIScriptObject**>(GetField(fieldName));
+        } else {
+            customObject = static_cast<asIScriptObject*>(GetField(fieldName));
+        }
+        if (!customObject) {
+            // Object does not exists
+            asIScriptEngine* engine = gScriptSys->GetRawEngine();
+            asITypeInfo* customTypeInfo = engine->GetTypeInfoById(_object->GetPropertyTypeId(_fields[fieldName]));
+            customObject = static_cast<asIScriptObject*>(engine->CreateScriptObject(customTypeInfo));
+        }
+        ScriptObject object = ScriptObject(customObject);
+        object.ApplyOverrides(node);
+        // TODO maybe stupid
+        SetField(fieldName, object.GetRaw());
+    }
+}
+
+void ScriptObject::OverrideNativeObject(const std::string& fieldName, const asUINT fieldType, const YAML::Node& node) {
+    if ((fieldType & asTYPEID_OBJHANDLE) == asTYPEID_OBJHANDLE) {
+        // Handle case
+        auto** obj = static_cast<CNativeObject**>(GetField(fieldName));
+        (*obj)->ApplyOverrides(node);
+    } else {
+        // Plain object case
+        auto* obj = static_cast<CNativeObject*>(GetField(fieldName));
+        obj->ApplyOverrides(node);
+    }
+}
+
+void ScriptObject::OverrideResource(const std::string& fieldName, const YAML::Node& node) {
+    // Parse value as resource handle
+    // native type registered by application, so no reflection, sir :)
+    auto* handle = static_cast<CResourceHandle*>(GetField(fieldName));
+    handle->ApplyOverrides(node);
+}
+
+void ScriptObject::OverrideRef(const std::string& fieldName, const std::string& ref) {
+    SceneLoader::AddFieldToPendingState(this, fieldName, ref.substr(1));
 }
 
 void ScriptObject::ApplyOverrides(const YAML::Node& overrides)
@@ -294,91 +594,47 @@ void ScriptObject::ApplyOverrides(const YAML::Node& overrides)
     for (const auto& override : overrides) {
         const std::string& fieldName = override.first.Scalar();
         const YAML::Node& value = override.second;
+
         // Case scalar value
         if (value.IsScalar()) {
             const std::string& stringVal = override.second.Scalar();
-            // Assuming it's component ref, that will be linked in Link Pass
+            // Component ref
             if (stringVal.starts_with("@")) {
-                SceneLoader::AddFieldToPendingState(this, fieldName, std::stoll(stringVal.substr(1)));
-            } else {
-                const int fieldTypeId = _object->GetPropertyTypeId(_fields[fieldName]);
-                if (Triad::Resource::IsTag(stringVal) && (fieldTypeId & asTYPEID_APPOBJECT) == asTYPEID_APPOBJECT && fieldTypeId != gScriptSys->GetStringType()->GetTypeId()) {
-                    // Parse value as resource handle
-                    // native type registered by application, so no reflection, sir :)
-                    auto* handle = static_cast<CResourceHandle*>(GetField(fieldName));
-                    handle->ApplyOverrides(value);
-                    continue;
-                } else {
-                    // Assuming it's primitive value
-                    void* val = parseOverrideValue(stringVal);
-                    SetField(fieldName, val);
-                    // if we set id for component than we add this component to registry fir Link Pass
-                    if (fieldName == "id") {
-                        SceneLoader::AddComponentToRegistry(*static_cast<uint64_t*>(val), this);
-                    }
-                }
+                OverrideRef(fieldName, stringVal);
+                continue;
             }
+            const int fieldTypeId = _object->GetPropertyTypeId(_fields[fieldName]);
+            if (Triad::Resource::IsTag(stringVal)
+                && (fieldTypeId & asTYPEID_APPOBJECT) == asTYPEID_APPOBJECT
+                && fieldTypeId != gScriptSys->GetStringType()->GetTypeId()) {
+                // Resource handle
+                OverrideResource(fieldName, value);
+                continue;
+            } else {
+                // Primitive value
+                OverrideSimpleField(fieldName, stringVal);
+                continue;
+            }
+            continue;
         }
+
         // Case map value
         if (value.IsMap()) {
             std::string firstFieldName = value.begin()->first.Scalar();
-            // Assuming it's array override
             if (firstFieldName.starts_with("@")) {
-                CScriptArray* array = static_cast<CScriptArray*>(GetField(fieldName));
-                for (const auto& arrayOverride: value) {
-                    uint64_t index = std::stoll(arrayOverride.first.Scalar().substr(1));
-                    // Assuming it's array of primitives or component refs
-                    if (arrayOverride.second.IsScalar()) {
-                        std::string arrayStringVal = arrayOverride.second.Scalar();
-                        // Assuming it's array of component refs
-                        if (arrayStringVal.starts_with("@")) {
-                            SceneLoader::AddArrayFieldToPendingState(this, fieldName, index, std::stoll(arrayStringVal.substr(1)));
-                        } else {
-                            // Assuming it's array of primitives
-                            void* primitiveArrayVal = parseOverrideValue(arrayStringVal);
-                            array->SetValue(index, primitiveArrayVal);
-                        }
-                    } else {
-                        // Assuming it's array of custom types
-                        asIScriptObject* arrayCustomObject = *static_cast<asIScriptObject**>(array->At(index));
-                        // Object does not exists
-                        if (!arrayCustomObject) {
-                            arrayCustomObject = static_cast<asIScriptObject*>(engine->CreateUninitializedScriptObject(array->GetArrayObjectType()));
-                        }
-                        ScriptObject* arrayObject = new ScriptObject(arrayCustomObject);
-                        arrayObject->ApplyOverrides(arrayOverride.second);
-                        // TODO maybe stupid
-                        asIScriptObject* raw = arrayObject->GetRaw();
-                        array->SetValue(index, &raw);
-                    }
-                }
-            } else {
-                const int fieldTypeId = _object->GetPropertyTypeId(_fields[fieldName]);
-                if ((fieldTypeId & asTYPEID_APPOBJECT) == asTYPEID_APPOBJECT) {
-                    // native type registered by application, so no reflection, sir :)
-                    if ((fieldTypeId & asTYPEID_OBJHANDLE) == asTYPEID_OBJHANDLE) {
-                        auto** obj = static_cast<CNativeObject**>(GetField(fieldName));
-                        (*obj)->ApplyOverrides(value);
-                        continue;
-                    }
-                    auto* obj = static_cast<CNativeObject*>(GetField(fieldName));
-                    obj->ApplyOverrides(value);
-                    continue;
-                }
-                
-                // Assuming it's custom type field override
-                asIScriptObject* customObject = static_cast<asIScriptObject*>(GetField(fieldName));
-                // Object does not exists
-                if (!customObject) {
-                    asITypeInfo* customTypeInfo = engine->GetTypeInfoById(_object->GetPropertyTypeId(_fields[fieldName]));
-                    customObject = static_cast<asIScriptObject*>(engine->CreateScriptObject(customTypeInfo));
-                }
-                ScriptObject object = ScriptObject(customObject);
-                object.ApplyOverrides(override.second);
-                // TODO maybe stupid
-                SetField(fieldName, object.GetRaw());
+                // Array
+                OverrideArray(fieldName, value);
+                continue;
             }
+            if (firstFieldName.starts_with("$")) {
+                OverrideChildren(value);
+                continue;
+            }
+            // Object override
+            OverrideObject(fieldName, value);
+            continue;
         }
+
         if (value.IsSequence()) {
             // not implemented yet
         }

@@ -54,26 +54,6 @@ ENGINE_API void SetOnShutdown(asIScriptFunction* shutdownFunc) {
     shutdownCallback = shutdownFunc;
 }
 
-std::string PropToString(const char* name, int type, void* value) {
-    std::string val;
-    if (type == 4) {
-        auto* fl = static_cast<uint32_t*>(value);
-        val = std::to_string(*fl);
-        *fl = *fl + 1;
-    }
-    if (type == 10) {
-        val = std::to_string(*static_cast<float*>(value));
-    }
-    auto* ti = gScriptSys->GetRawEngine()->GetTypeInfoById(type);
-    if (ti != nullptr && ti ->GetName() != "string" && ti->GetName() != "array") {
-        asIScriptObject* obj = *static_cast<asIScriptObject**>(value);
-        asIScriptGeneric* j = reinterpret_cast<asIScriptGeneric*>(value);
-        gScriptSys->GetEngine();
-
-    }
-    return  "Name: " + std::string(name) + " Type: " + (ti == nullptr ? std::to_string(type) : ti->GetName()) + " Value: " + val;
-}
-
 ENGINE_API asIScriptObject* LoadScene(Strid sceneName) {
     return nullptr;
 }

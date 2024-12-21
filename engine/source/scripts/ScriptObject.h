@@ -16,13 +16,25 @@ public:
     ScriptObject(asIScriptObject* object);
     ~ScriptObject();
     void SetField(const std::string& name, void* value);
-    void* GetField(std::string name);
-    void AssignField(const std::string& name, void* value); // only for objects
+    void SetField(const std::string &name, const std::string &value);
+    void *ParseStringByType(const std::string &value, asUINT fieldType);
+    void *GetField(std::string name);
+    void AssignField(const std::string& name, void* value);
+    // only for objects
     void ApplyOverrides(const YAML::Node& overrides);
     asIScriptObject* GetRaw() { return _object; };
+    const std::string GetComponentPath();
 
 private:
     asIScriptObject* Construct(ArgsT&& args = {});
+
+    void OverrideObject(const std::string &fieldName, const YAML::Node &node);
+    void OverrideNativeObject(const std::string &fieldName, const asUINT fieldType, const YAML::Node &node);
+    void OverrideResource(const std::string &fieldName, const YAML::Node &node);
+    void OverrideArray(const std::string &fieldName, const YAML::Node &node);
+    void OverrideChildren(const YAML::Node &node);
+    void OverrideRef(const std::string &fieldName, const std::string &ref);
+    void OverrideSimpleField(const std::string &fieldName, const std::string &value);
 
 private:
     std::unordered_map<std::string, asUINT> _fields;

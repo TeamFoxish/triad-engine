@@ -1,38 +1,28 @@
 content:
   name: TestScene
   objects:
-    #flopa1:
-    #  prefab: res://prefabs/flopa.prefab
-    #  overrides:
-    #    id: 4
-    #    child:
-    #      "@0":
-    #        id: 1
+    flopa1:
+      prefab: res://prefabs/flopa.prefab
     flopa2:
       prefab: res://prefabs/flopa.prefab
       overrides:
-        id: 5
         transform:
           position:
             x: 3.0
             y: 3.0
             z: 0.0
-        #child:
-        #  "@0":
-        #    id: 2
-        #    someInt: 3
-        #    someString: SceneOverride
-        #    material: res://materials/cheese.material
-        #    testClass:
-        #      resourceExample: resExample
-        #    testComponent: "@3"
+        children:
+          $Test2:
+            component: res://components/TestComponent.component
+            overrides:
+              someInt: 3
+              someString: SceneOverride
+              material: res://materials/cheese.material
+              testClass:
+                resourceExample: resExample
+              testComponent: "@cheese1/Test2"
     cheese1: 
       prefab: res://prefabs/cheese.prefab
-      overrides:
-        id: 6
-        #child:
-        #  "@0":
-        #    id: 3
     player:
       prefab: res://prefabs/player.prefab
 type: scene

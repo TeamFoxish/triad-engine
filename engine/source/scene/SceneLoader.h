@@ -15,7 +15,7 @@ class Scene;
 struct LinkageRequest {
 	ScriptObject* object;
 	const std::string fieldName;
-	const uint64_t ref;
+	const std::string ref;
 	const uint64_t index;
 	const bool isArrayField;
 };
@@ -40,25 +40,25 @@ public:
 		return "scene";
 	}
 
-	static void AddFieldToPendingState(ScriptObject* component, const std::string& fieldName, const uint64_t ref) {
+	static void AddFieldToPendingState(ScriptObject* component, const std::string& fieldName, const std::string ref) {
 		_unlinkedComponentFiedls.push({component, fieldName, ref, 0, false});
 	}
 
-	static void AddArrayFieldToPendingState(ScriptObject* component, const std::string& fieldName, uint64_t index, uint64_t ref) {
+	static void AddArrayFieldToPendingState(ScriptObject* component, const std::string& fieldName, uint64_t index, const std::string ref) {
 		_unlinkedComponentFiedls.push({component, fieldName, ref, index, true});
 	}
 
-	static void AddComponentToRegistry(const uint64_t id, ScriptObject* component) {
-		_componentRegistry[id] = component;
+	static void AddComponentToRegistry(const std::string componentPath, ScriptObject* component) {
+		_componentRegistry[componentPath] = component;
 	}
 
 private:
 	static inline std::unordered_map<ResTag, const YAML::Node> _scenes;
 	// Stores components during initialization for further linking pass
-	static inline std::unordered_map<uint64_t, ScriptObject*> _componentRegistry;
+	static inline std::unordered_map<std::string, ScriptObject*> _componentRegistry;
 	// Stores component's fields that should be linked during linking pass
 	static inline std::queue<LinkageRequest> _unlinkedComponentFiedls;
 
 	// Links components refs to actual components
-	static void LinkPass();
+	static void LinkPass(ScriptObject* root);
 };

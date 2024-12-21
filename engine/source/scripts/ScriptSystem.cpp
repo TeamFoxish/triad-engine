@@ -65,6 +65,12 @@ bool ScriptSystem::CallFunction(const std::string &module, const std::string &si
     return _engine->CallFunction(function, std::move(argsSetter));
 }
 
+bool ScriptSystem::CallFunctionAndGet(const std::string &module, const std::string &signature, Consumer<asIScriptContext*>&& retValueGetter) {
+    asIScriptFunction* function = _registry->GetFunction(module, signature);
+    return _engine->CallFunctionAndGet(function, std::move(retValueGetter));
+}
+
+
 bool ScriptSystem::Update(float deltaTime) {
     asIScriptFunction* function = _registry->GetUpdateFunction();
     return _engine->CallFunction(function, [deltaTime] (asIScriptContext* context) {
