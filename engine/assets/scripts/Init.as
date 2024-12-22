@@ -6,9 +6,11 @@ float speed = 1.0f;
 float amplitude = 3.0f;
 
 void UpdateImpl(float deltaTime) {
+    log_critical("some");
     if (Input::IsKeyDown(Input::Key::Space)) {
         Sound::System::PlayEvent("event:/Bubbles/Bubble2D");
     }
+    log_debug("updating root");
     sceneRoot.Update(deltaTime);
 }
 
@@ -21,7 +23,7 @@ void ShutdownImpl() {
 }
 
 void SetScene(Scene@ scene) {
-    println("Loaded scene: " + scene.GetName());
+    log_info("Loaded scene: " + scene.GetName());
     @sceneRoot = @scene;
 }
 
@@ -31,11 +33,11 @@ Scene@ GetScene() {
 
 void init()
 {
-    println("Initializing scripts...");
+    log_info("Initializing scripts...");
     SetUpdate(UpdateImpl);
     SetFixedUpdate(FixedUpdateImpl);
     SetShutdown(ShutdownImpl);
-    println("Script initialization done !");
+    log_info("Script initialization done !");
     
     sceneRoot.Init(); // TEMP
 }

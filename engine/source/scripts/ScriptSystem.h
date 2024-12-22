@@ -3,6 +3,7 @@
 #include "angelscript.h"
 #include <memory>
 #include "runtime/RuntimeIface.h"
+#include "debugger.h"
 #include "ScriptLoader.h"
 #include "ScriptEngine.h"
 #include "ScriptRegistry.h"
@@ -17,6 +18,13 @@ private:
     asITypeInfo* _stringType = nullptr;
     asITypeInfo* _arrayType = nullptr;
     asITypeInfo* _dictType = nullptr;
+
+#ifdef EDITOR
+
+    CDebugger* _debugger;
+
+#endif // EDITOR
+
 public:
     bool Init(RuntimeIface* runtime);
     void Term();
@@ -41,6 +49,13 @@ public:
     void SetScene(ScriptObject* sceneRoot);
 
     void LogCallstack();
+
+#ifdef EDITOR
+
+    CDebugger* GetDebugger() { return _debugger; }
+    void InvokeDebuggerMenu() { _debugger->TakeCommands(GetContext()); }
+    
+#endif // EDITOR
 };
 
 bool InitScript(RuntimeIface* runtime);

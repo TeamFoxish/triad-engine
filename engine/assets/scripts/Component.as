@@ -56,4 +56,8 @@ abstract class Component {
         entity.isComposite = false;
         return entity;
     }
+
+    string GetName() {
+        return name;
+    }
 };

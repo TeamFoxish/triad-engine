@@ -27,8 +27,13 @@ void TermScript(RuntimeIface *runtime)
 
 bool ScriptSystem::Init(RuntimeIface *runtime)
 {
+#ifdef EDITOR
+
+    _debugger = new CDebugger();
+
+#endif
     _engine = new ScriptEngine();
-    _context = GetRawEngine()->CreateContext();
+    _context = GetRawEngine()->RequestContext();
     _registry = new ScriptRegistry();
     if (!_registry->RegisterStdLibrary(_engine->GetEngine())) {
         std::cout << "Failed to register Std Script library." << std::endl;

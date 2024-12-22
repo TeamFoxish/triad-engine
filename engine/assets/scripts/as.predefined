@@ -5,7 +5,12 @@ void SetUpdate(Update @updateCallback);
 funcdef void Shutdown();
 void SetShutdown(Shutdown @shutdownCallback);
 void println(const string &in);
-void print(const string &in);
+void log_critical(const string &in);
+void log_error(const string &in);
+void log_warn(const string &in);
+void log_info(const string &in);
+void log_debug(const string &in);
+
 
 class ref{}
 funcdef bool less(const ?&in a, const ?&in b);

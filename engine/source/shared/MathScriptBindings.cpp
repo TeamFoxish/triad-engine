@@ -227,6 +227,21 @@ Math::Transform& CTransformHandle::GetTransform()
 	return SharedStorage::Instance().transforms.AccessWrite(handle);
 }
 
+
+// Here place for to string callbacks for debugger
+#ifdef EDITOR
+std::string TransformToString(void *obj, int expandMembersLevel, CDebugger* dbg) {
+	CTransformHandle* transformHandle = static_cast<CTransformHandle*>(obj);
+	DirectX::SimpleMath::Vector3 position = transformHandle->GetPosition();
+	DirectX::SimpleMath::Vector3 rotation = transformHandle->GetRotation().ToEuler();
+	DirectX::SimpleMath::Vector3 scale = transformHandle->GetScale();
+	return std::format("Position: {}, {}, {} Rotation: {}, {}, {}, Scale: {}, {}, {}", 
+						position.x, position.y, position.z,
+						rotation.x, rotation.y, rotation.z,
+						scale.x, scale.y, scale.z);
+}
+#endif // EDITOR
+
 void CTransformHandle::ApplyOverrides(const YAML::Node& overrides)
 {
 	Math::Vector3 pos = GetLocalPosition();
@@ -274,6 +289,15 @@ static void RegisterTransform()
 	r = engine->RegisterObjectMethod("Transform", "void SetLocalRotation(const Quaternion &in)", asMETHOD(CTransformHandle, SetLocalRotation), asCALL_THISCALL); assert(r >= 0);
 	r = engine->RegisterObjectMethod("Transform", "Vector3 GetLocalScale() const", asMETHOD(CTransformHandle, GetLocalScale), asCALL_THISCALL); assert(r >= 0);
 	r = engine->RegisterObjectMethod("Transform", "void SetLocalScale(const Vector3 &in)", asMETHOD(CTransformHandle, SetLocalScale), asCALL_THISCALL); assert(r >= 0);
+
+// Here place for to string callbacks bindings
+#ifdef EDITOR
+	CDebugger* debugger = gScriptSys->GetDebugger();
+
+	asITypeInfo* transformType = engine->GetTypeInfoByDecl("Transform");
+
+	debugger->RegisterToStringCallback(transformType, TransformToString);
+#endif // EDITOR
 }
 #pragma endregion
 

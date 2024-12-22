@@ -19,6 +19,7 @@
 #include <iostream>
 #include <string>
 #include "misc/Strid.h"
+#include "logs/Logs.h"
 
 
 asIScriptFunction* updateCallback = 0;
@@ -31,6 +32,26 @@ ENGINE_API void Print(const std::string& msg) {
 
 ENGINE_API void PrintLn(const std::string& msg) {
     std::cout << msg << std::endl;
+}
+
+ENGINE_API void log_info(const std::string& msg) {
+    LOG_INFO(msg);
+}
+
+ENGINE_API void log_error(const std::string& msg) {
+    LOG_ERROR(msg);
+}
+
+ENGINE_API void log_warn(const std::string& msg) {
+    LOG_WARN(msg);
+}
+
+ENGINE_API void log_critical(const std::string& msg) {
+    LOG_CRIT(msg);
+}
+
+ENGINE_API void log_debug(const std::string& msg) {
+    LOG_DEBUG(msg);
 }
 
 ENGINE_API void SetOnUpdate(asIScriptFunction* updateFunc) {
@@ -69,56 +90,91 @@ bool ScriptRegistry::RegisterCustomFunctions(asIScriptEngine *engine)
     // Standard funtion 'print' to output text to console
     r = engine->RegisterGlobalFunction("void print(const string &in)", asFUNCTION(Print), asCALL_CDECL);
     if (r < 0) {
-        std::cout << "Unrecoverable error while binding 'print' function." << std::endl;
+        LOG_ERROR("Unrecoverable error while binding 'print' function.");
         return false;
     }
 
     // Standard funtion 'println' to output text to console and add new line
     r = engine->RegisterGlobalFunction("void println(const string &in)", asFUNCTION(PrintLn), asCALL_CDECL);
     if (r < 0) {
-        std::cout << "Unrecoverable error while binding 'println' function." << std::endl;
+        LOG_ERROR("Unrecoverable error while binding 'println' function.");
+        return false;
+    }
+
+    // Standard funtion 'log_critical' to log critical error
+    r = engine->RegisterGlobalFunction("void log_critical(const string &in)", asFUNCTION(log_critical), asCALL_CDECL);
+    if (r < 0) {
+        LOG_ERROR("Unrecoverable error while binding 'log_critical' function.");
+        return false;
+    }
+
+    // Standard funtion 'log_error' to log error
+    r = engine->RegisterGlobalFunction("void log_error(const string &in)", asFUNCTION(log_error), asCALL_CDECL);
+    if (r < 0) {
+        LOG_ERROR("Unrecoverable error while binding 'log_error' function.");
+        return false;
+    }
+
+    // Standard funtion 'log_warn' to log warn
+    r = engine->RegisterGlobalFunction("void log_warn(const string &in)", asFUNCTION(log_warn), asCALL_CDECL);
+    if (r < 0) {
+        LOG_ERROR("Unrecoverable error while binding 'log_warn' function.");
+        return false;
+    }
+
+    // Standard funtion 'log_info' to log info
+    r = engine->RegisterGlobalFunction("void log_info(const string &in)", asFUNCTION(log_info), asCALL_CDECL);
+    if (r < 0) {
+        LOG_ERROR("Unrecoverable error while binding 'log_info' function.");
+        return false;
+    }
+
+    // Standard funtion 'log_debug' to log info
+    r = engine->RegisterGlobalFunction("void log_debug(const string &in)", asFUNCTION(log_debug), asCALL_CDECL);
+    if (r < 0) {
+        LOG_ERROR("Unrecoverable error while binding 'log_debug' function.");
         return false;
     }
 
     // Set Update callback
     r = engine->RegisterFuncdef("void Update(float)");
     if (r < 0) {
-        std::cout << "Unrecoverable error while binding 'Update' callback." << std::endl;
+        LOG_ERROR("Unrecoverable error while binding 'Update' callback.");
         return false;
     }
 
     // Setter for OnUpdate callback
     r = engine->RegisterGlobalFunction("void SetUpdate(Update @updateCallback)", asFUNCTION(SetOnUpdate), asCALL_CDECL);
     if (r < 0) {
-        std::cout << "Unrecoverable error while binding 'SetUpdate' update function setter." << std::endl;
+        LOG_ERROR("Unrecoverable error while binding 'SetUpdate' update function setter.");
         return false;
     }
 
     // Set FixedUpdate callback
     r = engine->RegisterFuncdef("void FixedUpdate(float)");
     if (r < 0) {
-        std::cout << "Unrecoverable error while binding 'FixedUpdate' callback." << std::endl;
+        LOG_ERROR("Unrecoverable error while binding 'FixedUpdate' callback.");
         return false;
     }
 
     // Setter for FixedUpdate callback
     r = engine->RegisterGlobalFunction("void SetFixedUpdate(FixedUpdate @updateCallback)", asFUNCTION(SetOnFixedUpdate), asCALL_CDECL);
     if (r < 0) {
-        std::cout << "Unrecoverable error while binding 'SetFixedUpdate' fixed update function setter." << std::endl;
+        LOG_ERROR("Unrecoverable error while binding 'SetFixedUpdate' fixed update function setter.");
         return false;
     }
 
     // Set FixedUpdate callback
     r = engine->RegisterFuncdef("void Shutdown()");
     if (r < 0) {
-        std::cout << "Unrecoverable error while binding 'Shutdown' callback funcdef." << std::endl;
+        LOG_ERROR("Unrecoverable error while binding 'Shutdown' callback funcdef.");
         return false;
     }
 
     // Setter for Shutdown callback
     r = engine->RegisterGlobalFunction("void SetShutdown(Shutdown @shutdownCallback)", asFUNCTION(SetOnShutdown), asCALL_CDECL);
     if (r < 0) {
-        std::cout << "Unrecoverable error while binding 'SetShutdown' callback." << std::endl;
+        LOG_ERROR("Unrecoverable error while binding 'SetShutdown' callback.");
         return false;
     }
 

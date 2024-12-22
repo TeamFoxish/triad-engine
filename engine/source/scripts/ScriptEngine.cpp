@@ -4,6 +4,28 @@
 #include <format>
 #include "misc/Function.h"
 #include "logs/Logs.h"
+#include "debugger.h"
+#include "ScriptSystem.h"
+
+asIScriptContext* CallbackContextRequest(asIScriptEngine* engine, void*)
+{
+    asIScriptContext* context = gScriptSys->GetContext();
+    if (!context) {
+        context = engine->CreateContext();
+        LOG_INFO("Default script context initialized");
+#ifdef EDITOR
+        CDebugger* debugger = gScriptSys->GetDebugger();
+        context->SetLineCallback(asMETHOD(CDebugger, LineCallback), debugger, asCALL_THISCALL);
+        LOG_INFO("Debugger attached to default context");
+#endif // EDITOR
+
+    }
+    return context;
+}
+
+void CallbackContextReturn(asIScriptEngine* engine, asIScriptContext* context, void*)
+{
+}
 
 ScriptEngine::ScriptEngine()
 {
@@ -11,6 +33,11 @@ ScriptEngine::ScriptEngine()
     int r = _engine->SetMessageCallback(asFUNCTION(ScriptRegistry::StdMessageCallback), 0, asCALL_CDECL);
     if (r < 0) {
         std::cout << "Unrecoverable error while setting message callback." << std::endl;
+    }
+
+    r = _engine->SetContextCallbacks(CallbackContextRequest, CallbackContextReturn, nullptr);
+    if ( r < 0) {
+        LOG_ERROR("Failed to bind context callbacks");
     }
 }
 
@@ -21,7 +48,8 @@ ScriptEngine::~ScriptEngine()
 
 bool ScriptEngine::CallFunction(asIScriptFunction *function)
 {
-    asIScriptContext* context = _engine->CreateContext();
+    asIScriptContext* context = _engine->RequestContext();
+    context->AddRef();
 
     context->Prepare(function);
 
@@ -44,7 +72,8 @@ bool ScriptEngine::CallFunction(asIScriptFunction *function)
 }
 
 bool ScriptEngine::CallFunction(asIScriptFunction* function, Consumer<asIScriptContext*>&& argsSetter) {
-    asIScriptContext* context = _engine->CreateContext();
+    asIScriptContext* context = _engine->RequestContext();
+    context->AddRef();
 
     context->Prepare(function);
 
@@ -70,7 +99,8 @@ bool ScriptEngine::CallFunction(asIScriptFunction* function, Consumer<asIScriptC
 
 bool ScriptEngine::CallFunctionAndGet(asIScriptFunction *function, Consumer<asIScriptContext*>&& retValueGetter)
 {
-    asIScriptContext* context = _engine->CreateContext();
+    asIScriptContext* context = _engine->RequestContext();
+    context->AddRef();
 
     context->Prepare(function);
 
@@ -99,7 +129,8 @@ bool ScriptEngine::CallFunctionAndGet(asIScriptFunction *function,
  Consumer<asIScriptContext*>&& argsSetter,
  Consumer<asIScriptContext *>&& retValueGetter)
 {
-    asIScriptContext* context = _engine->CreateContext();
+    asIScriptContext* context = _engine->RequestContext();
+    context->AddRef();
 
     context->Prepare(function);
 

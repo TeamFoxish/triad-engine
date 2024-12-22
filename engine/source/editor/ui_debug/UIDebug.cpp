@@ -114,6 +114,17 @@ void UIDebug::TestDraw()
             }
             ImGui::End();
         }
+        
+        // Script debugger
+        {
+            ImGui::Begin("Debugger");
+            // ToDo: change position of simulation buttoin
+            if (ImGui::Button("Debug menu"))
+            {
+               gScriptSys->InvokeDebuggerMenu();
+            }
+            ImGui::End();
+        }
 
         // Viewport in window
         {
