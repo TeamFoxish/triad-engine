@@ -54,8 +54,42 @@ ScriptObject::ScriptObject(asIScriptObject *object)
     }
 }
 
+ScriptObject::ScriptObject(const ScriptObject& other) : 
+    _object(other._object),
+    _fields(other._fields),
+    _type(other._type)
+{}
+
+ScriptObject::ScriptObject(ScriptObject&& other) noexcept : 
+    _object(std::exchange(other._object, nullptr)),
+    _fields(std::move(other._fields)),
+    _type(std::exchange(other._type, nullptr))
+{}
+
 ScriptObject::~ScriptObject()
+{}
+
+ScriptObject& ScriptObject::operator=(const ScriptObject &other)
 {
+    if (this == &other)
+        return *this;
+
+    ScriptObject temp(other);
+    std::swap(_object, temp._object);
+    std::swap(_fields, temp._fields);
+    std::swap(_type, temp._type);
+
+    return *this;
+}
+
+ScriptObject& ScriptObject::operator=(ScriptObject &&other) noexcept
+{
+    ScriptObject temp(std::move(other));
+    std::swap(_object, temp._object);
+    std::swap(_fields, temp._fields);
+    std::swap(_type, temp._type);
+    return *this;
+
 }
 
 asIScriptObject* ScriptObject::Construct(ArgsT&& args)
@@ -224,6 +258,7 @@ void ScriptObject::SetField(const std::string &name, void *value)
                 asIScriptObject* newValue = static_cast<asIScriptObject*>(value);
                 asIScriptObject** currentValueObject = static_cast<asIScriptObject**>(currentValuePointer);
                 *currentValueObject = newValue;
+                newValue->AddRef();
                 break;
             } else {
                 // TODO: call AssignField here?? should trigger opAssign
@@ -284,13 +319,19 @@ void ScriptObject::SetField(const std::string &name, const std::string& value)
         case asTYPEID_UINT8:
         {
             uint8_t* currentValueUint8 = static_cast<uint8_t*>(currentValuePointer);
-            *currentValueUint8 = std::stoul(value);
+             uint32_t parsedULongForUint8 = std::stoul(value);
+            assert (parsedULongForUint8 < std::numeric_limits<uint8_t>::max()
+                    && parsedULongForUint8 > std::numeric_limits<uint8_t>::min());
+            *currentValueUint8 = static_cast<uint8_t>(parsedULongForUint8);
             break;
         }
         case asTYPEID_UINT16:
         {
             uint16_t* currentValueUint16 = static_cast<uint16_t*>(currentValuePointer);
-            *currentValueUint16 = std::stoul(value);
+            uint32_t parsedULongForUint16 = std::stoul(value);
+            assert (parsedULongForUint16 < std::numeric_limits<uint16_t>::max()
+                    && parsedULongForUint16 > std::numeric_limits<uint16_t>::min());
+            *currentValueUint16 = static_cast<uint16_t>(parsedULongForUint16);
             break;
         }
         case asTYPEID_UINT32:
@@ -328,12 +369,13 @@ void ScriptObject::SetField(const std::string &name, const std::string& value)
     }
 }
 
-void* ScriptObject::ParseStringByType(const std::string &value, asUINT fieldType)
+void ScriptObject::SetArrayValue(CScriptArray* array, asUINT index, const std::string &value)
 {
+    asUINT fieldType = array->GetElementTypeId();
     switch (fieldType) {
         case asTYPEID_VOID:
         {
-            return nullptr;
+            // do nothing? i guess...
         }
         case asTYPEID_BOOL:
         {
@@ -341,64 +383,70 @@ void* ScriptObject::ParseStringByType(const std::string &value, asUINT fieldType
             if (value == "true") {
                 boolVal = true;
             }
-            return &boolVal;
+            array->SetValue(index, &boolVal);
         }
         case asTYPEID_INT8:
         {
             int8_t int8Val = std::stoi(value);
-            return &int8Val;
+            array->SetValue(index, &int8Val);
 
         }
         case asTYPEID_INT16:
         {
             int16_t int16Val = std::stoi(value);
-            return &int16Val;
+            array->SetValue(index, &int16Val);
         }
         case asTYPEID_INT32:
         {
             int32_t int32Val = std::stol(value);
-            return &int32Val;
+            array->SetValue(index, &int32Val);
         }
         case asTYPEID_INT64:
         {
             int64_t int64Val = std::stoll(value);
-            return &int64Val;
+            array->SetValue(index, &int64Val);
         }
         case asTYPEID_UINT8:
         {
-            uint8_t uint8Val = std::stoul(value);
-            return &uint8Val;
+            uint32_t parsedULongForUint8 = std::stoul(value);
+            assert (parsedULongForUint8 < std::numeric_limits<uint8_t>::max()
+                    && parsedULongForUint8 > std::numeric_limits<uint8_t>::min());
+            uint8_t uint8Val = static_cast<uint8_t>(parsedULongForUint8);
+            array->SetValue(index, &uint8Val);
         }
         case asTYPEID_UINT16:
         {
-            uint16_t uint16Val = std::stoul(value);
-            return &uint16Val;
+            uint32_t parsedULongForUint16 = std::stoul(value);
+            assert (parsedULongForUint16 < std::numeric_limits<uint16_t>::max()
+                    && parsedULongForUint16 > std::numeric_limits<uint16_t>::min());
+            uint16_t uint16Val = static_cast<uint16_t>(parsedULongForUint16);
+            array->SetValue(index, &uint16Val);
         }
         case asTYPEID_UINT32:
         {
             uint32_t uint32Val = std::stoul(value);
-            return &uint32Val;
+            array->SetValue(index, &uint32Val);
         }
         case asTYPEID_UINT64:
         {
             uint64_t uint64Val = std::stoull(value);
-            return &uint64Val;
+            array->SetValue(index, &uint64Val);
         }
         case asTYPEID_FLOAT:
         {
             float floatVal = std::stof(value);
-            return &floatVal;
+            array->SetValue(index, &floatVal);
         }
         case asTYPEID_DOUBLE:
         {
             double doubleVal = std::stod(value);
-            return &doubleVal;
+            array->SetValue(index, &doubleVal);
         }
         default:
         {
             if (fieldType == gScriptSys->GetStringType()->GetTypeId()) {
                 std::string stringVal = value;
-                return &stringVal;
+                array->SetValue(index, &stringVal);
             }
         }
     }
@@ -443,7 +491,7 @@ void ScriptObject::OverrideSimpleField(const std::string& fieldName, const std::
 void ScriptObject::OverrideArray(const std::string& fieldName, const YAML::Node& node) {
     CScriptArray* array = static_cast<CScriptArray*>(GetField(fieldName));
     for (const auto& arrayOverride: node) {
-        uint64_t index = std::stoll(arrayOverride.first.Scalar().substr(1));
+        asUINT index = std::stoul(arrayOverride.first.Scalar().substr(1));
         // Assuming it's array of primitives or component refs
         if (arrayOverride.second.IsScalar()) {
             std::string arrayStringVal = arrayOverride.second.Scalar();
@@ -453,8 +501,7 @@ void ScriptObject::OverrideArray(const std::string& fieldName, const YAML::Node&
                 continue;
             } else {
                 // Assuming it's array of primitives
-                void* primitiveArrayVal = ParseStringByType(arrayStringVal, array->GetElementTypeId());
-                array->SetValue(index, primitiveArrayVal);
+                SetArrayValue(array, index, arrayStringVal);
                 continue;
             }
         } else {
@@ -497,7 +544,7 @@ void ScriptObject::OverrideChildren(const YAML::Node& node) {
     CScriptArray* array = static_cast<CScriptArray*>(GetField("children"));
     for(const auto& arrayNode: node) {
         const std::string& childComponentName = arrayNode.first.Scalar().substr(1);
-        for (int i = 0; i < array->GetSize(); i++) {
+        for (asUINT i = 0; i < array->GetSize(); i++) {
             asIScriptObject* childRaw = *static_cast<asIScriptObject**>(array->At(i));
             if (childRaw == nullptr) {
                 continue;

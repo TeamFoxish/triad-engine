@@ -6,6 +6,7 @@
 #include "scripts/ScriptSystem.h"
 #include "scriptarray.h"
 #include "logs/Logs.h"
+#include <memory>
 
 SceneLoader::SceneLoader()
 {
@@ -22,10 +23,10 @@ void SceneLoader::Load(ResTag tag, const YAML::Node& desc)
 	LOG_INFO("Resource \"Scene\" with tag \"{}\" was indexed.", tag.string());
 }
 
-ScriptObject* SceneLoader::CreateScene(ResTag tag)
+std::unique_ptr<ScriptObject> SceneLoader::CreateScene(ResTag tag)
 {
 	const YAML::Node sceneDesc = _scenes[tag];
-	ScriptObject* root = new ScriptObject("Engine", "Scene", {{asTYPEID_MASK_OBJECT, nullptr}}); // currently scene has no parent
+	std::unique_ptr<ScriptObject> root = std::unique_ptr<ScriptObject>(new ScriptObject {"Engine", "Scene", {{asTYPEID_MASK_OBJECT, nullptr}}}); // currently scene has no parent
 
 	for (const auto& componentDesc : sceneDesc["objects"]) {
 		const std::string name = componentDesc.first.Scalar();
@@ -39,7 +40,7 @@ ScriptObject* SceneLoader::CreateScene(ResTag tag)
 		if (componentNode.IsDefined()) {
 			objectTag = ResTag(ToStrid(componentNode.Scalar()));
 		}
-		ScriptObject* component = PrefabLoader::Create(&objectTag, root);
+		ScriptObject* component = PrefabLoader::Create(&objectTag, root.get());
 		if (!component) {
 			LOG_WARN("Failed to load component or prefab \"{}\"", objectTag.string());
 			continue;
@@ -52,11 +53,11 @@ ScriptObject* SceneLoader::CreateScene(ResTag tag)
 	return root;
 }
 
-ScriptObject* GetChild(ScriptObject* root, const std::string& childName) {
+std::unique_ptr<ScriptObject> GetChild(const std::unique_ptr<ScriptObject>& root, const std::string& childName) {
 	CScriptArray* children = static_cast<CScriptArray*>(root->GetField("children"));
-	for (int i = 0; i < children->GetSize(); i++) {
+	for (asUINT i = 0; i < children->GetSize(); i++) {
 		asIScriptObject* childRaw = *static_cast<asIScriptObject**>(children->At(i));
-		ScriptObject* child = new ScriptObject(childRaw);
+		auto child = std::unique_ptr<ScriptObject>(new ScriptObject {childRaw} );
 		std::string* name = static_cast<std::string*>(child->GetField("name"));
 		if (*name == childName) {
 			return child;
@@ -65,18 +66,18 @@ ScriptObject* GetChild(ScriptObject* root, const std::string& childName) {
 	return nullptr;
 }
 
-ScriptObject* GetComponentByAbsolutePath(ScriptObject* root, const std::string& path) {
+std::unique_ptr<ScriptObject> GetComponentByAbsolutePath(const std::unique_ptr<ScriptObject>& root, const std::string& path) {
 	std::string delimiter = "/";
 	auto endPos = path.find(delimiter);
 	if (endPos != std::string::npos) {
 		std::string nextElemName = path.substr(0, path.find(delimiter));
-		ScriptObject* child = GetChild(root, nextElemName);
+		std::unique_ptr<ScriptObject> child = GetChild(root, nextElemName);
 		if (child == nullptr) {
 			return nullptr;
 		}
 		return GetComponentByAbsolutePath(child, path.substr(endPos + 1, path.length()));
 	} else {
-		ScriptObject* child = GetChild(root, path);
+		std::unique_ptr<ScriptObject> child = GetChild(root, path);
 		if (child == nullptr) {
 			return nullptr;
 		} else {
@@ -86,22 +87,18 @@ ScriptObject* GetComponentByAbsolutePath(ScriptObject* root, const std::string& 
 	return nullptr;
 }
 
-void SceneLoader::LinkPass(ScriptObject* root)
+void SceneLoader::LinkPass(const std::unique_ptr<ScriptObject>& root)
 {
 	while (!_unlinkedComponentFiedls.empty()) {
 		LinkageRequest linkageRequest = _unlinkedComponentFiedls.front();
 		if (linkageRequest.isArrayField) {
 			// not implemented
 		} else {
-			ScriptObject* linkedComponent = GetComponentByAbsolutePath(root, linkageRequest.ref);
+			std::unique_ptr<ScriptObject> linkedComponent = GetComponentByAbsolutePath(root, linkageRequest.ref);
 			linkageRequest.object->SetField(linkageRequest.fieldName, linkedComponent->GetRaw());
 		}
 		LOG_INFO("Linked field \"{}\" to component \"{}\"", linkageRequest.fieldName, linkageRequest.ref);
 		_unlinkedComponentFiedls.pop();
 	}
-	for( const auto& [id, component] : _componentRegistry) {
-		delete component;
-	}
-	_componentRegistry.clear();
 	LOG_INFO("Scene linkage pass done");
 }

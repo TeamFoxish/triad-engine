@@ -18,6 +18,7 @@ void ShutdownImpl() {
 }
 
 void SetScene(Scene@ scene) {
+    println("Loaded scene: " + scene.GetName());
     @sceneRoot = @scene;
 }
 

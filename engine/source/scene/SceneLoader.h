@@ -28,7 +28,7 @@ public:
 	void Load(ResTag tag, const YAML::Node& desc) override;
 	void Unload(ResTag tag) override {}
 
-	static ScriptObject* CreateScene(ResTag tag);
+	static std::unique_ptr<ScriptObject> CreateScene(ResTag tag);
 
 	static std::unique_ptr<ResourceLoader> CreateInstance()
 	{
@@ -48,17 +48,11 @@ public:
 		_unlinkedComponentFiedls.push({component, fieldName, ref, index, true});
 	}
 
-	static void AddComponentToRegistry(const std::string componentPath, ScriptObject* component) {
-		_componentRegistry[componentPath] = component;
-	}
-
 private:
 	static inline std::unordered_map<ResTag, const YAML::Node> _scenes;
-	// Stores components during initialization for further linking pass
-	static inline std::unordered_map<std::string, ScriptObject*> _componentRegistry;
 	// Stores component's fields that should be linked during linking pass
 	static inline std::queue<LinkageRequest> _unlinkedComponentFiedls;
 
 	// Links components refs to actual components
-	static void LinkPass(ScriptObject* root);
+	static void LinkPass(const std::unique_ptr<ScriptObject>& root);
 };

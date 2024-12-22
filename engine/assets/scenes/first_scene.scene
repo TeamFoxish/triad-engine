@@ -16,7 +16,7 @@ content:
       overrides:
         transform:
           position:
-            x: 3.0
+            x: 100.0
             y: 3.0
             z: 0.0
         children:

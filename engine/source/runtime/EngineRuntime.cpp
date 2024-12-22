@@ -76,9 +76,8 @@ bool EngineRuntime::Init(const InitParams& params)
 
 	gResourceSys->LoadResource(ToStrid(cfgInitResource.GetRef().data()));
 	gScriptSys->BuildModules();
-	ScriptObject* sceneRoot = SceneLoader::CreateScene(InitLoader::startUpSceneTag);
-	gScriptSys->SetScene(sceneRoot);
-	delete sceneRoot;
+	std::unique_ptr<ScriptObject> sceneRoot = SceneLoader::CreateScene(InitLoader::startUpSceneTag);
+	gScriptSys->SetScene(sceneRoot.get());
 
 	UIDebug::Init(window);
 

@@ -36,7 +36,7 @@ static EntityId AddEntityToSceneTree(CEntityInfo& info)
 {
     assert((info.entity.GetTypeId() & asTYPEID_SCRIPTOBJECT) > 0 && (info.entity.GetTypeId() & asTYPEID_OBJHANDLE) > 0);
     
-    SceneTree::Entity entity(static_cast<asIScriptObject*>(info.entity.GetRef()));
+    SceneTree::Entity entity(ScriptObject(static_cast<asIScriptObject*>(info.entity.GetRef())));
     // TODO: assign info.entity
     entity.parent = info.parent.handle;
     entity.name = info.name;

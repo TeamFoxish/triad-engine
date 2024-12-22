@@ -13,11 +13,15 @@ public:
     using ArgsT = std::vector<std::pair<TypeId, void*>>; // should be implemented using varargs in future
 
     ScriptObject(const std::string& module, const std::string& typeDecl, ArgsT&& args = {});
-    ScriptObject(asIScriptObject* object);
+    explicit ScriptObject(asIScriptObject* object);
+    ScriptObject(const ScriptObject& other);
+    ScriptObject(ScriptObject&& other) noexcept;
     ~ScriptObject();
+    ScriptObject& operator=(const ScriptObject& other);
+    ScriptObject& operator=(ScriptObject&& other) noexcept;
     void SetField(const std::string& name, void* value);
     void SetField(const std::string &name, const std::string &value);
-    void *ParseStringByType(const std::string &value, asUINT fieldType);
+    static void SetArrayValue(CScriptArray *array, asUINT index, const std::string &value);
     void *GetField(std::string name);
     void AssignField(const std::string& name, void* value);
     // only for objects
