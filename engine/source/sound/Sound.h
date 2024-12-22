@@ -14,6 +14,9 @@ namespace FMOD {
         class Bus;
     }
     class System;
+    class Sound;
+    class ChannelGroup;
+    class Channel;
 
     inline FMOD_VECTOR VecToFMOD(Math::Vector3 in)
     {

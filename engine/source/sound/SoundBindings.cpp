@@ -181,6 +181,13 @@ struct CSoundSystem {
 		}
 		return CSoundEvent(handle);
 	}
+
+	static void PlaySoundFile(const std::string& path, float volume, bool isLoop, bool is3D, const CTransformHandle* transform = nullptr) 
+	{
+		const TransformStorage::Handle trsHandle = is3D && transform ? transform->GetHandle() : TransformStorage::Handle{};
+		const Triad::FileIO::path filePath(path);
+		gSoundSys->PlaySoundFile(filePath, volume, isLoop, is3D, trsHandle);
+	}
 };
 
 void RegisterSoundBindings()
@@ -214,6 +221,7 @@ void RegisterSoundBindings()
 	r = engine->SetDefaultNamespace("Sound::System"); assert(r >= 0);
 
 	r = engine->RegisterGlobalFunction("Event PlayEvent(const string &in name)", asFUNCTION(CSoundSystem::PlayEvent), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("void PlaySoundFile(const string &in path, float volume, bool isLoop, bool is3D, const Math::Transform@+ transform = null)", asFUNCTION(CSoundSystem::PlaySoundFile), asCALL_CDECL); assert(r >= 0);
 
 	r = engine->SetDefaultNamespace(""); assert(r >= 0);
 }

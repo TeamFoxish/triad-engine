@@ -418,6 +418,7 @@ class Event{
 
 namespace System{
     Event PlayEvent(const string &in name);
+	void PlaySoundFile(const string &in path, float volume, bool isLoop, bool is3D, const Math::Transform@ transform = null);
 }
 }
 
