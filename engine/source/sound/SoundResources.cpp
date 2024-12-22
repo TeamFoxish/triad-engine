@@ -57,12 +57,12 @@ void SoundResources::LoadBank(const Triad::FileIO::path& path)
     }
 }
 
-void SoundResources::UnloadBank(Strid name)
+auto SoundResources::UnloadBank(Strid name) -> BanksMap::iterator
 {
     auto bankIter = banksMap.find(name);
     if (bankIter == banksMap.end()) {
         LOG_ERROR("attempt to unload bank which was never loaded");
-        return;
+        return {};
     }
 
     SoundBank& bank = bankIter->second;
@@ -81,13 +81,13 @@ void SoundResources::UnloadBank(Strid name)
 	bank.pBank->unloadSampleData();
 	bank.pBank->unload();
 	// Remove from banks map
-    banksMap.erase(bankIter);
+    return banksMap.erase(bankIter);
 }
 
 void SoundResources::UnloadAllBanks()
 {
-    for (auto& [name, _] : banksMap) {
-        UnloadBank(name);
+    for (auto iter = banksMap.begin(); iter != banksMap.end();) {
+        iter = UnloadBank(iter->first);
     }
 }
 

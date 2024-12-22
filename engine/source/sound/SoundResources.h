@@ -9,6 +9,10 @@
 #include <vector>
 
 class SoundResources {
+private:
+    struct SoundBank;
+    using BanksMap = std::unordered_map<Strid, SoundBank>;
+
 public:
     SoundResources() = default;
     SoundResources(const SoundResources&) = delete;
@@ -16,7 +20,7 @@ public:
     ~SoundResources() = default;
 
     void LoadBank(const Triad::FileIO::path& path);
-    void UnloadBank(Strid name);
+    BanksMap::iterator UnloadBank(Strid name);
     void UnloadAllBanks();
 
     FMOD::Studio::EventDescription* GetEventDesc(Strid name) const;
@@ -30,7 +34,7 @@ private:
     };
 
     // Map of loaded banks
-    std::unordered_map<Strid, SoundBank> banksMap;
+    BanksMap banksMap;
     // Map of event name to EventDescription
     std::unordered_map<Strid, FMOD::Studio::EventDescription*> eventsMap;
     // Map of buses
