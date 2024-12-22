@@ -8,6 +8,7 @@
 #include <d3dcompiler.h>
 
 #include "imgui.h"
+#include "imgui_internal.h"
 #include "backends/imgui_impl_win32.h"
 #include "backends/imgui_impl_dx11.h"
 #include "ImGuizmo.h"
@@ -27,6 +28,9 @@
 #include "shared/SharedStorage.h"
 #include "scripts/ScriptSystem.h"
 #include "scripts/ScriptObject.h"
+
+#define DRAG_SPEED 0.01f
+
 
 void UIDebug::Init(Window* window)
 {
@@ -229,6 +233,60 @@ bool UIDebug::HandleViewportResize()
 }
 
 #ifdef EDITOR
+static void DrawVec3Control(const std::string& label, Math::Vector3& values, float min = -100.f, float max = 100.f, ImGuiSliderFlags flag = 0, float columnWidth = 100.f)
+{
+    ImGui::PushID(label.c_str());
+
+    ImGui::Columns(2);
+    ImGui::SetColumnWidth(0, columnWidth);
+    ImGui::Text(label.c_str());
+    ImGui::NextColumn();
+
+    ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
+
+    float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.f;
+    ImVec2 buttonSize = { lineHeight + 3.f, lineHeight };
+
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
+    if (ImGui::Button("X", buttonSize)) {}
+    ImGui::PopStyleColor(3);
+
+    ImGui::SameLine();
+    ImGui::DragFloat("##X", &values.x, DRAG_SPEED, min, max, "%.3f", flag);
+    ImGui::PopItemWidth();
+    ImGui::SameLine();
+
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.2f, 0.7f, 0.3f, 1.0f });
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.2f, 0.7f, 0.3f, 1.0f });
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.2f, 0.7f, 0.3f, 1.0f });
+    if (ImGui::Button("Y", buttonSize)) {}
+    ImGui::PopStyleColor(3);
+
+    ImGui::SameLine();
+    ImGui::DragFloat("##Y", &values.y, DRAG_SPEED, min, max, "%.3f", flag);
+    ImGui::PopItemWidth();
+    ImGui::SameLine();
+
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
+    if (ImGui::Button("Z", buttonSize)) {}
+    ImGui::PopStyleColor(3);
+
+    ImGui::SameLine();
+    ImGui::DragFloat("##Z", &values.z, DRAG_SPEED, min, max, "%.3f", flag);
+    ImGui::PopItemWidth();
+    
+    ImGui::PopStyleVar();
+
+    ImGui::Columns(1);
+
+    ImGui::PopID();
+}
+
 void UIDebug::DrawGizmo()
 {
     auto node = outliner.GetSelectedNode();
@@ -237,12 +295,13 @@ void UIDebug::DrawGizmo()
     {
         SceneTree::Entity& entity = gSceneTree->Get(node);
         if (entity.isComposite && entity.transform.id_ >= 0) {
-
+            Math::Transform& trs = SharedStorage::Instance().transforms.AccessWrite(entity.transform);
+            
             // ImGui window
             {
-                ImGui::Begin("Gizmo options");
+                ImGui::Begin("Inspector");
 
-                ImGui::SeparatorText("Transforms");
+                ImGui::SeparatorText("Transform Manualy");
 
                 if (ImGui::Button("Translate"))
                 {
@@ -269,6 +328,19 @@ void UIDebug::DrawGizmo()
 
                 ImGui::SeparatorText("");
 
+                Math::Vector3 pos = trs.GetPosition();
+                DrawVec3Control("Position", pos);
+                trs.SetPosition(pos);
+                
+                Math::Vector3 rot = trs.GetRotation().ToEuler();
+                DrawVec3Control("Rotation", rot, -2 * Math::Pi, 2 * Math::Pi, ImGuiSliderFlags_WrapAround);
+                auto res = Math::Quaternion::CreateFromYawPitchRoll(rot);
+                trs.SetRotation(res);
+
+                Math::Vector3 scale = trs.GetScale();
+                DrawVec3Control("Scale", scale, 0.f, 100.f);
+                trs.SetScale(scale);
+
                 ImGui::End();
             }
 
@@ -290,7 +362,7 @@ void UIDebug::DrawGizmo()
             const Math::Matrix& projectionMatrix = camera->GetProjectionMatrix();
 
             // Transform
-            Math::Transform& trs = SharedStorage::Instance().transforms.AccessWrite(entity.transform);
+            //Math::Transform& trs = SharedStorage::Instance().transforms.AccessWrite(entity.transform);
             Math::Matrix matr = trs.GetMatrix(); // TODO: check if gizmo works for child entities
 
             ImGuizmo::Manipulate((float*)viewMatrix.m, (float*)projectionMatrix.m, operation, ImGuizmo::LOCAL, (float*)matr.m);
