@@ -44,8 +44,8 @@ const Math::Matrix& CameraManager::GetViewProjTransposed()
 
 void CameraManager::UpdateCameras()
 {
-    // TODO: should update only active camera
-    for (CameraStorage::CameraEntry& entry : RenderStorage::Instance().cameras.storage) {
+    if (HasActiveCamera()) {
+        CameraStorage::CameraEntry& entry = GetActiveCamera();
         const Math::Transform& camTrs = SharedStorage::Instance().transforms.AccessRead(entry.transform);
         entry.camera.UpdateView(camTrs);
         if (entry.updateProjection) {

@@ -22,6 +22,8 @@ public:
 	TransformStorage(TransformStorage&&) = delete;
 	~TransformStorage() = default; // TOOD: remove all transforms manually?
 
+	bool IsValidHandle(Handle handle) { return storage.Get(handle) != nullptr; }
+
 	const Math::Transform& AccessRead(Handle handle);
 	Math::Transform& AccessWrite(Handle handle);
 

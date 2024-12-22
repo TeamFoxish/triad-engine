@@ -1,0 +1,4 @@
+content:
+  class: SoundEmitterComponent
+  module: Engine
+type: component

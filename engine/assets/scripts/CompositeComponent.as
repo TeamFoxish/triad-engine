@@ -16,6 +16,16 @@ class CompositeComponent : Component, ICompositer {
 
     const array<Component@>& GetChildren() const { return children; }
 
+    void Init() {
+        if (children !is null) {
+            for( uint n = 0; n < children.length(); n++ ) {
+                if (children[n] !is null) {
+                    children[n].Init();
+                }
+            }
+        }
+    }
+
     void Update(float deltaTime) {
         if (children !is null) {
             for( uint n = 0; n < children.length(); n++ ) {

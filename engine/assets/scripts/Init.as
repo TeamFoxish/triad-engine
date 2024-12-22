@@ -6,6 +6,9 @@ float speed = 1.0f;
 float amplitude = 3.0f;
 
 void UpdateImpl(float deltaTime) {
+    if (Input::IsKeyDown(Input::Key::Space)) {
+        Sound::System::PlayEvent("event:/Bubbles/Bubble2D");
+    }
     sceneRoot.Update(deltaTime);
 }
 
@@ -33,4 +36,6 @@ void init()
     SetFixedUpdate(FixedUpdateImpl);
     SetShutdown(ShutdownImpl);
     println("Script initialization done !");
+    
+    sceneRoot.Init(); // TEMP
 }

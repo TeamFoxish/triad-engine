@@ -14,11 +14,11 @@ project("Engine")
   
   filter("configurations:Debug*")
     libdirs({ "libs/**/debug" })
-	links({ "assimp-vc143-mtd", "freetyped", "argumentumd", "yaml-cppd", "angelscriptd", "spdlogd" })
+	links({ "assimp-vc143-mtd", "freetyped", "argumentumd", "yaml-cppd", "angelscriptd", "spdlogd", "fmodL_vc", "fmodstudioL_vc" })
   
   filter("configurations:Release*")
     libdirs({ "libs/**/release" })
-	links({ "assimp-vc143-mt", "freetype", "argumentum", "yaml-cpp", "angelscript", "spdlog" })
+	links({ "assimp-vc143-mt", "freetype", "argumentum", "yaml-cpp", "angelscript", "spdlog", "fmod_vc", "fmodstudio_vc" })
   
   filter {  }
   
@@ -36,10 +36,14 @@ project("Engine")
 
   filter("configurations:Debug*")
    postbuildcommands {
-    "{COPYFILE} " .. scriptDir .. "/assimp-vc143-mtd.dll %{cfg.targetdir}/assimp-vc143-mtd.dll"
+    "{COPYFILE} " .. scriptDir .. "/assimp-vc143-mtd.dll %{cfg.targetdir}/assimp-vc143-mtd.dll",
+    "{COPYFILE} " .. scriptDir .. "/fmodstudioL.dll %{cfg.targetdir}/fmodstudioL.dll",
+    "{COPYFILE} " .. scriptDir .. "/fmodL.dll %{cfg.targetdir}/fmodL.dll"
   }
   filter("configurations:Release*")
    postbuildcommands {
-    "{COPYFILE} " .. scriptDir .. "/assimp-vc143-mt.dll %{cfg.targetdir}/assimp-vc143-mt.dll"
+    "{COPYFILE} " .. scriptDir .. "/assimp-vc143-mt.dll %{cfg.targetdir}/assimp-vc143-mt.dll",
+    "{COPYFILE} " .. scriptDir .. "/fmodstudio.dll %{cfg.targetdir}/fmodstudio.dll",
+    "{COPYFILE} " .. scriptDir .. "/fmod.dll %{cfg.targetdir}/fmod.dll"
   }
   

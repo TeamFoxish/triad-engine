@@ -22,6 +22,9 @@
 
 #include "scripts/ScriptSystem.h"
 #include "scripts/ScriptObject.h"
+
+#include "sound/SoundSystem.h"
+
 #include "logs/Logs.h"
 
 
@@ -64,6 +67,10 @@ bool EngineRuntime::Init(const InitParams& params)
 		LOG_ERROR("Failed on Reaource Initialization");
 		return false;
 	}
+	if (!InitSoundSystem()) {
+		LOG_ERROR("Failed on SoundSystem Initialization");
+		return false;
+	}
 	extern void InitSceneTree();
 	InitSceneTree();
 	if(!InitScript(this)) {
@@ -81,27 +88,34 @@ bool EngineRuntime::Init(const InitParams& params)
 
 	UIDebug::Init(window);
 
-	return true;
+	return gTempGame->Initialize();
 }
 
 void EngineRuntime::Run()
 {
-	bool success = gTempGame->Initialize();
-	if (success) {
-		while (gTempGame->isRunning) {
-			gTempGame->UpdateFrame();
-			
-			SharedStorage::Instance().transforms.Update();
-
-			UIDebug::StartNewFrame();
-			gRenderSys->StartFrame();
-
-			UIDebug::TestDraw();
-			UIDebug::Render();
-
-			gRenderSys->EndFrame();
-		}
+	while (gTempGame->isRunning) {
+		RunSingleFrame();
 	}
+}
+
+void EngineRuntime::RunSingleFrame(FrameParams&& params)
+{
+	if (params.simulationEnabled) {
+		UpdateSoundListener();
+		gSoundSys->Update(gTempGame->GetDeltaTime());
+	}
+	gTempGame->UpdateFrame(); // TODO: move to simulation branch
+	isRunning = gTempGame->isRunning;
+
+	SharedStorage::Instance().transforms.Update();
+
+	UIDebug::StartNewFrame();
+	gRenderSys->StartFrame();
+
+	UIDebug::TestDraw();
+	UIDebug::Render();
+
+	gRenderSys->EndFrame();
 }
 
 void EngineRuntime::Shutdown()
@@ -112,15 +126,27 @@ void EngineRuntime::Shutdown()
 	TermScript(this);
 	extern void TermSceneTree();
 	TermSceneTree();
+	TermSoundSystem();
 	TermResource(this);
 	TermRender(this);
 	TermSharedStorage();
 	if (window) {
 		osDestroyWindow(window);
 	}
+
+	delete globalInputDevice;
+	globalInputDevice = nullptr;
 }
 
 Math::Vector2 EngineRuntime::GetMousePosInViewport() const
 {
 	return globalInputDevice->MousePosition;
+}
+
+void EngineRuntime::UpdateSoundListener()
+{
+	if (!gRenderSys->cameraManager.HasActiveCamera()) {
+		return;
+	}
+	gSoundSys->SetListener(gRenderSys->cameraManager.GetActiveCamera().camera.GetViewMatrix());
 }

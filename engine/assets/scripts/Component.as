@@ -17,13 +17,20 @@ abstract class Component {
         Destroy();
     }
 
+    void Init() {
+        // do nothing, default behavior
+    }
+
     void Destroy() {
         if (isDead) {
             return;
         }
+        OnDestroy();
         isDead = true;
         Scene::Tree::RemoveEntity(id);
     }
+
+    void OnDestroy() {}
 
     void Update(float deltaTime) {
         // do nothing, default behavior

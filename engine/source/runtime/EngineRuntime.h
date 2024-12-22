@@ -11,13 +11,20 @@ class Window;
 
 class EngineRuntime : public RuntimeIface {
 public:
+	struct FrameParams {
+		bool simulationEnabled = true;
+	};
+
 	EngineRuntime() = default;
 	EngineRuntime(const EngineRuntime&) = delete;
 	EngineRuntime(EngineRuntime&&) = delete;
 	~EngineRuntime() = default;
 
+	bool IsRunning() const { return isRunning; }
+
 	bool Init(const InitParams& params) override;
 	void Run() override;
+	void RunSingleFrame(FrameParams&& params = {});
 	void Shutdown() override;
 
 	Window* GetWindow() const override { return window; }
@@ -25,7 +32,12 @@ public:
 	Math::Vector2 GetMousePosInViewport() const override;
 
 private:
+	void UpdateSoundListener();
+
+private:
 	Window* window = nullptr;
+
+	bool isRunning = true;
 };
 
 extern ConfigVar<std::string_view> cfgProjectName;

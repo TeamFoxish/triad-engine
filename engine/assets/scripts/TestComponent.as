@@ -13,19 +13,19 @@ class TestComponent : Component {
     TestComponent@ testComponent;
 
     void Update(float deltaTime) {
-        println("Update time: " + deltaTime);
-        println("someString: " + someString);
-        println("someInt: " + someInt);
-        println("someFloat: " + someFloat);
+        //println("Update time: " + deltaTime);
+        //println("someString: " + someString);
+        //println("someInt: " + someInt);
+        //println("someFloat: " + someFloat);
         if (testClass !is null) {
-            testClass.Print();
+            //testClass.Print();
         }
         if (testComponent !is null) {
-            println("Component ref someInt: " + testComponent.someInt);
+            //println("Component ref someInt: " + testComponent.someInt);
         }
     }
 
     void FixedUpdate(float deltaTime) {
-        println("Fixed Update time: " + deltaTime);
+        //println("Fixed Update time: " + deltaTime);
     }
 };

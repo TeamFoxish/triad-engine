@@ -5,6 +5,8 @@
 
 #ifdef EDITOR
 #include "UIOutliner.h"
+
+#include "misc/Delegates.h"
 #endif // EDITOR
 
 class Window;
@@ -54,5 +56,8 @@ private:
 	
 public:
 	static inline Outliner outliner; // TODO: remove
+
+	static inline MulticastDelegate<> onSimulationStart;
+	static inline MulticastDelegate<> onSimulationEnd;
 #endif // EDITOR
 };

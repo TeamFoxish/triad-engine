@@ -106,6 +106,11 @@ void UIDebug::TestDraw()
             {
                 start_simulation = !start_simulation;
                 bName = start_simulation ? "Pause" : "Start";
+                if (start_simulation) {
+                    onSimulationStart.Broadcast();
+                } else {
+                    onSimulationEnd.Broadcast();
+                }
             }
             ImGui::End();
         }

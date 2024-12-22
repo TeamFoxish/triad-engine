@@ -4,5 +4,5 @@
 
 class CNativeObject {
 public:
-	virtual void ApplyOverrides(const YAML::Node& overrides) = 0;
+	virtual void ApplyOverrides(const YAML::Node& overrides) {}
 };

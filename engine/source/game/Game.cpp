@@ -108,7 +108,6 @@ void Game::ProcessInput()
 
 void Game::Shutdown()
 {
-	delete(globalInputDevice);
 }
 
 void Game::UpdateFrame()

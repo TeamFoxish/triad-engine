@@ -8,6 +8,8 @@
 #include "editor/ui_debug/UIDebug.h"
 #include "math/Math.h"
 
+#include "sound/SoundSystem.h"
+
 static ConfigVar<int> cfgEditorWindowWidth("/Editor/Window/Width", 1280);
 static ConfigVar<int> cfgEditorWindowHeight("/Editor/Window/Height", 720);
 
@@ -29,17 +31,26 @@ bool EditorRuntime::Init(const InitParams& params)
 	InitParams engParams;
 	engParams.window.width = cfgEditorWindowWidth;
 	engParams.window.height = cfgEditorWindowHeight;
+
+	UIDebug::onSimulationStart.AddRaw(this, &EditorRuntime::HandleSimulationStart);
+	UIDebug::onSimulationEnd.AddRaw(this, &EditorRuntime::HandleSimulationEnd);
+
 	return engRuntime->Init(engParams);
 }
 
 void EditorRuntime::Run()
 {
-	engRuntime->Run();
+	while (engRuntime->IsRunning()) {
+		engRuntime->RunSingleFrame(EngineRuntime::FrameParams{
+			.simulationEnabled = UIDebug::start_simulation
+		});
+	}
 }
 
 void EditorRuntime::Shutdown()
 {
 	engRuntime->Shutdown();
+	UIDebug::onSimulationStart.RemoveObject(this);
 }
 
 Window* EditorRuntime::GetWindow() const
@@ -53,5 +64,15 @@ Math::Vector2 EditorRuntime::GetMousePosInViewport() const
 	pos.x -= UIDebug::GetViewportX();
 	pos.y -= UIDebug::GetViewportY();
 	return pos;
+}
+
+void EditorRuntime::HandleSimulationStart()
+{
+}
+
+void EditorRuntime::HandleSimulationEnd()
+{
+	gSoundSys->StopAllSounds();
+	gSoundSys->Update(0.0f);
 }
 #endif // EDITOR
