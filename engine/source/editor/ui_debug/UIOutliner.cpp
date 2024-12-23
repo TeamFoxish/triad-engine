@@ -36,9 +36,9 @@ void Outliner::Update()
     {
         gizmo_focused = false;
         int32_t entityId = gRenderSys->GetEntityIdUnderCursor();
-        if (entityId >= 0)
+        if (entityId >= 0 && entityId != selectedNode.id_)
         {
-            SetSelectedNodeUpward(entityId);
+            SetSelectedNode(entityId);
             gizmo_focused = true;
         }
     } 
@@ -46,9 +46,9 @@ void Outliner::Update()
         // delayed single left mouse click
         gizmo_focused = false;
         int32_t entityId = gRenderSys->GetEntityIdUnderCursor();
-        if (entityId >= 0 && entityId != selectedNode.id_)
+        if (entityId >= 0)
         {
-            SetSelectedNode(entityId);
+            SetSelectedNodeUpward(entityId);
             gizmo_focused = true;
         }
     }
