@@ -74,7 +74,7 @@ class CRenderable : public CNativeObject {
 
 public:
 	CRenderable() = default;
-	CRenderable(uint32_t entityId, const CTransformHandle& _transform)
+	CRenderable(int32_t entityId, const CTransformHandle& _transform)
 		: renderObj(RenderableStorage::Instance().Add(entityId, _transform.GetHandle()))
 	{
 		// TEMP

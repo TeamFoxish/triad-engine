@@ -72,7 +72,7 @@ void RenderSystem::EndFrame()
 	rendererImpl->EndFrame();
 }
 
-uint32_t RenderSystem::GetEntityIdUnderCursor() const
+int32_t RenderSystem::GetEntityIdUnderCursor() const
 {
 	return rendererImpl->GetEntityIdUnderCursor();
 }

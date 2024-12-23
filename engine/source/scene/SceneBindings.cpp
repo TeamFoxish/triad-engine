@@ -13,6 +13,13 @@ union EntityId {
 
 static constexpr EntityId InvalidEntityId = {};
 
+int32_t GetEntityInt32(asQWORD id)
+{ 
+    EntityId entId;
+    entId.id = id;
+    return entId.handle.id_;
+}
+
 static bool IsValidEntity(EntityId id) 
 {
     return id.id != EntityId{}.id;

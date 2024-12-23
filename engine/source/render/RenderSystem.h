@@ -25,7 +25,7 @@ public:
 	void StartFrame();
 	void EndFrame();
 
-	uint32_t GetEntityIdUnderCursor() const;
+	int32_t GetEntityIdUnderCursor() const;
 
 public:
 	CameraManager cameraManager;

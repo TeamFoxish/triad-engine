@@ -26,7 +26,7 @@ public:
 	std::string GetName() const { return name; }
 	bool HasParent() const { return hasParent; }
 
-	using Id_T = uint32_t;
+	using Id_T = int32_t;
 	Id_T GetId() const { return uid; }
 
 private:
@@ -44,5 +44,4 @@ private:
 	bool hasParent = false;
 	std::string name;
 	Id_T uid;
-
 };

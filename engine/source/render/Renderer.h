@@ -46,7 +46,7 @@ public:
 
 	ID3D11ShaderResourceView* GetColorPassSrt() const { return colorPassSrt; }
 
-	uint32_t GetEntityIdUnderCursor() const { return context.entityIdUnderCursor; }
+	int32_t GetEntityIdUnderCursor() const { return context.entityIdUnderCursor; }
 
 private:
 	void AddLight(Light* light);

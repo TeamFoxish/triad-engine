@@ -91,10 +91,7 @@ void Game::ProcessInput()
 	if (!UIDebug::start_simulation)
 	{
 		gRenderSys->cameraManager.SetActiveCamera(editorCam->GetCameraHandle());
-		if (!UIDebug::outliner.gizmo_focused)
-		{
-			editorCam->ProceedInput(globalInputDevice);
-		}
+		editorCam->ProceedInput(globalInputDevice);
 		return;
 	}
 #endif // EDITOR
@@ -289,10 +286,7 @@ void Game::UpdateGame()
 	if (!UIDebug::start_simulation)
 	{
 		gRenderSys->cameraManager.SetActiveCamera(editorCam->GetCameraHandle());
-		if (!UIDebug::outliner.gizmo_focused)
-		{
-			editorCam->Update(deltaTime);
-		}
+		editorCam->Update(deltaTime);
 		return;
 	}
 #endif // EDITOR

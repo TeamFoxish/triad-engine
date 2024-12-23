@@ -17,7 +17,7 @@ struct PS_OUTPUT
     float4 albedoSpec: SV_Target0;
     float3 normal: SV_Target1;
     float4 lightAcc: SV_Target2;
-	uint entityId: SV_Target3;
+	int entityId: SV_Target3;
 };
 
 cbuffer VertexConstantBuffer : register(b0)
@@ -30,7 +30,7 @@ cbuffer PixelConstantBuffer : register(b0)
 {
 	float4 ambientColor;
 	int isTextureSet;
-	uint entityId;
+	int entityId;
 }
 
 cbuffer MaterialCB : register(b1)

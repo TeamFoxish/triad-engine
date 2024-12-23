@@ -30,8 +30,9 @@ private:
 
 	//bool Remove(std::shared_ptr<OutlinerNode> root, std::string component_to_remove);
 
-	bool FindNodeById(uint32_t entityId, SceneTree::Handle node);
-	void SetSelectedNode(uint32_t entityId);
+	bool FindNodeById(SceneTree::Storage::Index entityId, SceneTree::Handle node);
+	void SetSelectedNode(SceneTree::Storage::Index entityId);
+	void SetSelectedNodeUpward(SceneTree::Storage::Index entityId);
 
 private:
 	SceneTree::Handle root;

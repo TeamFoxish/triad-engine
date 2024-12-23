@@ -74,9 +74,10 @@ static void CRenderableDefaultConstructor(CRenderable* self)
 	new(self) CRenderable();
 }
 
-static void CRenderableConstructor(uint32_t entityId, const CTransformHandle& transform, CRenderable* self)
+static void CRenderableConstructor(asQWORD entityId, const CTransformHandle& transform, CRenderable* self)
 {
-	new(self) CRenderable(entityId, transform);
+	extern int32_t GetEntityInt32(asQWORD id);
+	new(self) CRenderable(GetEntityInt32(entityId), transform);
 }
 
 static void CRenderableCopyConstructor(CRenderable& other, CRenderable* self)
@@ -107,7 +108,7 @@ void RegisterResourceHandles()
 
 	r = engine->RegisterObjectType("Renderable", sizeof(CRenderable), asOBJ_VALUE | asGetTypeTraits<CRenderable>() | asOBJ_APP_CLASS_MORE_CONSTRUCTORS); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("Renderable", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(CRenderableDefaultConstructor), asCALL_CDECL_OBJLAST); assert(r >= 0);
-	r = engine->RegisterObjectBehaviour("Renderable", asBEHAVE_CONSTRUCT, "void f(uint, const Math::Transform@+)", asFUNCTION(CRenderableConstructor), asCALL_CDECL_OBJLAST); assert(r >= 0);
+	r = engine->RegisterObjectBehaviour("Renderable", asBEHAVE_CONSTRUCT, "void f(uint64, const Math::Transform@+)", asFUNCTION(CRenderableConstructor), asCALL_CDECL_OBJLAST); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("Renderable", asBEHAVE_CONSTRUCT, "void f(Renderable &in)", asFUNCTION(CRenderableCopyConstructor), asCALL_CDECL_OBJLAST); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("Renderable", asBEHAVE_DESTRUCT, "void f()", asFUNCTION(CRenderableDestructor), asCALL_CDECL_OBJLAST); assert(r >= 0);
 	r = engine->RegisterObjectMethod("Renderable", "Renderable &opAssign(Renderable &in)", asMETHODPR(CRenderable, operator=, (CRenderable&), CRenderable&), asCALL_THISCALL); assert(r >= 0);

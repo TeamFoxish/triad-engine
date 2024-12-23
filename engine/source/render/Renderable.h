@@ -10,13 +10,13 @@ struct Renderable {
 		bool castShadows = true;
 	};
 
-	Renderable(uint32_t entityId, TransformStorage::Handle transform);
+	Renderable(int32_t entityId, TransformStorage::Handle transform);
 
 	std::shared_ptr<Mesh> mesh;
 	std::shared_ptr<Material> material;
 	TransformStorage::Handle transform;
 	DrawParams params;
-	uint32_t entityId;
+	int32_t entityId;
 };
 
 class RenderableStorage {
@@ -35,7 +35,7 @@ public:
 
 	Renderable& Get(Handle handle) { return storage[handle]; }
 	const Renderable& Get(Handle handle) const { return storage[handle]; }
-	Handle Add(uint32_t entityId, TransformStorage::Handle transform) { return storage.Add(Renderable{entityId, transform}); }
+	Handle Add(int32_t entityId, TransformStorage::Handle transform) { return storage.Add(Renderable{entityId, transform}); }
 	void Remove(Handle handle) { storage.Remove(handle); }
 
 	const Storage& GetStorage() const { return storage; }

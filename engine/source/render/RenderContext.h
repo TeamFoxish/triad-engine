@@ -23,7 +23,7 @@ struct RenderContext {
 	std::shared_ptr<Shader> activeShader;
 
 	// mouse picking support
-	uint32_t entityIdUnderCursor = 0;
+	int32_t entityIdUnderCursor = -1;
 
 	// d3d11 part
 	ID3D11Device* device;

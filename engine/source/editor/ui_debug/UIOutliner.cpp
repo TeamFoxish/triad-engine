@@ -30,25 +30,29 @@ void Outliner::Init()
 
 void Outliner::Update()
 {
+    static int clicksCount = 0;
+    const int newClicksCount = ImGui::GetMouseClickedCount(ImGuiMouseButton_Left);
     if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
     {
-        uint32_t entityId = gRenderSys->GetEntityIdUnderCursor();
-        union ConvHelper {
-            uint32_t orig = 0;
-            decltype(selectedNode.id_) target;
-        } helper;
-        helper.orig = entityId;
-        if (helper.target != selectedNode.id_) // TODO: check if actually works (note: entity ids are not set in renderables currently)
+        gizmo_focused = false;
+        int32_t entityId = gRenderSys->GetEntityIdUnderCursor();
+        if (entityId >= 0)
+        {
+            SetSelectedNodeUpward(entityId);
+            gizmo_focused = true;
+        }
+    } 
+    else if (clicksCount == 1 && newClicksCount == 0) {
+        // delayed single left mouse click
+        gizmo_focused = false;
+        int32_t entityId = gRenderSys->GetEntityIdUnderCursor();
+        if (entityId >= 0 && entityId != selectedNode.id_)
         {
             SetSelectedNode(entityId);
+            gizmo_focused = true;
         }
-        gizmo_focused = true;
     }
-    // ToDo: remove camera jerk when out of gizmo focus
-    else if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
-    {
-        gizmo_focused = false;
-    }
+    clicksCount = newClicksCount;
 }
 
 void Outliner::Draw()
@@ -122,38 +126,59 @@ void Outliner::DrawOutlinerNode(SceneTree::Handle node)
     }
 }
 
-bool Outliner::FindNodeById(uint32_t entityId, SceneTree::Handle node)
+bool Outliner::FindNodeById(SceneTree::Storage::Index entityId, SceneTree::Handle node)
 {
-    //if (node->id == entityId)
-    //{
-    //    //LOG_DEBUG("Selected node was updated. Id:{}", node->id);
-    //    selectedNode->isSelected = false;
-    //    selectedNode = node;
-    //    selectedNode->isSelected = true;
-    //    return true;
-    //}
+    SceneTree::Entity& entity = gSceneTree->Get(node);
+    if (node.id_ == entityId)
+    {
+        //LOG_DEBUG("Selected node was updated. Id:{}", node->id);
+        SceneTree::Entity& selected = gSceneTree->Get(selectedNode);
+        selected.isSelected = false;
+        selectedNode = node;
+        entity.isSelected = true;
+        return true;
+    }
 
-    //for (auto child : node->children)
-    //{
-    //    if (FindNodeById(entityId, child))
-    //    {
-    //        return true;
-    //    }
-    //}
+    for (SceneTree::Handle childHandle : entity.children)
+    {
+        if (FindNodeById(entityId, childHandle))
+        {
+            return true;
+        }
+    }
 
-    //return false;
-    return true;
+    return false;
 }
 
-void Outliner::SetSelectedNode(uint32_t entityId)
+void Outliner::SetSelectedNode(SceneTree::Storage::Index entityId)
 {
-    /*for (auto child : root->children)
+    SceneTree::Handle handle = gSceneTree->GetHandleFromIdx(entityId);
+    if (FindNodeById(entityId, handle)) {
+        return;
+    }
+
+    SceneTree::Entity& entity = gSceneTree->Get(handle);
+    for (SceneTree::Handle childHandle : entity.children)
     {
-        if (FindNodeById(entityId, child))
+        if (FindNodeById(entityId, childHandle))
         {
             break;
         }
-    }*/
+    }
+}
+
+void Outliner::SetSelectedNodeUpward(SceneTree::Storage::Index entityId)
+{
+    SceneTree::Handle handle = gSceneTree->GetHandleFromIdx(entityId);
+    SceneTree::Entity& entity = gSceneTree->Get(handle);
+    if (entity.parent.id_ < 0 || entity.parent == selectedNode) {
+        return;
+    }
+    SceneTree::Entity& selected = gSceneTree->Get(selectedNode);
+    selected.isSelected = false;
+    selectedNode = entity.parent;
+    SceneTree::Entity& parent = gSceneTree->Get(entity.parent);
+    parent.isSelected = true;
 }
 
 #endif // EDITOR

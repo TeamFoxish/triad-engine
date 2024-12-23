@@ -134,7 +134,7 @@ void GBufferPass::AddGeometryPass(RenderContext& ctx, FrameGraph& fg, FrameGraph
 				texDesc.Height = 1;
 				texDesc.Usage = D3D11_USAGE_STAGING;
 				texDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
-				texDesc.Format = DXGI_FORMAT_R32_UINT;
+				texDesc.Format = DXGI_FORMAT_R32_SINT;
 				//texDesc.BindFlags = D3D11_BIND_RENDER_TARGET;
 				texDesc.SampleDesc.Count = 1;
 				texDesc.SampleDesc.Quality = 0;
@@ -207,7 +207,7 @@ void GBufferPass::AddGeometryPass(RenderContext& ctx, FrameGraph& fg, FrameGraph
 			// enitity ids
 			auto& idsTexture = resources.get<FrameGraphResources::FGTexture>(data.entityIds);
 			RenderTargetDesc rtvDesc = {};
-			rtvDesc.Format = DXGI_FORMAT_R32_UINT;
+			rtvDesc.Format = DXGI_FORMAT_R32_SINT;
 			rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 			RenderTarget* rtv = idsTexture.BindWrite(ctx, &rtvDesc, 3);
 			ctx->ClearRenderTargetView(rtv, clearColor);
@@ -245,11 +245,11 @@ void GBufferPass::QueryEntityUnderCursor(RenderContext& ctx, FrameGraphResources
 	mousePos.y -= UIDebug::GetViewportY();
 	mousePos.y -= 10; // TEMP no idea why cursor losing about 10 units by Y axis when fetching texture 0_o
 #endif
-	ctx.entityIdUnderCursor = 0;
+	ctx.entityIdUnderCursor = -1;
 	if (mousePos.x < 0.0f || mousePos.x > ctx.viewport.width || mousePos.y < 0.0f || mousePos.y > ctx.viewport.height) {
 		return;
 	}
-	// get a single pixel texture with uint32 content
+	// get a single pixel texture with int32 content
 	D3D11_BOX srcRegion;
 	srcRegion.left = (uint32_t)mousePos.x;
 	srcRegion.right = srcRegion.left + 1;
@@ -262,6 +262,6 @@ void GBufferPass::QueryEntityUnderCursor(RenderContext& ctx, FrameGraphResources
 	// read resulted id
 	D3D11_MAPPED_SUBRESOURCE destRes = {};
 	ctx->Map(idsCopy.tex, 0, D3D11_MAP_READ, 0, &destRes);
-	ctx.entityIdUnderCursor = static_cast<uint32_t*>(destRes.pData)[0];
+	ctx.entityIdUnderCursor = static_cast<int32_t*>(destRes.pData)[0];
 	ctx->Unmap(idsCopy.tex, 0);
 }

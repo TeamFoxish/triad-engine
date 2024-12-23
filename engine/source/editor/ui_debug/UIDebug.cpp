@@ -102,7 +102,9 @@ void UIDebug::TestDraw()
 
         // Outliner
         {
-            outliner.Update();
+            if (!ImGuizmo::IsOver()) {
+                outliner.Update();
+            }
             outliner.Draw();
         }
 
@@ -145,10 +147,7 @@ void UIDebug::TestDraw()
                 isSceneFocused = ImGui::IsWindowFocused();
             }
 
-            if (outliner.gizmo_focused)
-            {
-                DrawGizmo();
-            }
+            DrawGizmo();
 
             ImGui::End();
             ImGui::PopStyleVar();
@@ -293,6 +292,7 @@ static void DrawVec3Control(const std::string& label, Math::Vector3& values, flo
 
 void UIDebug::DrawGizmo()
 {
+    //gizmoSelected = ImGuizmo::IsOver();
     auto node = outliner.GetSelectedNode();
 
     if (node.id_ >= 0 && node != outliner.GetRootNode())
@@ -396,6 +396,7 @@ void UIDebug::DrawGizmo()
             // Transform
             //Math::Transform& trs = SharedStorage::Instance().transforms.AccessWrite(entity.transform);
             Math::Matrix matr = trs.GetMatrix(); // TODO: check if gizmo works for child entities
+            Math::Matrix matrTemp = matr;
 
             if (ImGuizmo::Manipulate((float*)viewMatrix.m, (float*)projectionMatrix.m, operation, gizmoSpace == (int)GizmoSpace::World ? ImGuizmo::WORLD : ImGuizmo::LOCAL, (float*)matr.m)) {
                 trs.SetMatrix(matr);

@@ -9,16 +9,14 @@ content:
             x: 0.0
             y: 45.0
             z: -45.0
-    flopa1:
-      prefab: res://prefabs/flopa.prefab
     flopa2:
       prefab: res://prefabs/flopa.prefab
       overrides:
         transform:
           position:
-            x: 100.0
-            y: 3.0
-            z: 0.0
+            x: 3.0
+            y: 0.0
+            z: 3.0
         children:
           $Test2:
             component: res://components/TestComponent.component
@@ -29,6 +27,17 @@ content:
               testClass:
                 resourceExample: resExample
               testComponent: "@cheese1/Test2"
+          $Cheese:
+            component: res://components/MeshComponent.component
+            overrides:
+              transform:
+                rotation:
+                  x: 0.0
+                  y: 90.0
+                  z: 0.0
+              renderObj:
+                material: res://materials/cheese.material
+                mesh: res://meshes/cheese.mesh
     cheese1: 
       prefab: res://prefabs/cheese.prefab
     player:

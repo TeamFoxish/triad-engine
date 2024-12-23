@@ -36,6 +36,7 @@ public:
 
 	static inline bool useDefaultSettings = true;
 	static inline bool start_simulation = false;
+	static inline bool gizmoSelected = false;
 
 protected:
 	static void UpdateViewportPos();

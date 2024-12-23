@@ -362,7 +362,7 @@ class Mesh{
 }
 
 class Renderable{
-	Renderable(uint entityId, const Math::Transform@ transform);
+	Renderable(uint64 entityId, const Math::Transform@ transform);
 	Renderable(const Renderable &in) delete;
 
 	Mesh mesh;
