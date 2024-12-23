@@ -10,7 +10,9 @@ namespace Math {
 	using OrientedBox = DirectX::BoundingOrientedBox;
 	using Frustum = DirectX::BoundingFrustum;
 
+	constexpr float Epsilon = 1.0E-6f;
 	constexpr float Pi = DirectX::XM_PI;
+	constexpr float Pi2 = DirectX::XM_2PI;
 
 	template<typename T>
 	inline T Min(T a, T b)

@@ -29,7 +29,11 @@
 #include "scripts/ScriptSystem.h"
 #include "scripts/ScriptObject.h"
 
+#include "logs/Logs.h"
+
 #define DRAG_SPEED 0.01f
+
+static constexpr float DegreesDragSpeed = Math::RadToDeg(DRAG_SPEED);
 
 
 void UIDebug::Init(Window* window)
@@ -233,7 +237,7 @@ bool UIDebug::HandleViewportResize()
 }
 
 #ifdef EDITOR
-static void DrawVec3Control(const std::string& label, Math::Vector3& values, float min = -100.f, float max = 100.f, ImGuiSliderFlags flag = 0, float columnWidth = 100.f)
+static void DrawVec3Control(const std::string& label, Math::Vector3& values, float dragSpeed, float min = -100.f, float max = 100.f, ImGuiSliderFlags flag = 0, float columnWidth = 100.f)
 {
     ImGui::PushID(label.c_str());
 
@@ -255,7 +259,7 @@ static void DrawVec3Control(const std::string& label, Math::Vector3& values, flo
     ImGui::PopStyleColor(3);
 
     ImGui::SameLine();
-    ImGui::DragFloat("##X", &values.x, DRAG_SPEED, min, max, "%.3f", flag);
+    ImGui::DragFloat("##X", &values.x, dragSpeed, min, max, "%.3f", flag);
     ImGui::PopItemWidth();
     ImGui::SameLine();
 
@@ -266,7 +270,7 @@ static void DrawVec3Control(const std::string& label, Math::Vector3& values, flo
     ImGui::PopStyleColor(3);
 
     ImGui::SameLine();
-    ImGui::DragFloat("##Y", &values.y, DRAG_SPEED, min, max, "%.3f", flag);
+    ImGui::DragFloat("##Y", &values.y, dragSpeed, min, max, "%.3f", flag);
     ImGui::PopItemWidth();
     ImGui::SameLine();
 
@@ -277,7 +281,7 @@ static void DrawVec3Control(const std::string& label, Math::Vector3& values, flo
     ImGui::PopStyleColor(3);
 
     ImGui::SameLine();
-    ImGui::DragFloat("##Z", &values.z, DRAG_SPEED, min, max, "%.3f", flag);
+    ImGui::DragFloat("##Z", &values.z, dragSpeed, min, max, "%.3f", flag);
     ImGui::PopItemWidth();
     
     ImGui::PopStyleVar();
@@ -293,6 +297,12 @@ void UIDebug::DrawGizmo()
 
     if (node.id_ >= 0 && node != outliner.GetRootNode())
     {
+        enum class GizmoSpace : int {
+            World = 0,
+            Local
+        };
+        static int gizmoSpace = (int)GizmoSpace::World;
+
         SceneTree::Entity& entity = gSceneTree->Get(node);
         if (entity.isComposite && entity.transform.id_ >= 0) {
             Math::Transform& trs = SharedStorage::Instance().transforms.AccessWrite(entity.transform);
@@ -326,20 +336,43 @@ void UIDebug::DrawGizmo()
                     outliner.gizmo_focused = false;
                 }
 
+                ImGui::SameLine();
+
+                ImGui::RadioButton("World", &gizmoSpace, (int)GizmoSpace::World);
+                ImGui::SameLine();
+                ImGui::RadioButton("Local", &gizmoSpace, (int)GizmoSpace::Local);
+
                 ImGui::SeparatorText("");
 
-                Math::Vector3 pos = trs.GetPosition();
-                DrawVec3Control("Position", pos);
-                trs.SetPosition(pos);
+                // Position
+                const Math::Vector3 pos = trs.GetLocalPosition();
+                Math::Vector3 newPos = pos;
+                DrawVec3Control("Position", newPos, DRAG_SPEED);
+                if (Math::Vector3::DistanceSquared(newPos, pos) > Math::Epsilon) {
+                    trs.SetLocalPosition(newPos);
+                }
                 
-                Math::Vector3 rot = trs.GetRotation().ToEuler();
-                DrawVec3Control("Rotation", rot, -2 * Math::Pi, 2 * Math::Pi, ImGuiSliderFlags_WrapAround);
-                auto res = Math::Quaternion::CreateFromYawPitchRoll(rot);
-                trs.SetRotation(res);
+                // Rotation
+                Math::Quaternion rot = trs.GetLocalRotation();
+                const Math::Vector3 euler = Math::RadToDeg(rot.ToEuler());
+                Math::Vector3 changed = euler;
+                DrawVec3Control("Rotation", changed, DegreesDragSpeed, -360.0f, 360.0f, ImGuiSliderFlags_WrapAround);
 
-                Math::Vector3 scale = trs.GetScale();
-                DrawVec3Control("Scale", scale, 0.f, 100.f);
-                trs.SetScale(scale);
+                const Math::Vector3 delta = Math::DegToRad(changed - euler);
+                if (delta.LengthSquared() > Math::Epsilon) {
+                    rot *= Math::Quaternion::CreateFromAxisAngle(Math::Vector3::UnitY, delta.y);
+                    rot *= Math::Quaternion::CreateFromAxisAngle(Math::Vector3::UnitX, delta.x);
+                    rot *= Math::Quaternion::CreateFromAxisAngle(Math::Vector3::UnitZ, delta.z);
+                    trs.SetLocalRotation(rot);
+                }
+
+                // Scale
+                const Math::Vector3 scale = trs.GetLocalScale();
+                Math::Vector3 newScale = scale;
+                DrawVec3Control("Scale", newScale, DRAG_SPEED, 0.f, 100.f);
+                if (Math::Vector3::DistanceSquared(newScale, scale) > Math::Epsilon) {
+                    trs.SetLocalScale(newScale);
+                }
 
                 ImGui::End();
             }
@@ -351,7 +384,6 @@ void UIDebug::DrawGizmo()
             float w_height = (float)ImGui::GetWindowHeight();
             const float headerHeight = ImGui::GetTextLineHeightWithSpacing(); // https://github.com/CedricGuillemet/ImGuizmo/issues/109
             ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y + headerHeight, w_width, w_height);
-
 
             EditorCamera* camera = gTempGame->GetEditorCamera();
 
@@ -365,9 +397,9 @@ void UIDebug::DrawGizmo()
             //Math::Transform& trs = SharedStorage::Instance().transforms.AccessWrite(entity.transform);
             Math::Matrix matr = trs.GetMatrix(); // TODO: check if gizmo works for child entities
 
-            ImGuizmo::Manipulate((float*)viewMatrix.m, (float*)projectionMatrix.m, operation, ImGuizmo::LOCAL, (float*)matr.m);
-
-            trs.SetMatrix(matr);
+            if (ImGuizmo::Manipulate((float*)viewMatrix.m, (float*)projectionMatrix.m, operation, gizmoSpace == (int)GizmoSpace::World ? ImGuizmo::WORLD : ImGuizmo::LOCAL, (float*)matr.m)) {
+                trs.SetMatrix(matr);
+            }
         }
     }
 }

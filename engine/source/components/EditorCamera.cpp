@@ -35,6 +35,10 @@ void EditorCamera::Update(float deltaTime)
 
 void EditorCamera::ProceedInput(InputDevice* inpDevice)
 {
+	if (!globalInputDevice->IsKeyHold(Keys::RightButton)) {
+		return;
+	}
+
 	Math::Transform& camTrs = SharedStorage::Instance().transforms.AccessWrite(transform);
 	Math::Vector3 camPos = camTrs.GetPosition();
 	const Math::Vector3 forward = Math::Vector3::Transform(Math::Vector3::Forward, camTrs.GetRotation());
@@ -56,6 +60,10 @@ void EditorCamera::ProceedInput(InputDevice* inpDevice)
 
 void EditorCamera::ProceedMouseInput(const MouseMoveEventArgs& event)
 {
+	if (!globalInputDevice->IsKeyHold(Keys::RightButton)) {
+		return;
+	}
+
 	constexpr int MAX_MOUSE_SPEED = 25;
 	const float MAX_ANGULAR_SPEED = Math::Pi * 8;
 	const float MAX_PITCH_SPEED = Math::Pi * 8;
