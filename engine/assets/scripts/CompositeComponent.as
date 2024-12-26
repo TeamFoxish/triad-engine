@@ -4,10 +4,6 @@ class CompositeComponent : Component, ICompositer {
 
     CompositeComponent(ICompositer@ _parent = null) {
         super(_parent);
-        println("CompositeComponent factory .");
-        if (GetParent() !is null) {
-            println("parent was not null");
-        }
         @transform = Math::Transform(GetParent() !is null ? GetParent().GetTransform() : null);
         Scene::Tree::AddEntityTransform(GetId(), transform);
     }

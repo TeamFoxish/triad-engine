@@ -5,7 +5,6 @@ abstract class Component {
     private bool isDead = false;
 
     Component(ICompositer@ _parent = null) {
-        println("Base component factory .");
         @parent = @_parent;
         if (parent !is null) {
             parent.AddChild(this);

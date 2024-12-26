@@ -5,8 +5,6 @@ class Scene : CompositeComponent {
     }
 
     void Update(float deltaTime) {
-        println("updading childs");
-        println(GetName());
         const auto children = GetChildren(); // i can't hold reference to array ???
         if (children !is null) {
             for( uint n = 0; n < children.length(); n++ ) {

@@ -31,6 +31,8 @@ content:
             component: res://components/MeshComponent.component
             overrides:
               transform:
+                position:
+                  z: 3.0
                 rotation:
                   x: 0.0
                   y: 90.0

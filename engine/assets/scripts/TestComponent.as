@@ -2,7 +2,6 @@ class TestComponent : Component {
 
     TestComponent(ICompositer@ parent = null) {
         super(@parent);
-        println("Test Component factory .");
     }
 
     int someInt = 1;
