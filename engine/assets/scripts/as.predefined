@@ -398,6 +398,8 @@ class Camera{
 	void SetFov(float fovDeg);
 	void SetLookTrasnform(const Math::Vector3 &in camPos, const Math::Vector3 &in target, const Math::Vector3 &in up);
 	void SetActive();
+
+	private bool activateAtInit;
 }
 
 namespace Sound{

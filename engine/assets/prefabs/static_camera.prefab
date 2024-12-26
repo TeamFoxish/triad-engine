@@ -1,0 +1,9 @@
+content:
+  class: static_camera
+  components:
+    Camera:
+      component: res://components/CameraComponent.component
+      overrides:
+        activateAtInit: true # TEMP until component overrides are available in scene
+        isPerspective: false # same
+type: prefab

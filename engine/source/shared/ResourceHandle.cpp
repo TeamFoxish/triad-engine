@@ -99,12 +99,14 @@ void RegisterResourceHandles()
 	r = engine->RegisterObjectBehaviour("Mesh", asBEHAVE_CONSTRUCT, "void f(const Mesh &in)", asFUNCTION(CMeshHandleCopyConstructor), asCALL_CDECL_OBJLAST); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("Mesh", asBEHAVE_CONSTRUCT, "void f(const string &in)", asFUNCTION(CMeshHandleTagConstructor), asCALL_CDECL_OBJLAST); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("Mesh", asBEHAVE_DESTRUCT, "void f()", asFUNCTION(CMeshDestructor), asCALL_CDECL_OBJLAST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Mesh", "Mesh &opAssign(const Mesh &in)", asMETHODPR(CMeshHandle, operator=, (const CMeshHandle&), CMeshHandle&), asCALL_THISCALL); assert(r >= 0);
 
 	r = engine->RegisterObjectType("Material", sizeof(CMaterialHandle), asOBJ_VALUE | asGetTypeTraits<CMaterialHandle>()); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("Material", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(CMaterialHandleDefaultConstructor), asCALL_CDECL_OBJLAST); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("Material", asBEHAVE_CONSTRUCT, "void f(const Material &in)", asFUNCTION(CMaterialHandleCopyConstructor), asCALL_CDECL_OBJLAST); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("Material", asBEHAVE_CONSTRUCT, "void f(const string &in)", asFUNCTION(CMaterialHandleTagConstructor), asCALL_CDECL_OBJLAST); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("Material", asBEHAVE_DESTRUCT, "void f()", asFUNCTION(CMaterialDestructor), asCALL_CDECL_OBJLAST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Material", "Material &opAssign(const Material &in)", asMETHODPR(CMaterialHandle, operator=, (const CMaterialHandle&), CMaterialHandle&), asCALL_THISCALL); assert(r >= 0);
 
 	r = engine->RegisterObjectType("Renderable", sizeof(CRenderable), asOBJ_VALUE | asGetTypeTraits<CRenderable>() | asOBJ_APP_CLASS_MORE_CONSTRUCTORS); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("Renderable", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(CRenderableDefaultConstructor), asCALL_CDECL_OBJLAST); assert(r >= 0);

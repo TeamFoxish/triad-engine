@@ -1,0 +1,18 @@
+content:
+  class: paddle
+  components:
+    PongBall:
+      component: res://test/pong/PongBallComponent.component
+      overrides:
+        boundX: 270.0
+        boundY: 220.0
+        moveSpeed: 250.0
+        red: res://materials/red.material
+        green: res://materials/green.material
+        blue: res://materials/blue.material
+    Mesh:
+      component: res://components/MeshComponent.component
+      overrides:
+        renderObj:
+          mesh: res://meshes/cube.mesh
+type: prefab

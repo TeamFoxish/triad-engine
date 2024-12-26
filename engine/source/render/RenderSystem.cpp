@@ -64,6 +64,9 @@ RenderContext& RenderSystem::GetContext() const
 void RenderSystem::StartFrame()
 {
 	cameraManager.UpdateCameras();
+	if (!cameraManager.HasActiveCamera()) {
+		return;
+	}
 	rendererImpl->Draw();
 }
 

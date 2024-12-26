@@ -9,6 +9,8 @@
 #include "shared/SharedStorage.h"
 
 class CCamera {
+	friend void RegisterCameraBindings();
+
 public:
 	CCamera() = default;
 
@@ -23,14 +25,23 @@ public:
 
 	CCamera(const CCamera& other)
 	{
-		// clone camera entry
-		const CameraStorage::CameraEntry& entry = other.GetCamera();
-		handle = RenderStorage::Instance().cameras.Add(entry.params, entry.transform);
+		*this = other;
 	}
 
 	~CCamera() 
 	{
+		if (gRenderSys->cameraManager.HasActiveCamera() && gRenderSys->cameraManager.GetActiveCameraHandle() == handle) {
+			gRenderSys->cameraManager.SetActiveCamera(CameraStorage::Handle{});
+		}
 		RenderStorage::Instance().cameras.Remove(handle);
+	}
+
+	CCamera& operator=(const CCamera& other) 
+	{
+		// clone camera entry
+		const CameraStorage::CameraEntry& entry = other.GetCamera();
+		handle = RenderStorage::Instance().cameras.Add(entry.params, entry.transform);
+		return *this;
 	}
 
 	CameraStorage::CameraEntry& GetCamera() const { return RenderStorage::Instance().cameras.Get(handle); }
@@ -75,6 +86,7 @@ public:
 
 private:
 	CameraStorage::Handle handle;
+	bool activateAtInit = false;
 };
 
 void RegisterCameraBindings()
@@ -84,7 +96,7 @@ void RegisterCameraBindings()
 
 	r = engine->RegisterObjectType("Camera", sizeof(CCamera), asOBJ_VALUE | asGetTypeTraits<CCamera>() | asOBJ_APP_CLASS_MORE_CONSTRUCTORS); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("Camera", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(CCamera::CreateDefault), asCALL_CDECL_OBJFIRST); assert(r >= 0);
-	r = engine->RegisterObjectBehaviour("Camera", asBEHAVE_CONSTRUCT, "void f(const Math::Transform@+)", asFUNCTION(CCamera::CreateCopy), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectBehaviour("Camera", asBEHAVE_CONSTRUCT, "void f(const Math::Transform@+)", asFUNCTION(CCamera::CreateFromTransform), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("Camera", asBEHAVE_CONSTRUCT, "void f(Camera &in)", asFUNCTION(CCamera::CreateCopy), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("Camera", asBEHAVE_DESTRUCT, "void f()", asFUNCTION(CCamera::Destroy), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 	r = engine->RegisterObjectMethod("Camera", "Camera &opAssign(Camera &in)", asMETHODPR(CCamera, operator=, (const CCamera&), CCamera&), asCALL_THISCALL); assert(r >= 0);

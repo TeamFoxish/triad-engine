@@ -13,7 +13,7 @@
 class Scene;
 
 struct LinkageRequest {
-	ScriptObject* object;
+	ScriptObject object;
 	const std::string fieldName;
 	const std::string ref;
 	const uint64_t index;
@@ -41,11 +41,11 @@ public:
 	}
 
 	static void AddFieldToPendingState(ScriptObject* component, const std::string& fieldName, const std::string ref) {
-		_unlinkedComponentFiedls.push({component, fieldName, ref, 0, false});
+		_unlinkedComponentFiedls.push({*component, fieldName, ref, 0, false});
 	}
 
 	static void AddArrayFieldToPendingState(ScriptObject* component, const std::string& fieldName, uint64_t index, const std::string ref) {
-		_unlinkedComponentFiedls.push({component, fieldName, ref, index, true});
+		_unlinkedComponentFiedls.push({*component, fieldName, ref, index, true});
 	}
 
 private:

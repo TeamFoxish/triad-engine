@@ -16,6 +16,7 @@ public:
     void Term();
 
     bool HasActiveCamera() const { return activeCamera.id_ >= 0; }
+    CameraStorage::Handle GetActiveCameraHandle() const { return activeCamera; }
     CameraStorage::CameraEntry& GetActiveCamera() const;
     void SetActiveCamera(CameraStorage::Handle handle);
 

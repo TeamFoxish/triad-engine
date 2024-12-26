@@ -132,7 +132,7 @@ asIScriptObject* ScriptObject::Construct(ArgsT&& args)
         // construct object
         const int rc = ctx->Execute();
         if (rc != asEXECUTION_FINISHED) {
-            LOG_ERROR("faild to construct object \"{}\". Exception on line number \"{}\": \"{}\"", 
+            LOG_ERROR("failed to construct object \"{}\". Exception on line number \"{}\": \"{}\"", 
                 ctx->GetExceptionFunction()->GetName(),
                 ctx->GetExceptionLineNumber(),
                 ctx->GetExceptionString());
@@ -146,7 +146,12 @@ asIScriptObject* ScriptObject::Construct(ArgsT&& args)
 
 void ScriptObject::SetField(const std::string &name, void *value)
 {
-    int fieldNumber = _fields[name];
+    const auto iter = _fields.find(name);
+    if (iter == _fields.end()) {
+        LOG_WARN("failed to set field value for object of type `{}`. no field `{}` was found", name, _type->GetName());
+        return;
+    }
+    const asUINT fieldNumber = iter->second;
     void* currentValuePointer = _object->GetAddressOfProperty(fieldNumber);
     asUINT fieldType = _object->GetPropertyTypeId(fieldNumber);
     switch (fieldType) {
@@ -552,7 +557,7 @@ void ScriptObject::OverrideChildren(const YAML::Node& node) {
             ScriptObject child = ScriptObject(childRaw);
             std::string* name = static_cast<std::string*>(child.GetField("name"));
             if (*name == childComponentName) {
-                child.ApplyOverrides(node);
+                child.ApplyOverrides(arrayNode.second["overrides"]);
                 return;
             }
         }
@@ -586,6 +591,11 @@ void ScriptObject::OverrideChildren(const YAML::Node& node) {
 }
 
 void ScriptObject::OverrideObject(const std::string& fieldName, const YAML::Node& node) {
+    const auto iter = _fields.find(fieldName);
+    if (iter == _fields.end()) {
+        LOG_WARN("failed to override field for object with type `{}`. no field with name '{}' was found", _type->GetName(), fieldName);
+        return;
+    }
     const int fieldTypeId = _object->GetPropertyTypeId(_fields[fieldName]);
 
     if ((fieldTypeId & asTYPEID_APPOBJECT) == asTYPEID_APPOBJECT) {

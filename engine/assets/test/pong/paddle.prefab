@@ -1,0 +1,19 @@
+content:
+  class: paddle
+  components:
+    Paddle:
+      component: res://test/pong/PaddleComponent.component
+      overrides:
+        boundY: 210.0
+        moveSpeed: 250.0
+    Mesh:
+      component: res://components/MeshComponent.component
+      overrides:
+        transform:
+          scale:
+            x: 1.0
+            y: 3.0
+            z: 1.0
+        renderObj:
+          mesh: res://meshes/cube.mesh
+type: prefab

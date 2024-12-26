@@ -39,5 +39,6 @@ void init()
     SetShutdown(ShutdownImpl);
     log_info("Script initialization done !");
     
+    // TODO: extract to a separate init function
     sceneRoot.Init(); // TEMP
 }

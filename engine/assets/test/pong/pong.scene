@@ -1,0 +1,45 @@
+content:
+  name: TestScene
+  objects:
+    dir_light:
+      prefab: res://prefabs/dir_light.prefab
+      overrides:
+        transform:
+          rotation:
+            x: 0.0
+            y: 45.0
+            z: -45.0
+    camera:
+      prefab: res://prefabs/static_camera.prefab
+      overrides:
+        transform:
+          position:
+            x: 0.0
+            y: 0.0
+            z: 10.0
+    paddle:
+      prefab: res://test/pong/paddle.prefab
+      overrides:
+        transform:
+          position:
+            x: -250.0
+            y: 0.0
+            z: 0.0
+          scale:
+            x: 10.0
+            y: 10.0
+            z: 10.0
+    ball:
+      prefab: res://test/pong/pongBall.prefab
+      overrides:
+        transform:
+          scale:
+            x: 10.0
+            y: 10.0
+            z: 10.0
+        children:
+          $PongBall:
+            overrides:
+              paddle: "@paddle/Mesh"
+              ballMesh: "@ball/Mesh"
+type: scene

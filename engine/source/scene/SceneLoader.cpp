@@ -95,7 +95,7 @@ void SceneLoader::LinkPass(const std::unique_ptr<ScriptObject>& root)
 			// not implemented
 		} else {
 			std::unique_ptr<ScriptObject> linkedComponent = GetComponentByAbsolutePath(root, linkageRequest.ref);
-			linkageRequest.object->SetField(linkageRequest.fieldName, linkedComponent->GetRaw());
+			linkageRequest.object.SetField(linkageRequest.fieldName, linkedComponent->GetRaw());
 		}
 		LOG_INFO("Linked field \"{}\" to component \"{}\"", linkageRequest.fieldName, linkageRequest.ref);
 		_unlinkedComponentFiedls.pop();

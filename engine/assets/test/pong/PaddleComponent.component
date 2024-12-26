@@ -1,0 +1,4 @@
+content:
+  class: PaddleComponent
+  module: Engine
+type: component

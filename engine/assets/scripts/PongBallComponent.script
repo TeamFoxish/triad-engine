@@ -1,0 +1,4 @@
+content:
+  source_file: ./assets/scripts/PongBallComponent.as
+  module: Engine
+type: script

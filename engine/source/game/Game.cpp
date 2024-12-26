@@ -88,11 +88,23 @@ void Game::ProcessInput()
 	}
 
 #ifdef EDITOR
+	static CameraStorage::Handle gameCam;
+
 	if (!UIDebug::start_simulation)
 	{
+		if (gRenderSys->cameraManager.HasActiveCamera()) {
+			const CameraStorage::Handle someCam = gRenderSys->cameraManager.GetActiveCameraHandle();
+			if (someCam != editorCam->GetCameraHandle()) {
+				gameCam = someCam;
+			}
+		}
 		gRenderSys->cameraManager.SetActiveCamera(editorCam->GetCameraHandle());
 		editorCam->ProceedInput(globalInputDevice);
 		return;
+	}
+
+	if (gameCam.id_ >= 0) {
+		gRenderSys->cameraManager.SetActiveCamera(gameCam);
 	}
 #endif // EDITOR
 
