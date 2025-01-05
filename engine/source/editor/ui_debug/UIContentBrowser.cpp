@@ -11,12 +11,17 @@
 #include "render/Renderer.h"
 
 
-//const char* assets_dir = "assets";
 static const std::filesystem::path assets_dir = "assets";
 
 void ContentBrowser::Init()
 {
     curr_dir = assets_dir;
+
+    std::string icon_path = "icons\\directory.png";
+    HRESULT hr = DirectX::CreateWICTextureFromFile(gRenderSys->GetRenderer()->GetDevice(), gRenderSys->GetRenderer()->GetDeviceContext(), std::wstring(icon_path.begin(), icon_path.end()).c_str(), nullptr, &directoryTexture);
+
+    icon_path = "icons\\file.png";
+    hr = DirectX::CreateWICTextureFromFile(gRenderSys->GetRenderer()->GetDevice(), gRenderSys->GetRenderer()->GetDeviceContext(), std::wstring(icon_path.begin(), icon_path.end()).c_str(), nullptr, &fileTexture);
 }
 
 void ContentBrowser::Draw()
@@ -55,14 +60,10 @@ void ContentBrowser::Draw()
         auto relativePath = std::filesystem::relative(path, assets_dir);
         std::string filenameString = relativePath.filename().string(); // ToDo: replace std::string or else it will crash on Russian names or other languages
 
-
-        std::string icon_path = dirEntry.is_directory() ? "icons\\directory.png" : "icons\\file.png";
-        // ToDo: fix memory of icon texture creation
-        ID3D11ShaderResourceView* myTextureView = nullptr;
-        HRESULT hr = DirectX::CreateWICTextureFromFile(gRenderSys->GetRenderer()->GetDevice(), gRenderSys->GetRenderer()->GetDeviceContext(), std::wstring(icon_path.begin(), icon_path.end()).c_str(), nullptr, &myTextureView);
-
-
-        ImGui::ImageButton(filenameString.c_str(), (ImTextureID)myTextureView, { thumbnailSize, thumbnailSize });
+        if (dirEntry.is_directory())
+            ImGui::ImageButton(filenameString.c_str(), (ImTextureID)directoryTexture, { thumbnailSize, thumbnailSize });
+        else
+            ImGui::ImageButton(filenameString.c_str(), (ImTextureID)fileTexture, { thumbnailSize, thumbnailSize });
 
         if (dirEntry.is_directory() && ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
         {
@@ -76,4 +77,10 @@ void ContentBrowser::Draw()
     ImGui::Columns(1);
 
     ImGui::End();
+}
+
+ContentBrowser::~ContentBrowser()
+{
+    directoryTexture->Release();
+    fileTexture->Release();
 }
