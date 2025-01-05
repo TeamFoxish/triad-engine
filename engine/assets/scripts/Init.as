@@ -1,4 +1,6 @@
-Scene@ sceneRoot;
+SceneInstance@ sceneRoot;
+SoftRef<ResourceHandle> tempScene("resd://scenes/first_scene.scene");
+SceneInstance@ tempRoot;
 
 float initialZ = 0.0f;
 float time = 0.0f;
@@ -20,12 +22,12 @@ void ShutdownImpl() {
     @sceneRoot = null;
 }
 
-void SetScene(Scene@ scene) {
+void SetScene(SceneInstance@ scene) {
     log_info("Loaded scene: " + scene.GetName());
     @sceneRoot = @scene;
 }
 
-Scene@ GetScene() {
+SceneInstance@ GetScene() {
     return sceneRoot;
 }
 
@@ -39,4 +41,7 @@ void init()
     
     // TODO: extract to a separate init function
     sceneRoot.Init(); // TEMP
+
+    ResourceHandle handle = tempScene.Load();
+    @tempRoot = Game::CreateScene(handle);
 }

@@ -13,6 +13,7 @@ public:
     using ArgsT = std::vector<std::pair<TypeId, void*>>; // should be implemented using varargs in future
 
     ScriptObject(const std::string& module, const std::string& typeDecl, ArgsT&& args = {});
+    ScriptObject(asITypeInfo* type, ArgsT&& args = {}, asIScriptFunction* factory = nullptr);
     explicit ScriptObject(asIScriptObject* object);
     ScriptObject(const ScriptObject& other);
     ScriptObject(ScriptObject&& other) noexcept;
@@ -26,11 +27,14 @@ public:
     void AssignField(const std::string& name, void* value);
     // only for objects
     void ApplyOverrides(const YAML::Node& overrides);
-    asIScriptObject* GetRaw() { return _object; };
+    asITypeInfo* GetTypeInfo() const { return _type; };
+    asIScriptObject* GetRaw() const { return _object; };
     const std::string GetComponentPath();
 
 private:
-    asIScriptObject* Construct(ArgsT&& args = {});
+    void Init(asITypeInfo* type, ArgsT&& args = {}, asIScriptFunction* factory = nullptr);
+    asIScriptObject* Construct(ArgsT&& args = {}, asIScriptFunction* factory = nullptr);
+    asIScriptFunction* FindAppropriateFactory(const ArgsT& args);
 
     void OverrideObject(const std::string &fieldName, const YAML::Node &node);
     void OverrideNativeObject(const std::string &fieldName, const asUINT fieldType, const YAML::Node &node);

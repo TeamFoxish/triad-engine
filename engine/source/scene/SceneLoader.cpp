@@ -26,7 +26,7 @@ void SceneLoader::Load(ResTag tag, const YAML::Node& desc)
 std::unique_ptr<ScriptObject> SceneLoader::CreateScene(ResTag tag)
 {
 	const YAML::Node sceneDesc = _scenes[tag];
-	std::unique_ptr<ScriptObject> root = std::unique_ptr<ScriptObject>(new ScriptObject {"Engine", "Scene", {{asTYPEID_MASK_OBJECT, nullptr}}}); // currently scene has no parent
+	std::unique_ptr<ScriptObject> root = std::unique_ptr<ScriptObject>(new ScriptObject {"Engine", "SceneInstance", {{asTYPEID_MASK_OBJECT, nullptr}}}); // currently scene has no parent
 
 	for (const auto& componentDesc : sceneDesc["objects"]) {
 		const std::string name = componentDesc.first.Scalar();

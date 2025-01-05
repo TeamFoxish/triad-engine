@@ -5,6 +5,8 @@
 #include "render/RenderResources.h"
 #include "MathScriptBindings.h"
 
+class asITypeInfo;
+
 #define DECLARE_RESOURCE_HANDLE(TYPE, NAME, VAR)    \
 	TYPE& Get_##NAME() { return NAME; }             \
 	void Set_##NAME(const TYPE& handle)	            \
@@ -22,13 +24,39 @@ public:
 	{
 	}
 
+	bool IsValid() const { return tag != ResTag{}; }
+
 	ResTag GetTag() const { return tag; }
-	virtual Strid GetType() const = 0;
+	virtual Strid GetType() const { return Strid{}; }
 
 	void ApplyOverrides(const YAML::Node& tag) override;
 
 protected:
 	ResTag tag;
+};
+
+class CResourceHandleDynamic : public CNativeObject {
+public:
+	CResourceHandleDynamic() = default;
+	CResourceHandleDynamic(asITypeInfo* type)
+		: objType(type)
+	{
+	}
+	CResourceHandleDynamic(asITypeInfo* type, const std::string& _tag)
+		: tagStr(_tag)
+		, objType(type)
+	{
+	}
+
+	bool IsValid() const { return !tagStr.empty() && Triad::Resource::IsTagDynamic(tagStr); }
+
+	void ApplyOverrides(const YAML::Node& tag) override;
+
+	void* Load() const;
+
+protected:
+	std::string tagStr;
+	asITypeInfo* objType = nullptr;
 };
 
 class CMaterialHandle : public CResourceHandle {

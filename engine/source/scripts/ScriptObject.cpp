@@ -9,6 +9,8 @@
 #include "scripts/ComponentLoader.h"
 #include "game/PrefabLoader.h"
 
+#include <scripthelper.h>
+
 ScriptObject::ScriptObject(const std::string& module, const std::string& typeDecl, ArgsT&& args) {
     asIScriptEngine* engine = gScriptSys->GetRawEngine();
     asIScriptModule* _module = engine->GetModule(module.c_str());
@@ -16,30 +18,17 @@ ScriptObject::ScriptObject(const std::string& module, const std::string& typeDec
         LOG_ERROR("Failed to find script module \"{}\"", module);
         return;
     }
-    _type = _module->GetTypeInfoByDecl(typeDecl.c_str());
-    if (!_type) {
+    asITypeInfo* type = _module->GetTypeInfoByDecl(typeDecl.c_str());
+    if (!type) {
         LOG_ERROR("Failed to find script type \"{}\"", typeDecl);
         return;
     }
-    // asIScriptModule* _module = engine->GetModule("Engine");
-    // asUINT classCount = _module->GetTypedefCount();
-    // for (asUINT i = 0; i < classCount; i++) {
-    //     asITypeInfo* ti = _module->GetTypedefByIndex(i);
-    //     LOG_INFO("Type: {} DECLARATION: {}", ti->GetTypeId(), ti->GetName());
-    // }
-    if (args.empty()) {
-        _object = static_cast<asIScriptObject*>(engine->CreateScriptObject(_type));
-    } else {
-        _object = Construct(std::move(args));
-        if (_object == nullptr) {
-            LOG_ERROR("faild to find appropriate constructor for type {} with {} arguments", typeDecl, args.size());
-            return;
-        }
-    }
-    int fieldsCount = _object->GetPropertyCount();
-    for (int i = 0; i < fieldsCount; i++) {
-        _fields[_object->GetPropertyName(i)] = i;
-    }
+    Init(type, std::move(args));
+}
+
+ScriptObject::ScriptObject(asITypeInfo* type, ArgsT&& args, asIScriptFunction* factory)
+{
+    Init(type, std::move(args), factory);
 }
 
 // TODO check ref count
@@ -92,7 +81,78 @@ ScriptObject& ScriptObject::operator=(ScriptObject &&other) noexcept
 
 }
 
-asIScriptObject* ScriptObject::Construct(ArgsT&& args)
+void ScriptObject::Init(asITypeInfo* type, ArgsT&& args, asIScriptFunction* factory)
+{
+    _type = type;
+    if (args.empty() && !factory) {
+        asIScriptEngine* engine = gScriptSys->GetRawEngine();
+        _object = static_cast<asIScriptObject*>(engine->CreateScriptObject(_type));
+    } else {
+        const size_t argsNum = args.size();
+        _object = Construct(std::move(args), factory);
+        if (_object == nullptr) {
+            return;
+        }
+    }
+    if (_type->GetTypeId() & asTYPEID_APPOBJECT) {
+        return; // TEMP
+    }
+    int fieldsCount = _object->GetPropertyCount();
+    for (int i = 0; i < fieldsCount; i++) {
+        _fields[_object->GetPropertyName(i)] = i;
+    }
+}
+
+asIScriptObject* ScriptObject::Construct(ArgsT&& args, asIScriptFunction* factory)
+{
+    if (!factory) {
+        factory = FindAppropriateFactory(args);
+        if (!factory) {
+            LOG_ERROR("failed to construct object with type {}. no appropriate constructor was found with {} arguments", _type->GetName(), args.size());
+            return nullptr;
+        }
+    }
+    int rc = -1;
+
+    asIScriptContext* ctx = gScriptSys->GetContext();
+    ctx->PushState(); // push state to reuse active context (allow nested calls)
+
+    // push constructor to context
+    rc = ctx->Prepare(factory);
+    if (rc < 0) {
+        LOG_ERROR("failed to construct object \"{}\". failed to preapre script context. error code: {}", factory->GetName(), rc);
+        ctx->PopState();
+        return nullptr;
+    }
+
+    // set constructor arguments
+    const asUINT paramsCount = factory->GetParamCount();
+    for (asUINT j = 0; j < paramsCount; ++j) {
+        auto& [_, argValue] = args[j];
+        if (!argValue) {
+            continue;
+        }
+        ctx->SetArgObject(j, argValue);
+    }
+
+    // construct object
+    rc = ctx->Execute();
+    if (rc != asEXECUTION_FINISHED) {
+        LOG_ERROR(GetExceptionInfo(ctx, true));
+        LOG_ERROR("failed to construct object \"{}\". Exception on line number \"{}\": \"{}\"", 
+            ctx->GetExceptionFunction()->GetName(),
+            ctx->GetExceptionLineNumber(),
+            ctx->GetExceptionString());
+        ctx->PopState();
+        return nullptr;
+    }
+
+    asIScriptObject* retVal = *(asIScriptObject**)ctx->GetAddressOfReturnValue();
+    ctx->PopState();
+    return retVal;
+}
+
+asIScriptFunction* ScriptObject::FindAppropriateFactory(const ArgsT& args)
 {
     const asUINT factoriesCount = _type->GetFactoryCount();
     for (asUINT i = 0; i < factoriesCount; ++i) {
@@ -115,31 +175,7 @@ asIScriptObject* ScriptObject::Construct(ArgsT&& args)
         if (paramIdx < paramsCount) {
             continue; // inappropriate constructor
         }
-
-        // push constructor to context
-        asIScriptContext* ctx = gScriptSys->GetContext();
-        ctx->Prepare(factory);
-
-        // set constructor arguments
-        for (asUINT j = 0; j < paramsCount; ++j) {
-            auto& [_, argValue] = args[j];
-            if (!argValue) {
-                continue;
-            }
-            ctx->SetArgObject(j, argValue);
-        }
-
-        // construct object
-        const int rc = ctx->Execute();
-        if (rc != asEXECUTION_FINISHED) {
-            LOG_ERROR("failed to construct object \"{}\". Exception on line number \"{}\": \"{}\"", 
-                ctx->GetExceptionFunction()->GetName(),
-                ctx->GetExceptionLineNumber(),
-                ctx->GetExceptionString());
-            return nullptr;
-        }
-
-        return *(asIScriptObject**)ctx->GetAddressOfReturnValue();
+        return factory;
     }
     return nullptr;
 }
@@ -381,6 +417,7 @@ void ScriptObject::SetArrayValue(CScriptArray* array, asUINT index, const std::s
         case asTYPEID_VOID:
         {
             // do nothing? i guess...
+            break;
         }
         case asTYPEID_BOOL:
         {
@@ -389,27 +426,31 @@ void ScriptObject::SetArrayValue(CScriptArray* array, asUINT index, const std::s
                 boolVal = true;
             }
             array->SetValue(index, &boolVal);
+            break;
         }
         case asTYPEID_INT8:
         {
             int8_t int8Val = std::stoi(value);
             array->SetValue(index, &int8Val);
-
+            break;
         }
         case asTYPEID_INT16:
         {
             int16_t int16Val = std::stoi(value);
             array->SetValue(index, &int16Val);
+            break;
         }
         case asTYPEID_INT32:
         {
             int32_t int32Val = std::stol(value);
             array->SetValue(index, &int32Val);
+            break;
         }
         case asTYPEID_INT64:
         {
             int64_t int64Val = std::stoll(value);
             array->SetValue(index, &int64Val);
+            break;
         }
         case asTYPEID_UINT8:
         {
@@ -418,6 +459,7 @@ void ScriptObject::SetArrayValue(CScriptArray* array, asUINT index, const std::s
                     && parsedULongForUint8 > std::numeric_limits<uint8_t>::min());
             uint8_t uint8Val = static_cast<uint8_t>(parsedULongForUint8);
             array->SetValue(index, &uint8Val);
+            break;
         }
         case asTYPEID_UINT16:
         {
@@ -426,26 +468,31 @@ void ScriptObject::SetArrayValue(CScriptArray* array, asUINT index, const std::s
                     && parsedULongForUint16 > std::numeric_limits<uint16_t>::min());
             uint16_t uint16Val = static_cast<uint16_t>(parsedULongForUint16);
             array->SetValue(index, &uint16Val);
+            break;
         }
         case asTYPEID_UINT32:
         {
             uint32_t uint32Val = std::stoul(value);
             array->SetValue(index, &uint32Val);
+            break;
         }
         case asTYPEID_UINT64:
         {
             uint64_t uint64Val = std::stoull(value);
             array->SetValue(index, &uint64Val);
+            break;
         }
         case asTYPEID_FLOAT:
         {
             float floatVal = std::stof(value);
             array->SetValue(index, &floatVal);
+            break;
         }
         case asTYPEID_DOUBLE:
         {
             double doubleVal = std::stod(value);
             array->SetValue(index, &doubleVal);
+            break;
         }
         default:
         {

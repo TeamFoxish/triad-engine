@@ -1,6 +1,6 @@
-class Scene : CompositeComponent {
+class SceneInstance : CompositeComponent {
 
-    Scene(ICompositer@ parent){
+    SceneInstance(ICompositer@ parent){
         super(parent);
     }
 

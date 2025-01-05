@@ -1,6 +1,7 @@
 #include "Res.h"
 
 #include "ResourceSystem.h"
+#include <sstream>
 #include <yaml-cpp/yaml.h>
 
 namespace Triad {
@@ -11,9 +12,28 @@ ResPath Resource::GetTagSubpath(ResTag tag)
     return tagStr.substr(TAG_PREFIX.size());
 }
 
+ResPath Triad::Resource::GetTagDynamicSubpath(ResTag tag)
+{
+    const std::string_view tagStr = tag.string();
+    assert(tagStr.size() > TAG_DYNAMIC_PREFIX.size());
+    return tagStr.substr(TAG_DYNAMIC_PREFIX.size());
+}
+
 bool Resource::IsTag(std::string_view str)
 {
     return str.starts_with(TAG_PREFIX);
+}
+
+bool Resource::IsTagDynamic(std::string_view str)
+{
+    return str.starts_with(TAG_DYNAMIC_PREFIX);
+}
+
+ResTag Resource::MakeTag(ResPath subpath)
+{
+    std::stringstream ss;
+    ss << TAG_PREFIX << subpath.string();
+    return ToStrid(ss.str());
 }
 
 std::string_view Resource::GetFileTagSubpath(std::string_view filetag)

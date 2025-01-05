@@ -12,7 +12,6 @@ void log_info(const string &in);
 void log_debug(const string &in);
 
 
-class ref{}
 funcdef bool less(const ?&in a, const ?&in b);
 class array<T>{
 	array<T>& opAssign(const array<T>&in);
@@ -57,6 +56,16 @@ class any{
 	bool retrieve(? &out value) const;
 	bool retrieve(int64 &out value) const;
 	bool retrieve(double &out value) const;
+}
+class ref{
+	ref();
+	ref(const ref &in);
+	ref(const ?&in);
+	void opCast(?&out);
+	ref &opHndlAssign(const ref &in);
+	ref &opHndlAssign(const ?&in);
+	bool opEquals(const ref &in) const;
+	bool opEquals(const ?&in) const;
 }
 class dictionary{
 	//Sets a key/value pair in the dictionary. If the key already exists, the value will be changed.
@@ -332,6 +341,17 @@ class Transform{
 }
 } // Math
 
+class ResourceHandle{
+	ResourceHandle(const string &in tag);
+	bool IsValid() const;
+}
+
+class SoftRef<T>{
+	SoftRef(const string &in tag);
+	bool IsValid() const;
+	T& Load() const;
+}
+
 namespace Scene {
 typedef uint64 EntityId;
 const EntityId EntityInvalidId; // handle id = -1, gen = -1
@@ -426,6 +446,14 @@ class Event{
 namespace System{
     Event PlayEvent(const string &in name);
 	void PlaySoundFile(const string &in path, float volume, bool isLoop, bool is3D, const Math::Transform@ transform = null);
+}
+}
+
+// typedefs for complex types are unsupported
+// typedef ResourceHandle Scene;
+namespace Game{
+namespace Impl{
+	ref@ CreateScene(const ResourceHandle &in scene);
 }
 }
 
