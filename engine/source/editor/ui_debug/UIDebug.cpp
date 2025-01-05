@@ -69,6 +69,7 @@ void UIDebug::Init(Window* window)
 
 #ifdef EDITOR
     outliner.Init();
+    contentBrowser.Init();
 #endif // EDITOR
 }
 
@@ -111,7 +112,7 @@ void UIDebug::TestDraw()
         // File system
         {
             ImGui::Begin("File system");
-            // ToDo: change position of simulation buttoin
+            // ToDo: change position of simulation button
             if (ImGui::Button(bName.c_str()))
             {
                 start_simulation = !start_simulation;
@@ -123,6 +124,7 @@ void UIDebug::TestDraw()
                 }
             }
             ImGui::End();
+            contentBrowser.Draw();
         }
         
         // Script debugger
