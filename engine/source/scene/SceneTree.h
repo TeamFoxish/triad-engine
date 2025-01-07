@@ -30,7 +30,9 @@ public:
 	SceneTree(SceneTree&&) = delete;
 	~SceneTree() = default;
 
-	Handle GetHandleFromIdx(Storage::Index idx) const { return storage.GetHandleFromIdx(idx); }
+	bool IsValidHandle(Handle handle) const { return storage.Get(handle) != nullptr; }
+
+	Handle GetHandleFromId(Storage::Index id) const { return storage.GetHandleFromId(id); }
 
 	Entity& Get(Handle handle) { return storage[handle]; }
 	const Entity& Get(Handle handle) const { return storage[handle]; }

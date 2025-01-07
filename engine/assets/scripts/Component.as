@@ -1,6 +1,7 @@
 abstract class Component {
     private ICompositer@ parent; // TODO: hold parent as weak ref
     private string name;
+    private string entityKey;
     private Scene::EntityId id;
     private bool isDead = false;
 
@@ -10,6 +11,7 @@ abstract class Component {
             parent.AddChild(this);
         }
         id = Scene::Tree::AddEntity(CreateEntity());
+        entityKey = formatUInt(id);
     }
 
     ~Component() {
@@ -27,6 +29,9 @@ abstract class Component {
         OnDestroy();
         isDead = true;
         Scene::Tree::RemoveEntity(id);
+        if (parent !is null) {
+            parent.RemoveChild(this);
+        }
     }
 
     void OnDestroy() {}
@@ -38,6 +43,8 @@ abstract class Component {
     void FixedUpdate(float deltaTime) {
         // do nothing, default behavior
     }
+
+    bool IsAlive() const { return !isDead; }
 
     ICompositer@ GetParent() {
         return parent;
@@ -59,4 +66,6 @@ abstract class Component {
     string GetName() {
         return name;
     }
+
+    protected const string& GetEntityKey() const { return entityKey; }
 };

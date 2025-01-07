@@ -91,6 +91,16 @@ void Outliner::Draw()
     ImGui::End();
 }
 
+void Outliner::ClearSelectedNode()
+{
+    if (selectedNode.id_ < 0) {
+        return;
+    }
+    SceneTree::Entity& entity = gSceneTree->Get(selectedNode);
+    entity.isSelected = false;
+    selectedNode = SceneTree::Handle{};
+}
+
 void Outliner::DrawOutlinerNode(SceneTree::Handle node)
 {
     SceneTree::Entity& entity = gSceneTree->Get(node);
@@ -152,8 +162,8 @@ bool Outliner::FindNodeById(SceneTree::Storage::Index entityId, SceneTree::Handl
 
 void Outliner::SetSelectedNode(SceneTree::Storage::Index entityId)
 {
-    SceneTree::Handle handle = gSceneTree->GetHandleFromIdx(entityId);
-    if (FindNodeById(entityId, handle)) {
+    SceneTree::Handle handle = gSceneTree->GetHandleFromId(entityId);
+    if (handle.id_ < 0 || FindNodeById(entityId, handle)) {
         return;
     }
 
@@ -169,13 +179,18 @@ void Outliner::SetSelectedNode(SceneTree::Storage::Index entityId)
 
 void Outliner::SetSelectedNodeUpward(SceneTree::Storage::Index entityId)
 {
-    SceneTree::Handle handle = gSceneTree->GetHandleFromIdx(entityId);
+    SceneTree::Handle handle = gSceneTree->GetHandleFromId(entityId);
+    if (handle.id_ < 0) {
+        return;
+    }
     SceneTree::Entity& entity = gSceneTree->Get(handle);
     if (entity.parent.id_ < 0 || entity.parent == selectedNode) {
         return;
     }
-    SceneTree::Entity& selected = gSceneTree->Get(selectedNode);
-    selected.isSelected = false;
+    if (selectedNode.id_ >= 0) {
+        SceneTree::Entity& selected = gSceneTree->Get(selectedNode);
+        selected.isSelected = false;
+    }
     selectedNode = entity.parent;
     SceneTree::Entity& parent = gSceneTree->Get(entity.parent);
     parent.isSelected = true;

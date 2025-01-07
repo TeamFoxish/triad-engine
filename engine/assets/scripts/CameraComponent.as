@@ -13,10 +13,8 @@ class CameraComponent : CompositeComponent {
             camera.SetActive();
         }
         if (isPerspective) {
-            println("perspective");
             camera.MakePerspective();
         } else {
-            println("!perspective");
             camera.MakeOrthographic();
         }
     }

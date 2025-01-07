@@ -12,7 +12,16 @@ public:
 	using Index = int32_t;
 
 	Index Length() const { return storage.size(); }
-	Handle GetHandleFromIdx(Index idx) const { return storage.handle_from_index(idx); }
+
+	// actual index in elements storage
+	Handle GetHandleFromIndex(Index idx) const { return storage.handle_from_index(idx); }
+
+	// the id part of handle
+	Handle GetHandleFromId(Index id) const 
+	{
+		std::optional<Index> idx = storage.index_from_id(id);
+		return idx ? GetHandleFromIndex(*idx) : Handle{};
+	} 
 
 	Handle Add(const T& item) { return storage.add(item); }
 	Handle Add(T&& item) { return storage.add(std::move(item)); }

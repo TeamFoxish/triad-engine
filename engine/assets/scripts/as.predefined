@@ -1,9 +1,13 @@
+// TODO: hide callback setters under namespace
 funcdef void FixedUpdate(float);
 void SetFixedUpdate(FixedUpdate @updateCallback);
 funcdef void Update(float);
 void SetUpdate(Update @updateCallback);
 funcdef void Shutdown();
 void SetShutdown(Shutdown @shutdownCallback);
+funcdef void CallbackDestroyComponent(ref@ component);
+void SetDestroyComponent(CallbackDestroyComponent @destroyCompCallback);
+
 void println(const string &in);
 void log_critical(const string &in);
 void log_error(const string &in);
@@ -383,6 +387,7 @@ class Mesh{
 }
 
 class Renderable{
+	Renderable();
 	Renderable(uint64 entityId, const Math::Transform@ transform);
 	Renderable(const Renderable &in) delete;
 

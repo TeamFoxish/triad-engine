@@ -1,6 +1,7 @@
 class CompositeComponent : Component, ICompositer {
     private array<Component@> children;
     private Math::Transform@ transform;
+    private bool isUpdating = false;
 
     CompositeComponent(ICompositer@ _parent = null) {
         super(_parent);
@@ -12,8 +13,10 @@ class CompositeComponent : Component, ICompositer {
 
     void SetTransform(const Math::Transform@ trs) { transform = trs; } // copy transform
 
+    // TODO: replace reference with handle
     const array<Component@>& GetChildren() const { return children; }
 
+    // TODO: extract user Init logic to OnInit
     void Init() {
         if (children !is null) {
             for( uint n = 0; n < children.length(); n++ ) {
@@ -24,13 +27,25 @@ class CompositeComponent : Component, ICompositer {
         }
     }
 
+    // TODO: extract user Update logic to OnUpdate
     void Update(float deltaTime) {
+        isUpdating = true;
         if (children !is null) {
             for( uint n = 0; n < children.length(); n++ ) {
                 if (children[n] !is null) {
                     children[n].Update(deltaTime);
                 }
             }
+        }
+        isUpdating = false;
+        dictionaryValue pendingDeadVal;
+        array<Component@>@ pendingDead;
+        if (Game::Private::gPendingDeadComponents.get(GetEntityKey(), @pendingDead) && pendingDead !is null) {
+            //array<Component@>@ pendingDead = cast<array<Component@>@>(pendingDeadVal);
+            for (uint i = 0; i < pendingDead.length(); ++i) {
+                RemoveChild(pendingDead[i]);
+            }
+            Game::Private::gPendingDeadComponents.delete(GetEntityKey());
         }
     }
 
@@ -44,10 +59,46 @@ class CompositeComponent : Component, ICompositer {
         }
     }
 
+    void Destroy() {
+        if (!IsAlive()) {
+            return;
+        }
+        if (children !is null) {
+            for( int n = children.length() - 1; n >= 0; --n ) {
+                if (children[n] !is null) {
+                    children[n].Destroy();
+                }
+            }
+            children.resize(0);
+        }
+        Component::Destroy();
+    }
+
     void AddChild(Component@ child) {
         // TODO: adjust child transform if compositer
         // TODO: remove child from its parent component
         children.insertLast(child);
+    }
+
+    void RemoveChild(Component@ child) {
+        if (isUpdating) {
+            if (!Game::Private::gPendingDeadComponents.exists(GetEntityKey())) {
+                array<Component@>@ arr = array<Component@>();
+                @Game::Private::gPendingDeadComponents[GetEntityKey()] = @arr;
+            }
+            {
+                dictionaryValue val = Game::Private::gPendingDeadComponents[GetEntityKey()];
+                array<Component@>@ arr = cast<array<Component@>>(val);
+                arr.insertLast(child);
+            }
+            return;
+        }
+        const int idx = children.findByRef(@child);
+        if (idx < 0) {
+            log_error("failed to remove child " + child.GetName() + " with id " + child.GetId() + ". it wasn't found in parent " + GetName() + " with id " + GetId());
+            return;
+        }
+        children.removeAt(uint(idx));
     }
 
     protected Scene::Entity CreateEntity() {

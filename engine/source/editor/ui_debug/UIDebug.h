@@ -13,7 +13,6 @@
 class Window;
 class Component;
 class CompositeComponent;
-class Outliner;
 
 
 class UIDebug
@@ -31,6 +30,8 @@ public:
 	static void Destroy();
 
 	static bool GetUIDebugFlag();
+
+	static Outliner& GetOutliner() { return outliner; }
 
 	static int GetViewportX() { return viewportX; }
 	static int GetViewportY() { return viewportY; }

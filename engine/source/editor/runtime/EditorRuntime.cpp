@@ -41,6 +41,7 @@ bool EditorRuntime::Init(const InitParams& params)
 void EditorRuntime::Run()
 {
 	while (engRuntime->IsRunning()) {
+		controller.ProceedInput();
 		engRuntime->RunSingleFrame(EngineRuntime::FrameParams{
 			.simulationEnabled = UIDebug::start_simulation
 		});

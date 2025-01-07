@@ -256,6 +256,15 @@ namespace thh
   }
 
   template<typename T, typename Tag, typename Index, typename Gen>
+  std::optional<Index> handle_vector_t<T, Tag, Index, Gen>::index_from_id(Index id) const
+  {
+      if (id >= handles_.size()) {
+          return std::nullopt;
+      }
+      return handles_[id].lookup_;
+  }
+
+  template<typename T, typename Tag, typename Index, typename Gen>
   bool handle_vector_t<T, Tag, Index, Gen>::empty() const
   {
     assert(elements_.empty() == element_ids_.empty());

@@ -4,6 +4,8 @@
 
 #include "runtime/RuntimeIface.h"
 
+#include "EditorController.h"
+
 #include <memory>
 
 class EngineRuntime;
@@ -29,6 +31,8 @@ private:
 	void HandleSimulationEnd();
 
 private:
+	EditorController controller;
+
 	std::unique_ptr<EngineRuntime> engRuntime;
 };
 

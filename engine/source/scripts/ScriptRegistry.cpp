@@ -19,6 +19,7 @@
 #include <iostream>
 #include <string>
 #include "misc/Strid.h"
+#include "game/GameBindings.h"
 #include "logs/Logs.h"
 
 
@@ -164,17 +165,27 @@ bool ScriptRegistry::RegisterCustomFunctions(asIScriptEngine *engine)
         return false;
     }
 
-    // Set FixedUpdate callback
+    // Shutdown
     r = engine->RegisterFuncdef("void Shutdown()");
     if (r < 0) {
         LOG_ERROR("Unrecoverable error while binding 'Shutdown' callback funcdef.");
         return false;
     }
-
-    // Setter for Shutdown callback
     r = engine->RegisterGlobalFunction("void SetShutdown(Shutdown @shutdownCallback)", asFUNCTION(SetOnShutdown), asCALL_CDECL);
     if (r < 0) {
         LOG_ERROR("Unrecoverable error while binding 'SetShutdown' callback.");
+        return false;
+    }
+
+    // DestroyComponent
+    r = engine->RegisterFuncdef("void CallbackDestroyComponent(ref@ component)");
+    if (r < 0) {
+        LOG_ERROR("Unrecoverable error while binding 'CallbackDestroyComponent' callback funcdef.");
+        return false;
+    }
+    r = engine->RegisterGlobalFunction("void SetDestroyComponent(CallbackDestroyComponent @destroyCompCallback)", asFUNCTION(GameBindings::SetDestroyComponentCB), asCALL_CDECL);
+    if (r < 0) {
+        LOG_ERROR("Unrecoverable error while binding 'SetDestroyComponent' callback.");
         return false;
     }
 

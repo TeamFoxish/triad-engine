@@ -15,6 +15,7 @@ void FixedUpdateImpl(float deltaTime) {
 }
 
 void ShutdownImpl() {
+    sceneRoot.Destroy();
     @sceneRoot = null;
 }
 
@@ -33,6 +34,7 @@ void init()
     SetUpdate(UpdateImpl);
     SetFixedUpdate(FixedUpdateImpl);
     SetShutdown(ShutdownImpl);
+    SetDestroyComponent(Game::Private::DestroyComponent);
     log_info("Script initialization done !");
     
     // TODO: extract to a separate init function
@@ -44,5 +46,6 @@ void init()
     SingleSoundComponent@ soundComp = cast<SingleSoundComponent@>(Game::SpawnComponent(compRef.Load(), sceneRoot));
     soundComp.SetEvent("event:/Bubbles/Bubble3D");
     soundComp.Play();
+
     Game::SpawnComposite(meshCompRef.Load(), null, sceneRoot);
 }

@@ -10,6 +10,32 @@
 
 #include <scripthandle.h>
 
+using namespace GameBindings;
+
+namespace GameBindings {
+
+static asIScriptFunction* destroyComponentFunc = nullptr;
+
+void SetDestroyComponentCB(asIScriptFunction* destroyCompCb)
+{
+    assert(destroyComponentFunc == nullptr);
+    destroyComponentFunc = destroyCompCb;
+}
+
+void DestroyComponent(ScriptObject& comp)
+{
+    if (!destroyComponentFunc) {
+        LOG_ERROR("failed to destroy component with native call GameBindings::DestroyComponent. destroy component callback wasn't ever set");
+        return;
+    }
+    CScriptHandle compHandle(comp.GetRaw(), comp.GetTypeInfo());
+    gScriptSys->GetEngine()->CallFunction(destroyComponentFunc, [&compHandle](asIScriptContext* context) {
+        context->SetArgObject(0, &compHandle);
+        });
+}
+
+} // GameBindings
+
 CScriptHandle CreateScene(const CResourceHandle& sceneRes) 
 {
     CScriptHandle ref;

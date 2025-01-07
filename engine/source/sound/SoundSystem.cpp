@@ -76,7 +76,7 @@ void SoundSystem::Update(float deltaTime)
         FMOD_STUDIO_PLAYBACK_STATE state;
         event.pEvent->getPlaybackState(&state);
         if (state == FMOD_STUDIO_PLAYBACK_STOPPED) {
-            done.push_back(events.GetHandleFromIdx(idx));
+            done.push_back(events.GetHandleFromIndex(idx));
         }
     }
     // Remove done event instances from map
@@ -200,7 +200,7 @@ void SoundSystem::UpdateSounds(float deltaTime)
         bool isPlaying = false;
         entry.channel->isPlaying(&isPlaying);
         if (!isPlaying) {
-            done.push_back(sounds.GetHandleFromIdx(idx));
+            done.push_back(sounds.GetHandleFromIndex(idx));
             continue;
         }
         if (entry.transform.id_ < 0 || !SharedStorage::Instance().transforms.IsValidHandle(entry.transform)) {

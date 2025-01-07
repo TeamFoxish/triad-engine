@@ -153,6 +153,9 @@ namespace thh
     // note: will return an empty optional if the handle is invalid
     std::optional<Index> index_from_handle(
       typed_handle_t<Tag, Index, Gen> handle) const;
+    // returns the index from the id part of handle
+    // note: will return an empty optional if handle id is invalid
+    std::optional<Index> index_from_id(Index id) const;
     // returns if the container has any elements or not
     [[nodiscard]] bool empty() const;
     // returns mutable reference to element at position

@@ -40,4 +40,17 @@ namespace Game {
         return composite;
     }
 
+    namespace Private {
+        dictionary gPendingDeadComponents = {};
+        // TODO: add gPendingAddedComponents;
+
+        void DestroyComponent(ref@ compHandle) {
+            Component@ comp = cast<Component@>(compHandle);
+            if (comp is null) {
+                log_error("failed to destroy component with native Game::DestroyComponent call. invlalid component type or null");
+                return;
+            }
+            comp.Destroy();
+        }
+    }
 }

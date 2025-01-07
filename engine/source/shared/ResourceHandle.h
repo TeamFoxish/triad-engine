@@ -137,6 +137,9 @@ public:
 
 	CRenderable& operator=(CRenderable& other) 
 	{
+		if (renderObj.id_ >= 0) {
+			RenderableStorage::Instance().Remove(renderObj);
+		}
 		renderObj = other.renderObj;
 		other.renderObj = RenderableStorage::Handle{};
 		mesh = other.mesh;
