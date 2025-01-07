@@ -326,6 +326,7 @@ const Quaternion QuaternionIdentity;
 
 class Transform{
 	Transform(const Transform@ parent = null);
+	Transform @opAssign(const Transform@);
     Vector3 GetPosition() const;
     void SetPosition(const Vector3 &in);
 	Quaternion GetRotation() const;
@@ -454,6 +455,8 @@ namespace System{
 namespace Game{
 namespace Impl{
 	ref@ CreateScene(const ResourceHandle &in scene);
+	ref@ SpawnPrefab(const ResourceHandle &in prefab, ref@ parent = null);
+	ref@ SpawnComponent(const ResourceHandle &in compRef, ref@ parent = null);
 }
 }
 

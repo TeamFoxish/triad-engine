@@ -40,7 +40,7 @@ std::unique_ptr<ScriptObject> SceneLoader::CreateScene(ResTag tag)
 		if (componentNode.IsDefined()) {
 			objectTag = ResTag(ToStrid(componentNode.Scalar()));
 		}
-		ScriptObject* component = PrefabLoader::Create(&objectTag, root.get());
+		ScriptObject* component = PrefabLoader::Create(objectTag, root.get());
 		if (!component) {
 			LOG_WARN("Failed to load component or prefab \"{}\"", objectTag.string());
 			continue;

@@ -85,6 +85,7 @@ void ScriptObject::Init(asITypeInfo* type, ArgsT&& args, asIScriptFunction* fact
 {
     _type = type;
     if (args.empty() && !factory) {
+        // TODO: check if default constructor exists
         asIScriptEngine* engine = gScriptSys->GetRawEngine();
         _object = static_cast<asIScriptObject*>(engine->CreateScriptObject(_type));
     } else {
@@ -115,13 +116,17 @@ asIScriptObject* ScriptObject::Construct(ArgsT&& args, asIScriptFunction* factor
     int rc = -1;
 
     asIScriptContext* ctx = gScriptSys->GetContext();
-    ctx->PushState(); // push state to reuse active context (allow nested calls)
+
+    // push state to reuse active context (allow nested calls)
+    bool nested = (ctx->PushState() == asSUCCESS);
 
     // push constructor to context
     rc = ctx->Prepare(factory);
     if (rc < 0) {
         LOG_ERROR("failed to construct object \"{}\". failed to preapre script context. error code: {}", factory->GetName(), rc);
-        ctx->PopState();
+        if (nested) {
+            ctx->PopState();
+        }
         return nullptr;
     }
 
@@ -143,12 +148,16 @@ asIScriptObject* ScriptObject::Construct(ArgsT&& args, asIScriptFunction* factor
             ctx->GetExceptionFunction()->GetName(),
             ctx->GetExceptionLineNumber(),
             ctx->GetExceptionString());
-        ctx->PopState();
+        if (nested) {
+            ctx->PopState();
+        }
         return nullptr;
     }
 
     asIScriptObject* retVal = *(asIScriptObject**)ctx->GetAddressOfReturnValue();
-    ctx->PopState();
+    if (nested) {
+        ctx->PopState();
+    }
     return retVal;
 }
 
@@ -619,7 +628,7 @@ void ScriptObject::OverrideChildren(const YAML::Node& node) {
             if (componentNode.IsDefined()) {
                 objectTag = ResTag(ToStrid(componentNode.Scalar()));
             }
-            ScriptObject* component = PrefabLoader::Create(&objectTag, this);
+            ScriptObject* component = PrefabLoader::Create(objectTag, this);
             if (!component) {
                 LOG_WARN("Failed to load component or prefab \"{}\"", objectTag.string());
                 continue;
@@ -630,7 +639,7 @@ void ScriptObject::OverrideChildren(const YAML::Node& node) {
         if (arrayNode.second["component"]) {
             const YAML::Node parameters = arrayNode.second;
             ResTag componentTag = ResTag(ToStrid(parameters["component"].Scalar()));
-            ScriptObject* component = ComponentLoader::CreateComponent(&componentTag, this);
+            ScriptObject* component = ComponentLoader::CreateComponent(componentTag, this);
             component->ApplyOverrides(parameters["overrides"]);
             component->SetField("name", childComponentName);
         }

@@ -1,6 +1,7 @@
 class SingleSoundComponent : Component {
     protected Sound::Event event;
     protected bool allowFadeOnDestroy = true;
+    protected bool isPlaying = false;
 
     protected string eventName;
 
@@ -16,10 +17,7 @@ class SingleSoundComponent : Component {
     }
 
     void Init() {
-        if (eventName.isEmpty()) {
-            return;
-        }
-        event = Sound::System::PlayEvent(eventName);
+        Play();
     }
 
     void Update(float deltaTime) {
@@ -28,5 +26,17 @@ class SingleSoundComponent : Component {
         }
         const Math::Transform@ parentTrs = GetParent().GetTransform();
         event.Set3DAttributes(parentTrs);
+    }
+
+    void SetEvent(const string &in evtName) {
+        eventName = evtName;
+    }
+
+    void Play() {
+        if (eventName.isEmpty()) {
+            return;
+        }
+        event = Sound::System::PlayEvent(eventName);
+        isPlaying = true;
     }
 }

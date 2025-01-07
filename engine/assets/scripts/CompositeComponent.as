@@ -10,6 +10,8 @@ class CompositeComponent : Component, ICompositer {
 
     Math::Transform@ GetTransform() const { return transform; }
 
+    void SetTransform(const Math::Transform@ trs) { transform = trs; } // copy transform
+
     const array<Component@>& GetChildren() const { return children; }
 
     void Init() {

@@ -3,7 +3,7 @@ content:
   module: Engine
   overrides:
     renderObj:
-      #mesh: res://material/example.material
+      mesh: res://meshes/cube.mesh
       material: res://materials/default_mesh.material
 
 type: component

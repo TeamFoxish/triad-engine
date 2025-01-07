@@ -31,9 +31,9 @@ void PrefabLoader::Load(ResTag tag, const YAML::Node& desc)
 	LOG_INFO("Resource \"Prefab\" with tag \"{}\" was indexed", tag.string());
 }
 
-ScriptObject* PrefabLoader::Create(ResTag* tag, ScriptObject* parent)
+ScriptObject* PrefabLoader::Create(ResTag tag, ScriptObject* parent)
 {
-	const YAML::Node desc = _prefabs[*tag];
+	const YAML::Node desc = _prefabs[tag];
 
 	// TEMP
 	if (desc["class"] && desc["class"].Scalar() == "player") {
@@ -53,7 +53,7 @@ ScriptObject* PrefabLoader::Create(ResTag* tag, ScriptObject* parent)
 		const std::string name = componentDesc.first.Scalar();
 		const YAML::Node parameters = componentDesc.second;
 		ResTag componentTag = ResTag(ToStrid(parameters["component"].Scalar()));
-		ScriptObject* component = ComponentLoader::CreateComponent(&componentTag, root);
+		ScriptObject* component = ComponentLoader::CreateComponent(componentTag, root);
 		component->ApplyOverrides(parameters["overrides"]);
 		component->SetField("name", name);
 	}

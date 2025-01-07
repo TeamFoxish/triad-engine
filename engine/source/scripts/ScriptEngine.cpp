@@ -43,7 +43,7 @@ ScriptEngine::ScriptEngine()
 
 ScriptEngine::~ScriptEngine()
 {
-    _engine->Release();
+    _engine->ShutDownAndRelease();
 }
 
 bool ScriptEngine::CallFunction(asIScriptFunction *function)

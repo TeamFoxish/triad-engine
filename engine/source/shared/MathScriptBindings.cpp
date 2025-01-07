@@ -198,7 +198,7 @@ static void RegisterQaternion()
 #pragma endregion
 
 #pragma region TRANSFORM
-CTransformHandle* STransformHandleFactory(const CTransformHandle* parent)
+CTransformHandle* STransformHandleFactory(const CTransformHandle* parent = nullptr)
 {
 	return new CTransformHandle(parent);
 }
@@ -215,6 +215,12 @@ CTransformHandle::CTransformHandle(const CTransformHandle* parent)
 CTransformHandle::~CTransformHandle()
 {
 	SharedStorage::Instance().transforms.Remove(handle);
+}
+
+CTransformHandle* STransformHandleAssign(const CTransformHandle* other, CTransformHandle* self)
+{
+	self->GetTransform() = other->GetTransform();
+	return self;
 }
 
 const Math::Transform& CTransformHandle::GetTransform() const
@@ -273,10 +279,11 @@ static void RegisterTransform()
 {
 	auto engine = gScriptSys->GetRawEngine();
 	int r = engine->RegisterObjectType("Transform", 0, asOBJ_REF); assert(r >= 0);
-	r = engine->RegisterObjectBehaviour("Transform", asBEHAVE_FACTORY, "Transform@ f(const Transform@+)", asFUNCTION(STransformHandleFactory), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterObjectBehaviour("Transform", asBEHAVE_FACTORY, "Transform@ f(const Transform@+ parent = null)", asFUNCTION(STransformHandleFactory), asCALL_CDECL); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("Transform", asBEHAVE_ADDREF, "void f()", asMETHOD(CTransformHandle, AddRef), asCALL_THISCALL); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("Transform", asBEHAVE_RELEASE, "void f()", asMETHOD(CTransformHandle, Release), asCALL_THISCALL); assert(r >= 0);
 
+	r = engine->RegisterObjectMethod("Transform", "Transform@+ opAssign(const Transform@+)", asFUNCTION(STransformHandleAssign), asCALL_CDECL_OBJLAST); assert(r >= 0);
 	r = engine->RegisterObjectMethod("Transform", "Vector3 GetPosition() const", asMETHOD(CTransformHandle, GetPosition), asCALL_THISCALL); assert(r >= 0);
 	r = engine->RegisterObjectMethod("Transform", "void SetPosition(const Vector3 &in)", asMETHOD(CTransformHandle, SetPosition), asCALL_THISCALL); assert(r >= 0);
 	r = engine->RegisterObjectMethod("Transform", "Quaternion GetRotation() const", asMETHOD(CTransformHandle, GetRotation), asCALL_THISCALL); assert(r >= 0);

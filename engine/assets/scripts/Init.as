@@ -1,11 +1,7 @@
 SceneInstance@ sceneRoot;
-SoftRef<ResourceHandle> tempScene("resd://scenes/first_scene.scene");
-SceneInstance@ tempRoot;
-
-float initialZ = 0.0f;
-float time = 0.0f;
-float speed = 1.0f;
-float amplitude = 3.0f;
+SoftRef<ResourceHandle> prefabRef("resd://prefabs/cheese.prefab");
+SoftRef<ResourceHandle> compRef("resd://components/SingleSoundComponent.component");
+SoftRef<ResourceHandle> meshCompRef("resd://components/MeshComponent.component");
 
 void UpdateImpl(float deltaTime) {
     if (Input::IsKeyDown(Input::Key::Space)) {
@@ -42,6 +38,11 @@ void init()
     // TODO: extract to a separate init function
     sceneRoot.Init(); // TEMP
 
-    ResourceHandle handle = tempScene.Load();
-    @tempRoot = Game::CreateScene(handle);
+    Math::Transform@ trs = Math::Transform();
+    trs.SetLocalPosition(Math::Vector3(3.0f, 3.0f, 3.0f));
+    Game::SpawnPrefab(prefabRef.Load(), trs, sceneRoot);
+    SingleSoundComponent@ soundComp = cast<SingleSoundComponent@>(Game::SpawnComponent(compRef.Load(), sceneRoot));
+    soundComp.SetEvent("event:/Bubbles/Bubble3D");
+    soundComp.Play();
+    Game::SpawnComposite(meshCompRef.Load(), null, sceneRoot);
 }
