@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef EDITOR
+
 class EditorController {
 public:
     void ProceedInput();
@@ -7,3 +9,5 @@ public:
 private:
     // TODO: add active input context here, which will be switched based on current active editor window
 };
+
+#endif // EDITOR

@@ -1,3 +1,5 @@
+#ifdef EDITOR
+
 #include "EditorController.h"
 
 #include "editor/ui_debug/UIDebug.h"
@@ -19,3 +21,5 @@ void EditorController::ProceedInput()
         }
     }
 }
+
+#endif // EDITOR

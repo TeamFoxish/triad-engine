@@ -31,8 +31,6 @@ public:
 
 	static bool GetUIDebugFlag();
 
-	static Outliner& GetOutliner() { return outliner; }
-
 	static int GetViewportX() { return viewportX; }
 	static int GetViewportY() { return viewportY; }
 
@@ -54,6 +52,9 @@ protected:
 	static inline int viewportHeight = -1;
 
 #ifdef EDITOR
+public:
+	static Outliner& GetOutliner() { return outliner; }
+
 private:
 	static void DrawGizmo();
 	
