@@ -5,13 +5,29 @@
 #include "components/CompositeComponent.h"
 #include "input/InputDevice.h"
 #include "render/RenderSystem.h"
+#include "game/GameBindings.h"
+#include "editor/runtime/EditorRuntime.h"
 
 #include "imgui.h"
 
 #include "logs/Logs.h"
 
+Outliner::InputContext::InputContext(Outliner& outliner)
+    : outliner(&outliner)
+{
+}
+
+void Outliner::InputContext::ProceedInput(InputDevice* device)
+{
+    if (device->IsKeyDown(Keys::Delete)) {
+        outliner->DestroySelectedNode();
+    }
+}
+
 void Outliner::Init()
 {
+    inpContext = std::make_shared<InputContext>(*this);
+
     root = gSceneTree->GetRoot();
     if (root.id_ < 0) {
         return; // scene empty
@@ -63,6 +79,14 @@ void Outliner::Draw()
         return;
     }
 
+    const bool isOutlinerFocused = ImGui::IsWindowFocused();
+    if (isOutlinerFocused && !isFocused) {
+        static_cast<EditorRuntime*>(gEngineRuntime)->GetController().SetInputContext(inpContext);
+    } else if (!isOutlinerFocused && isFocused) {
+        static_cast<EditorRuntime*>(gEngineRuntime)->GetController().ClearInputContext(inpContext);
+    }
+    isFocused = isOutlinerFocused;
+
     SceneTree::Entity& rootEntity = gSceneTree->Get(root);
     assert(rootEntity.isComposite);
 
@@ -89,6 +113,20 @@ void Outliner::Draw()
     }
 
     ImGui::End();
+}
+
+void Outliner::DestroySelectedNode()
+{
+    SceneTree::Handle node = selectedNode;
+    if (node.id_ == 0) {
+        return; // TEMP. do not destroy scene root
+    }
+    if (node.id_ >= 0 && gSceneTree->IsValidHandle(node)) {
+        ClearSelectedNode();
+        SceneTree::Entity& entity = gSceneTree->Get(node);
+        assert(entity.obj.GetRaw()); // check if entity has a valid script object attached
+        GameBindings::DestroyComponent(entity.obj);
+    }
 }
 
 void Outliner::ClearSelectedNode()

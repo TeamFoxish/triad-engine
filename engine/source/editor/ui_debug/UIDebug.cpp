@@ -28,8 +28,13 @@
 #include "shared/SharedStorage.h"
 #include "scripts/ScriptSystem.h"
 #include "scripts/ScriptObject.h"
+#include "input/InputDevice.h"
 
 #include "logs/Logs.h"
+
+#ifdef EDITOR
+#include "editor/runtime/EditorRuntime.h"
+#endif
 
 #define DRAG_SPEED 0.01f
 
@@ -39,6 +44,8 @@ static constexpr float DegreesDragSpeed = Math::RadToDeg(DRAG_SPEED);
 void UIDebug::Init(Window* window)
 {
     isInitted = true;
+
+    viewportInpContext = std::make_shared<ViewportInputContext>();
 
     // TODO: add flags to enable/disable docking and viewporting
     // Setup Dear ImGui context
@@ -111,7 +118,7 @@ void UIDebug::TestDraw()
 
         // File system
         {
-            ImGui::Begin("File system");
+            ImGui::Begin("File system", nullptr, ImGuiWindowFlags_NoFocusOnAppearing);
             // ToDo: change position of simulation button
             if (ImGui::Button(bName.c_str()))
             {
@@ -129,7 +136,7 @@ void UIDebug::TestDraw()
         
         // Script debugger
         {
-            ImGui::Begin("Debugger");
+            ImGui::Begin("Debugger", nullptr, ImGuiWindowFlags_NoFocusOnAppearing);
             // ToDo: change position of simulation button
             if (ImGui::Button("Debug menu"))
             {
@@ -142,11 +149,18 @@ void UIDebug::TestDraw()
         {
             ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
             ImGui::Begin("Scene Test", 0, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+            ImGui::GetCurrentWindow();
             UpdateViewportPos();
             if (HandleViewportResize()) {
                 ImGui::Image((ImTextureID)(intptr_t)gRenderSys->GetRenderer()->GetColorPassSrt(), ImGui::GetWindowSize());
 
-                isSceneFocused = ImGui::IsWindowFocused();
+                const bool isFocused = ImGui::IsWindowFocused();
+                if (isFocused && !isSceneFocused) {
+                    static_cast<EditorRuntime*>(gEngineRuntime)->GetController().SetInputContext(viewportInpContext);
+                } else if (!isFocused && isSceneFocused) {
+                    static_cast<EditorRuntime*>(gEngineRuntime)->GetController().ClearInputContext(viewportInpContext);
+                }
+                isSceneFocused = isFocused;
             }
 
             DrawGizmo();
@@ -180,6 +194,8 @@ void UIDebug::Render()
 void UIDebug::Destroy()
 {
     isInitted = false;
+
+    viewportInpContext.reset();
 
     ImGui_ImplDX11_Shutdown();
     ImGui_ImplWin32_Shutdown();
@@ -311,7 +327,7 @@ void UIDebug::DrawGizmo()
             
             // ImGui window
             {
-                ImGui::Begin("Inspector");
+                ImGui::Begin("Inspector", nullptr, ImGuiWindowFlags_NoFocusOnAppearing);
 
                 ImGui::SeparatorText("Transform Manually");
 
@@ -404,6 +420,13 @@ void UIDebug::DrawGizmo()
                 trs.SetMatrix(matr);
             }
         }
+    }
+}
+
+void UIDebug::ViewportInputContext::ProceedInput(InputDevice* device)
+{
+    if (device->IsKeyDown(Keys::Delete)) {
+        outliner.DestroySelectedNode();
     }
 }
 #endif // EDITOR

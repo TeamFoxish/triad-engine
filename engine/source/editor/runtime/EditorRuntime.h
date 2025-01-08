@@ -26,6 +26,8 @@ public:
 
 	Math::Vector2 GetMousePosInViewport() const override;
 
+	EditorController& GetController() { return controller; }
+
 private:
 	void HandleSimulationStart();
 	void HandleSimulationEnd();

@@ -14,6 +14,10 @@
 #include "render/RenderSystem.h"
 #include "render/Renderer.h"
 
+#ifdef EDITOR
+#include "editor/runtime/EditorRuntime.h"
+#endif
+
 class wndWindow : public Window {
 public:
 	bool Create(const std::string& title, int width, int height) override;
@@ -45,12 +49,25 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT umessage, WPARAM wparam, LPARAM lparam)
 	if (ImGui_ImplWin32_WndProcHandler(hwnd, umessage, wparam, lparam))
 		return true;
 
+	bool ignoreMouse = false;
+	bool ignoreKeyboard = false;
+
+#ifdef EDITOR
+	using InputTarget = EditorController::InputContextBase::InputTarget;
+	InputTarget edtInpTarget =
+		static_cast<EditorRuntime*>(gEngineRuntime)->GetController().GetInputTarget();
+	ignoreMouse = (edtInpTarget == InputTarget::Editor);
+	ignoreKeyboard = false; // TEMP
+#else
 	if (UIDebug::GetUIDebugFlag()) {
 		auto& io = ImGui::GetIO();
-		if (io.WantCaptureMouse || io.WantCaptureKeyboard) {
+		ignoreMouse = io.WantCaptureMouse;
+		ignoreKeyboard = io.WantCaptureKeyboard;
+		if (ignoreMouse || ignoreKeyboard) {
 			return true;
 		}
 	}
+#endif
 
 	switch (umessage) {
 	case WM_SIZE:
@@ -80,7 +97,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT umessage, WPARAM wparam, LPARAM lparam)
 
 			RAWINPUT* vertFloats = reinterpret_cast<RAWINPUT*>(lpb);
 
-			if (vertFloats->header.dwType == RIM_TYPEKEYBOARD)
+			if (ignoreKeyboard)
+				printf("keyboard ignored");
+			if (vertFloats->header.dwType == RIM_TYPEKEYBOARD && !ignoreKeyboard)
 			{
 				//printf(" Kbd: make=%04i Flags:%04i Reserved:%04i ExtraInformation:%08i, msg=%04i VK=%i \n",
 				//	raw->data.keyboard.MakeCode,
@@ -97,7 +116,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT umessage, WPARAM wparam, LPARAM lparam)
 					vertFloats->data.keyboard.Message
 					});
 			}
-			else if (vertFloats->header.dwType == RIM_TYPEMOUSE)
+			else if (vertFloats->header.dwType == RIM_TYPEMOUSE && !ignoreMouse)
 			{
 				//printf(" Mouse: X=%04d Y:%04d \n", raw->data.mouse.lLastX, raw->data.mouse.lLastY);
 				globalInputDevice->OnMouseMove({
