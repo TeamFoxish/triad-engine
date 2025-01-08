@@ -2,10 +2,12 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 
 #ifdef EDITOR
 #include "UIOutliner.h"
 #include "UIContentBrowser.h"
+#include "editor/runtime/EditorController.h"
 
 #include "misc/Delegates.h"
 #endif // EDITOR
@@ -18,6 +20,15 @@ class CompositeComponent;
 class UIDebug
 {
 public:
+#ifdef EDITOR
+	class ViewportInputContext : public EditorController::InputContextBase {
+	public:
+		void ProceedInput(InputDevice* device) override;
+
+		InputTarget GetInputTarget() const override { return InputTarget::Game; }
+	};
+#endif
+
 	static void Init(Window* window);
 
 	static void StartNewFrame();
@@ -62,6 +73,8 @@ private:
 public:
 	static inline Outliner outliner; // TODO: remove
 	static inline ContentBrowser contentBrowser; // TODO: remove
+
+	static inline std::shared_ptr<ViewportInputContext> viewportInpContext;
 
 	static inline MulticastDelegate<> onSimulationStart;
 	static inline MulticastDelegate<> onSimulationEnd;
