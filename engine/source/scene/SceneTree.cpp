@@ -9,10 +9,16 @@ auto SceneTree::Add(Entity&& entity) -> Handle
 {
     Handle parent = entity.parent;
     Handle handle = storage.Add(std::move(entity));
-    if (parent.id_ >= 0) {
+
+	// TEMP
+	// ToDo: add normal naming of components
+	Entity& temp_entity = storage[handle];
+	temp_entity.name = std::format("Component {}", c_num++);
+    
+	if (parent.id_ >= 0) {
 		Entity& parentEntity = storage[parent];
 		parentEntity.children.push_back(handle);
-		parentEntity.name = std::format("Component {}", c_num++); // TEMP
+		//parentEntity.name = std::format("Component {}", c_num++); // TEMP
     }
 	if (root.id_ < 0) {
 		root = handle;

@@ -41,7 +41,7 @@ void Outliner::Update()
             SetSelectedNode(entityId);
             gizmo_focused = true;
         }
-    } 
+    }
     else if (clicksCount == 1 && newClicksCount == 0) {
         // delayed single left mouse click
         gizmo_focused = false;
@@ -112,9 +112,9 @@ void Outliner::DrawOutlinerNode(SceneTree::Handle node)
     flag |= (entity.isSelected) ? ImGuiTreeNodeFlags_Selected : 0;
 
     // ToDo: will outliner draw only components without their children(?)
-    //flag |= (entity.children.empty()) ? ImGuiTreeNodeFlags_Leaf : 0;
-    flag |= ImGuiTreeNodeFlags_Leaf;
-    
+    flag |= (entity.children.empty()) ? ImGuiTreeNodeFlags_Leaf : 0;
+    //flag |= ImGuiTreeNodeFlags_Leaf;
+
 
     if (ImGui::TreeNodeEx(entity.name.c_str(), flag))
     {
@@ -126,11 +126,10 @@ void Outliner::DrawOutlinerNode(SceneTree::Handle node)
             entity.isSelected = true;
         }
 
-        // TEMP
-        /*for (SceneTree::Handle child : entity.children)
+        for (SceneTree::Handle child : entity.children)
         {
             DrawOutlinerNode(child);
-        }*/
+        }
 
         ImGui::TreePop();
     }

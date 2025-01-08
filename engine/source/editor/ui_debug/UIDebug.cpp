@@ -8,6 +8,7 @@
 #include <d3dcompiler.h>
 
 #include "imgui.h"
+#include "misc/cpp/imgui_stdlib.h"
 #include "imgui_internal.h"
 #include "backends/imgui_impl_win32.h"
 #include "backends/imgui_impl_dx11.h"
@@ -119,21 +120,22 @@ void UIDebug::TestDraw()
                 bName = start_simulation ? "Pause" : "Start";
                 if (start_simulation) {
                     onSimulationStart.Broadcast();
-                } else {
+                }
+                else {
                     onSimulationEnd.Broadcast();
                 }
             }
             ImGui::End();
             contentBrowser.Draw();
         }
-        
+
         // Script debugger
         {
             ImGui::Begin("Debugger");
             // ToDo: change position of simulation button
             if (ImGui::Button("Debug menu"))
             {
-               gScriptSys->InvokeDebuggerMenu();
+                gScriptSys->InvokeDebuggerMenu();
             }
             ImGui::End();
         }
@@ -284,7 +286,7 @@ static void DrawVec3Control(const std::string& label, Math::Vector3& values, flo
     ImGui::SameLine();
     ImGui::DragFloat("##Z", &values.z, dragSpeed, min, max, "%.3f", flag);
     ImGui::PopItemWidth();
-    
+
     ImGui::PopStyleVar();
 
     ImGui::Columns(1);
@@ -296,7 +298,7 @@ void UIDebug::DrawGizmo()
 {
     //gizmoSelected = ImGuizmo::IsOver();
     auto node = outliner.GetSelectedNode();
-    
+
     if (node.id_ >= 0 && node != outliner.GetRootNode())
     {
         enum class GizmoSpace : int {
@@ -308,7 +310,7 @@ void UIDebug::DrawGizmo()
         SceneTree::Entity& entity = gSceneTree->Get(node);
         if (entity.isComposite && entity.transform.id_ >= 0) {
             Math::Transform& trs = SharedStorage::Instance().transforms.AccessWrite(entity.transform);
-            
+
             // ImGui window
             {
                 ImGui::Begin("Inspector");
@@ -353,7 +355,7 @@ void UIDebug::DrawGizmo()
                 if (Math::Vector3::DistanceSquared(newPos, pos) > Math::Epsilon) {
                     trs.SetLocalPosition(newPos);
                 }
-                
+
                 // Rotation
                 Math::Quaternion rot = trs.GetLocalRotation();
                 const Math::Vector3 euler = Math::RadToDeg(rot.ToEuler());
@@ -375,6 +377,8 @@ void UIDebug::DrawGizmo()
                 if (Math::Vector3::DistanceSquared(newScale, scale) > Math::Epsilon) {
                     trs.SetLocalScale(newScale);
                 }
+
+                DrawAdditionalFields(&entity.obj);
 
                 ImGui::End();
             }
@@ -403,6 +407,182 @@ void UIDebug::DrawGizmo()
             if (ImGuizmo::Manipulate((float*)viewMatrix.m, (float*)projectionMatrix.m, operation, gizmoSpace == (int)GizmoSpace::World ? ImGuizmo::WORLD : ImGuizmo::LOCAL, (float*)matr.m)) {
                 trs.SetMatrix(matr);
             }
+        }
+    }
+}
+void UIDebug::DrawAdditionalFields(ScriptObject* obj)
+{
+    void* currentValuePointer;
+    int fieldType;
+    LOG_INFO("min = {}", sizeof(uint8_t));
+
+    for (asUINT prop = 0; prop < obj->GetRaw()->GetPropertyCount(); ++prop)
+    {
+        std::string name = obj->GetRaw()->GetPropertyName(prop);
+        currentValuePointer = obj->GetRaw()->GetAddressOfProperty(prop);
+        fieldType = obj->GetRaw()->GetPropertyTypeId(prop);
+
+        switch (fieldType)
+        {
+        case asTYPEID_BOOL:
+        {
+            bool* currentValueBool = static_cast<bool*>(currentValuePointer);
+            ImGui::Checkbox(name.c_str(), currentValueBool);
+            break;
+        }
+
+        case asTYPEID_INT8:
+        {
+            int8_t min = -100;
+            int8_t max = 100;
+
+            int8_t* currentValueInt8 = static_cast<int8_t*>(currentValuePointer);
+            ImGui::DragInt(name.c_str(), (int*)currentValueInt8, 1.F,
+                min,
+                max
+            );
+            break;
+        }
+
+        case asTYPEID_INT16:
+        {
+            int16_t min = -1000;
+            int16_t max = 1000;
+
+            int16_t* currentValueInt16 = static_cast<int16_t*>(currentValuePointer);
+            ImGui::DragInt(name.c_str(), (int*)currentValueInt16, 1.F,
+                min,
+                max
+            );
+            break;
+        }
+
+        case asTYPEID_INT32:
+        {
+            int32_t min = -1000;
+            int32_t max = 1000;
+
+            int32_t* currentValueInt32 = static_cast<int32_t*>(currentValuePointer);
+            ImGui::DragInt(name.c_str(), (int*)currentValueInt32, 1.F,
+                min,
+                max
+            );
+            break;
+        }
+
+        case asTYPEID_INT64:
+        {
+            int64_t min = -1000;
+            int64_t max = 1000;
+
+            int64_t* currentValueInt64 = static_cast<int64_t*>(currentValuePointer);
+            ImGui::DragInt(name.c_str(), (int*)currentValueInt64, 1.F,
+                min,
+                max
+            );
+            break;
+        }
+
+        case asTYPEID_UINT8:
+        {
+            uint8_t min = 0;
+            uint8_t max = 100;
+
+            uint8_t* currentValueInt8 = static_cast<uint8_t*>(currentValuePointer);
+            ImGui::DragInt(name.c_str(), (int*)currentValueInt8, 1.F,
+                min,
+                max
+            );
+            break;
+        }
+
+        case asTYPEID_UINT16:
+        {
+            uint16_t min = 0;
+            uint16_t max = 1000;
+
+            uint16_t* currentValueInt16 = static_cast<uint16_t*>(currentValuePointer);
+            ImGui::DragInt(name.c_str(), (int*)currentValueInt16, 1.F,
+                min,
+                max
+            );
+            break;
+        }
+
+        case asTYPEID_UINT32:
+        {
+            uint32_t min = 0;
+            uint32_t max = 1000;
+
+            uint32_t* currentValueInt32 = static_cast<uint32_t*>(currentValuePointer);
+            ImGui::DragInt(name.c_str(), (int*)currentValueInt32, 1.F,
+                min,
+                max
+            );
+            break;
+        }
+
+        case asTYPEID_UINT64:
+        {
+            uint64_t min = 0;
+            uint64_t max = 1000;
+
+            uint64_t* currentValueInt64 = static_cast<uint64_t*>(currentValuePointer);
+            ImGui::DragInt(name.c_str(), (int*)currentValueInt64, 1.F,
+                min,
+                max
+            );
+            break;
+        }
+
+        case asTYPEID_FLOAT:
+        {
+            float min = -100.f;
+            float max = 100.f;
+
+            float* currentValueFloat = static_cast<float*>(currentValuePointer);
+            ImGui::DragFloat(name.c_str(), currentValueFloat, 0.01f,
+                min,
+                max
+            );
+
+            break;
+        }
+        case asTYPEID_DOUBLE:
+        {
+            double min = -100.f;
+            double max = 100.f;
+
+            double* currentValueDouble = static_cast<double*>(currentValuePointer);
+            ImGui::DragFloat(name.c_str(), (float*)currentValueDouble, 0.01f,
+                min,
+                max
+            );
+            break;
+        }
+
+        case asTYPEID_SCRIPTOBJECT:
+        {
+            ImGui::SeparatorText(name.c_str());
+
+            ScriptObject* currentValueScriptObject = static_cast<ScriptObject*>(currentValuePointer);
+            DrawAdditionalFields(currentValueScriptObject);
+
+            break;
+        }
+        case asTYPEID_APPOBJECT:
+        {
+            ImGui::SeparatorText(("App Object: " + name).c_str());
+
+            break;
+        }
+
+        case asTYPEID_VOID:
+        default:
+        {
+            currentValuePointer = nullptr;
+            break;
+        }
         }
     }
 }

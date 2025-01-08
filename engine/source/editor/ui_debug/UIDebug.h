@@ -57,6 +57,7 @@ public:
 
 private:
 	static void DrawGizmo();
+	static void DrawAdditionalFields(ScriptObject* obj);
 	
 public:
 	static inline Outliner outliner; // TODO: remove
