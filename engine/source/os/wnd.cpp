@@ -58,15 +58,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT umessage, WPARAM wparam, LPARAM lparam)
 		static_cast<EditorRuntime*>(gEngineRuntime)->GetController().GetInputTarget();
 	ignoreMouse = (edtInpTarget == InputTarget::Editor);
 	ignoreKeyboard = false; // TEMP
-#else
-	if (UIDebug::GetUIDebugFlag()) {
-		auto& io = ImGui::GetIO();
-		ignoreMouse = io.WantCaptureMouse;
-		ignoreKeyboard = io.WantCaptureKeyboard;
-		if (ignoreMouse || ignoreKeyboard) {
-			return true;
-		}
-	}
 #endif
 
 	switch (umessage) {

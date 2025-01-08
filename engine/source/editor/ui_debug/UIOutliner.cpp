@@ -46,6 +46,10 @@ void Outliner::Init()
 
 void Outliner::Update()
 {
+    if (selectedNode.id_ >= 0 && !gSceneTree->IsValidHandle(selectedNode)) {
+        ClearSelectedNode();
+    }
+
     static int clicksCount = 0;
     const int newClicksCount = ImGui::GetMouseClickedCount(ImGuiMouseButton_Left);
     if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
@@ -77,6 +81,12 @@ void Outliner::Draw()
     if (root.id_ < 0) {
         ImGui::End();
         return;
+    }
+    if (!gSceneTree->IsValidHandle(root)) {
+        root = gSceneTree->GetRoot(); // root may changed after loaded to another scene
+        if (root.id_ < 0) {
+            return; // no scene loaded
+        }
     }
 
     const bool isOutlinerFocused = ImGui::IsWindowFocused();
@@ -132,6 +142,10 @@ void Outliner::DestroySelectedNode()
 void Outliner::ClearSelectedNode()
 {
     if (selectedNode.id_ < 0) {
+        return;
+    }
+    if (!gSceneTree->IsValidHandle(selectedNode)) {
+        selectedNode = SceneTree::Handle{};
         return;
     }
     SceneTree::Entity& entity = gSceneTree->Get(selectedNode);

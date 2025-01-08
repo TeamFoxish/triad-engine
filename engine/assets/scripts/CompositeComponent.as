@@ -41,7 +41,6 @@ class CompositeComponent : Component, ICompositer {
         dictionaryValue pendingDeadVal;
         array<Component@>@ pendingDead;
         if (Game::Private::gPendingDeadComponents.get(GetEntityKey(), @pendingDead) && pendingDead !is null) {
-            //array<Component@>@ pendingDead = cast<array<Component@>@>(pendingDeadVal);
             for (uint i = 0; i < pendingDead.length(); ++i) {
                 RemoveChild(pendingDead[i]);
             }
@@ -50,13 +49,7 @@ class CompositeComponent : Component, ICompositer {
     }
 
     void FixedUpdate(float deltaTime) {
-        if (children !is null) {
-            for( uint n = 0; n < children.length(); n++ ) {
-                if (children[n] !is null) {
-                    children[n].FixedUpdate(deltaTime);
-                }
-            }
-        }
+        // no implementation yet
     }
 
     void Destroy() {

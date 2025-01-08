@@ -25,7 +25,7 @@ public:
 
     void ClearInputContext(const std::shared_ptr<InputContextBase>& context);
 
-    InputContextBase::InputTarget GetInputTarget() const { return activeContext ? activeContext->GetInputTarget() : InputContextBase::InputTarget::Game; }
+    InputContextBase::InputTarget GetInputTarget() const { return activeContext ? activeContext->GetInputTarget() : InputContextBase::InputTarget::Editor; }
 
 private:
     std::shared_ptr<InputContextBase> activeContext;

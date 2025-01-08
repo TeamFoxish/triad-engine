@@ -41,7 +41,7 @@ abstract class Component {
     }
 
     void FixedUpdate(float deltaTime) {
-        // do nothing, default behavior
+        // no implementation yet
     }
 
     bool IsAlive() const { return !isDead; }
