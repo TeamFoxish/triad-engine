@@ -64,7 +64,7 @@ bool EngineRuntime::Init(const InitParams& params)
 	}
 	if (!InitResource(this)) {
 		// TODO: change message(?)
-		LOG_ERROR("Failed on Reaource Initialization");
+		LOG_ERROR("Failed on Resource Initialization");
 		return false;
 	}
 	if (!InitSoundSystem()) {

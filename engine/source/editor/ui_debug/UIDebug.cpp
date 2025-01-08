@@ -130,7 +130,7 @@ void UIDebug::TestDraw()
         // Script debugger
         {
             ImGui::Begin("Debugger");
-            // ToDo: change position of simulation buttoin
+            // ToDo: change position of simulation button
             if (ImGui::Button("Debug menu"))
             {
                gScriptSys->InvokeDebuggerMenu();
@@ -296,7 +296,7 @@ void UIDebug::DrawGizmo()
 {
     //gizmoSelected = ImGuizmo::IsOver();
     auto node = outliner.GetSelectedNode();
-
+    
     if (node.id_ >= 0 && node != outliner.GetRootNode())
     {
         enum class GizmoSpace : int {
@@ -313,7 +313,7 @@ void UIDebug::DrawGizmo()
             {
                 ImGui::Begin("Inspector");
 
-                ImGui::SeparatorText("Transform Manualy");
+                ImGui::SeparatorText("Transform Manually");
 
                 if (ImGui::Button("Translate"))
                 {

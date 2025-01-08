@@ -14,6 +14,13 @@ public:
     ~ContentBrowser();
 
 private:
+    void CreateNewFile(const std::string& dirTo, const std::string& fileName, const std::string& expansion);
+
+    void CreateComponent(const std::string& fileName);
+    void CreateScript(const std::string& fileName);
+    void CreateMaterial(const std::string& fileName);
+
+private:
     std::filesystem::path curr_dir;
 
     ID3D11ShaderResourceView* directoryTexture = nullptr;
