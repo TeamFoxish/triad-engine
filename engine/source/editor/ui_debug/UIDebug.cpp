@@ -45,7 +45,9 @@ void UIDebug::Init(Window* window)
 {
     isInitted = true;
 
+#ifdef EDITOR
     viewportInpContext = std::make_shared<ViewportInputContext>();
+#endif
 
     // TODO: add flags to enable/disable docking and viewporting
     // Setup Dear ImGui context
@@ -195,7 +197,9 @@ void UIDebug::Destroy()
 {
     isInitted = false;
 
+#ifdef EDITOR
     viewportInpContext.reset();
+#endif
 
     ImGui_ImplDX11_Shutdown();
     ImGui_ImplWin32_Shutdown();
