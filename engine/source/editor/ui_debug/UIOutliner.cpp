@@ -88,6 +88,12 @@ void Outliner::Draw()
             return; // no scene loaded
         }
     }
+    if (!gSceneTree->IsValidHandle(selectedNode))
+    {
+        selectedNode = root;
+        SceneTree::Entity& rootEntity = gSceneTree->Get(root);
+        rootEntity.isSelected = true;
+    }
 
     const bool isOutlinerFocused = ImGui::IsWindowFocused();
     if (isOutlinerFocused && !isFocused) {
