@@ -32,10 +32,12 @@
 #include "input/InputDevice.h"
 
 #include "logs/Logs.h"
+#include "shared/Shared.h"
 
 #ifdef EDITOR
 #include "editor/runtime/EditorRuntime.h"
 #endif
+#include <game/PrefabLoader.h>
 
 #define DRAG_SPEED 0.01f
 
@@ -100,6 +102,7 @@ void UIDebug::TestDraw()
     ImGuiIO& io = ImGui::GetIO(); (void)io;
 #ifdef EDITOR
     {
+        // Docking space
         {
             ImVec2 wSize{
                 (float)gRenderSys->GetRenderer()->GetWindow()->GetWidth(),
@@ -109,6 +112,70 @@ void UIDebug::TestDraw()
             imViewPort->Size = wSize;
             imViewPort->WorkSize = wSize;
             ImGui::DockSpaceOverViewport(0, imViewPort);
+        }
+
+        {
+            if (ImGui::BeginMainMenuBar())
+            {
+                if (ImGui::BeginMenu("Assets"))
+                {
+                    if (ImGui::BeginMenu("Add Component"))
+                    {
+
+                        Triad::FileIO::FPath componentPath = "./assets/components";
+                        Triad::FileIO::FPath assetsPath = "./assets";
+
+                        Triad::FileIO::IterateDirectory(
+                            componentPath,
+                            [assetsPath, componentPath] (YAML::Node scriptDesc, const Triad::FileIO::FPath path) {
+                                std::string fileName = std::filesystem::relative(path, componentPath).stem().string();
+                                std::string filePath = std::filesystem::relative(path, assetsPath).generic_string();
+
+                                if (ImGui::MenuItem(fileName.c_str()))
+                                {
+                                    // Add prefab to the scene
+                                    ResTag tag = ResTag(ToStrid("res://" + filePath));
+
+                                    SceneTree::Entity& rootEntity = gSceneTree->Get(gSceneTree->GetRoot());
+                                    PrefabLoader::Create(tag, &rootEntity.obj);
+                                }
+                            },
+                            ".component"
+                        );
+
+                        ImGui::EndMenu();
+                    }
+                    if (ImGui::BeginMenu("Add Prefab"))
+                    {
+                        Triad::FileIO::FPath prefabPath = "./assets/prefabs";
+                        Triad::FileIO::FPath assetsPath = "./assets";
+                        Triad::FileIO::IterateDirectory(
+                            prefabPath,
+                            [assetsPath, prefabPath](YAML::Node scriptDesc, const Triad::FileIO::FPath path) {
+                                std::string fileName = std::filesystem::relative(path, prefabPath).stem().string();
+                                std::string filePath = std::filesystem::relative(path, assetsPath).generic_string();
+                                
+                                if (ImGui::MenuItem(fileName.c_str()))
+                                {
+                                    // Add prefab to the scene
+                                    ResTag tag = ResTag(ToStrid("res://" + filePath));
+
+                                    SceneTree::Entity& rootEntity = gSceneTree->Get(gSceneTree->GetRoot());
+                                    PrefabLoader::Create(tag, &rootEntity.obj);
+
+                                }
+                            },
+                            ".prefab"
+                        );
+
+                        ImGui::EndMenu();
+                    }
+
+                    ImGui::EndMenu();
+                }
+
+                ImGui::EndMainMenuBar();
+            }
         }
 
         // Outliner
@@ -601,6 +668,8 @@ void UIDebug::DrawAdditionalFields(ScriptObject* obj)
         case asTYPEID_APPOBJECT:
         {
             ImGui::SeparatorText(("App Object: " + name).c_str());
+
+            CNativeObject** currentValueNativeObject = static_cast<CNativeObject**>(currentValuePointer);
 
             break;
         }
