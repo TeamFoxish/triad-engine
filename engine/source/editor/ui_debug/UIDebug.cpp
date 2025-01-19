@@ -33,6 +33,7 @@
 #include "scripts/ScriptSystem.h"
 #include "scripts/ScriptObject.h"
 #include "input/InputDevice.h"
+#include "resource/ResourceSystem.h"
 
 #include "logs/Logs.h"
 #include "shared/Shared.h"
@@ -138,6 +139,7 @@ void UIDebug::TestDraw()
                                 {
                                     // Add prefab to the scene
                                     ResTag tag = ResTag(ToStrid("res://" + filePath));
+                                    gResourceSys->LoadResource(tag);
 
                                     SceneTree::Entity& rootEntity = gSceneTree->Get(gSceneTree->GetRoot());
                                     std::optional<YAML::Node> sceneDesc = SceneLoader::FindSpawnedComponent(rootEntity.obj);
@@ -179,6 +181,7 @@ void UIDebug::TestDraw()
                                 {
                                     // Add prefab to the scene
                                     ResTag tag = ResTag(ToStrid("res://" + filePath));
+                                    gResourceSys->LoadResource(tag);
 
                                     SceneTree::Entity& rootEntity = gSceneTree->Get(gSceneTree->GetRoot());
                                     std::optional<YAML::Node> sceneDesc = SceneLoader::FindSpawnedComponent(rootEntity.obj);
