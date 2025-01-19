@@ -1,6 +1,8 @@
 class SingleSoundComponent : Component {
     protected Sound::Event event;
+    [Editable]
     protected bool allowFadeOnDestroy = true;
+    [Show]
     protected bool isPlaying = false;
 
     protected string eventName;

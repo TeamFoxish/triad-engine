@@ -56,3 +56,15 @@ CScriptBuilder* ScriptLoader::GetBuilderByModule(const std::string &module)
 {
     return _loadedModules[module];
 }
+
+std::vector<std::string> ScriptLoader::GetPropertyMetadata(int holderTypeId, asUINT fieldIdx)
+{
+    for (const auto& [moduleName, builder] : _loadedModules) {
+        const std::vector<std::string> attributes = 
+            builder->GetMetadataForTypeProperty(holderTypeId, (int)fieldIdx);
+        if (!attributes.empty()) {
+            return attributes;
+        }
+    }
+    return std::vector<std::string>();
+}

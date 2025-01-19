@@ -4,7 +4,9 @@ class TestComponent : Component {
         super(@parent);
     }
 
+    [Editable]
     int someInt = 1;
+    [Editable]
     float someFloat = 30.0;
     string someString = "Same";
     Material material;

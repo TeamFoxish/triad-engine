@@ -40,7 +40,11 @@
 
 #ifdef EDITOR
 #include "editor/runtime/EditorRuntime.h"
-#endif
+#include "EditorInspector.h"
+
+static std::unique_ptr<EditorInspector> inspector;
+#endif // EDITOR
+
 #include <game/PrefabLoader.h>
 
 #define DRAG_SPEED 0.01f
@@ -234,10 +238,21 @@ void UIDebug::TestDraw()
 
         // Outliner
         {
+            static SceneTree::Handle prevSelected = outliner.GetSelectedNode();
             if (!ImGuizmo::IsOver()) {
                 outliner.Update();
             }
             outliner.Draw();
+            const SceneTree::Handle selectedNode = outliner.GetSelectedNode();
+            if (selectedNode != prevSelected) {
+                // change inspector view
+                if (selectedNode == SceneTree::Handle{}) {
+                    inspector.reset();
+                } else {
+                    inspector = std::make_unique<EditorInspector>(selectedNode);
+                }
+                prevSelected = selectedNode;
+            }
         }
 
         // File system
@@ -528,7 +543,10 @@ void UIDebug::DrawGizmo()
                     SceneLoader::UpdateSpawnedComponentTransform(node);
                 }
 
-                DrawAdditionalFields(&entity.obj);
+                //DrawAdditionalFields(&entity.obj);
+                if (inspector) {
+                    inspector->Draw();
+                }
 
                 ImGui::End();
             }
@@ -577,7 +595,6 @@ void UIDebug::DrawAdditionalFields(ScriptObject* obj)
 {
     void* currentValuePointer;
     int fieldType;
-    LOG_INFO("min = {}", sizeof(uint8_t));
 
     for (asUINT prop = 0; prop < obj->GetRaw()->GetPropertyCount(); ++prop)
     {

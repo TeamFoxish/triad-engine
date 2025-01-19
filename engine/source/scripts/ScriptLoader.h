@@ -17,6 +17,8 @@ public:
 	void Build();
 	CScriptBuilder* GetBuilderByModule(const std::string& module);
 
+	static std::vector<std::string> GetPropertyMetadata(int holderTypeId, asUINT fieldIdx);
+
 	static std::unique_ptr<ResourceLoader> CreateInstance()
 	{
 		return std::make_unique<ScriptLoader>();

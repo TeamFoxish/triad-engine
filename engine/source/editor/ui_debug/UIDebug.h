@@ -16,7 +16,6 @@ class Window;
 class Component;
 class CompositeComponent;
 
-
 class UIDebug
 {
 public:
