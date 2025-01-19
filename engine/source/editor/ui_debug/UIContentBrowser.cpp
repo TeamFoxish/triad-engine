@@ -21,6 +21,7 @@ static const std::filesystem::path components_dir = "assets\\components";
 static const std::filesystem::path materials_dir = "assets\\materials";
 static const std::filesystem::path scenes_dir = "assets\\scenes";
 static const std::filesystem::path scripts_dir = "assets\\scripts";
+static std::filesystem::path file_to_delete;
 
 static bool openFileNameWnd = false;
 
@@ -59,7 +60,7 @@ void ContentBrowser::Draw()
         }
     }
 
-    ImGui::SeparatorText("");
+    ImGui::Separator();
 
     static float padding = 16.f;
     static float thumbnailSize = 75.f;
@@ -72,22 +73,33 @@ void ContentBrowser::Draw()
 
     ImGui::Columns(columnCount, 0, false);
 
+
     for (auto& dirEntry : std::filesystem::directory_iterator(curr_dir))
     {
         const auto& path = dirEntry.path();
         auto relativePath = std::filesystem::relative(path, assets_dir);
-        std::string filenameString = relativePath.filename().string(); // ToDo: replace std::string or else it will crash on Russian names or other languages
+        std::string filenameString = relativePath.filename().generic_string();
 
-        if (dirEntry.is_directory())
-            ImGui::ImageButton(filenameString.c_str(), (ImTextureID)directoryTexture, { thumbnailSize, thumbnailSize });
-        else
-            ImGui::ImageButton(filenameString.c_str(), (ImTextureID)fileTexture, { thumbnailSize, thumbnailSize });
+        auto& texture = dirEntry.is_directory() ? directoryTexture : fileTexture;
+        ImGui::ImageButton(filenameString.c_str(), (ImTextureID)texture, { thumbnailSize, thumbnailSize });
 
-        if (dirEntry.is_directory() && ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+        if (ImGui::IsItemHovered())
         {
-            curr_dir /= path.filename();
+            if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+            {
+                file_to_delete = dirEntry;
+                ImGui::OpenPopup("asset_popup");
+            }
+            else if (dirEntry.is_directory() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+            {
+                curr_dir /= path.filename();
+            }
         }
-        else if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+        else if (
+            ImGui::IsMouseClicked(ImGuiMouseButton_Right)
+            && !ImGui::IsPopupOpen("asset_popup")
+            && ImGui::IsWindowHovered(ImGuiHoveredFlags_None)
+            )
         {
             ImGui::OpenPopup("cont_brows_popup");
         }
@@ -98,20 +110,128 @@ void ContentBrowser::Draw()
 
     ImGui::Columns(1);
 
-    // ToDo: add delete files option
-    //if (ImGui::BeginPopup("asset_popup"))
-    //{
-    //    if (ImGui::MenuItem("Delete Item"))
-    //    {
-    //        // DeleteFolderOrAsset();
-    //    }
+    DrawPopups();
 
-    //    ImGui::EndPopup();
-    //}
+    // File dialog window
+    if (ImGuiFD::BeginDialog("Choose Asset")) {
+        if (ImGuiFD::ActionDone()) {
+            if (ImGuiFD::SelectionMade())
+            {
+                std::string filename = ImGuiFD::GetSelectionNameString(0);
+                std::filesystem::path copy_to = curr_dir.string() + "\\" + ImGuiFD::GetSelectionNameString(0);
+                TryChangeFileName(copy_to, filename);
+                copy_to = curr_dir.string() + "\\" + filename;
 
+                std::filesystem::copy_file(std::filesystem::path(ImGuiFD::GetSelectionPathString(0)), copy_to);
+            }
+            ImGuiFD::CloseCurrentDialog();
+        }
+        ImGuiFD::EndDialog();
+    }
+
+    ImGui::End();
+}
+
+ContentBrowser::~ContentBrowser()
+{
+    directoryTexture->Release();
+    fileTexture->Release();
+}
+
+void ContentBrowser::CreateNewFile(const std::string& dirTo, const std::string& fileName, const std::string& expansion)
+{
+    std::string newAssetPath = dirTo + "\\" + fileName + expansion;
+    std::ofstream ofs(newAssetPath);
+    ofs.close();
+}
+
+void ContentBrowser::CreateComponent(const std::string& fileName)
+{
+    if (
+        std::filesystem::exists(std::filesystem::path(components_dir.string() + "\\" + fileName + ".component"))
+        || std::filesystem::exists(std::filesystem::path(components_dir.string() + "\\" + fileName + ".as"))
+        || std::filesystem::exists(std::filesystem::path(components_dir.string() + "\\" + fileName + ".script"))
+        )
+    {
+        return;
+    }
+
+    CreateNewFile(components_dir.string(), fileName, ".component");
+    CreateNewFile(scripts_dir.string(), fileName, ".as");
+    CreateNewFile(scripts_dir.string(), fileName, ".script");
+}
+
+void ContentBrowser::CreateScript(const std::string& fileName)
+{
+    if (
+        std::filesystem::exists(std::filesystem::path(components_dir.string() + "\\" + fileName + ".as"))
+        || std::filesystem::exists(std::filesystem::path(components_dir.string() + "\\" + fileName + ".script"))
+        )
+    {
+        return;
+    }
+
+    CreateNewFile(scripts_dir.string(), fileName, ".as");
+    CreateNewFile(scripts_dir.string(), fileName, ".script");
+}
+
+void ContentBrowser::CreateMaterial(const std::string& fileName)
+{
+    if (std::filesystem::exists(std::filesystem::path(components_dir.string() + "\\" + fileName + ".material")))
+    {
+        return;
+    }
+
+    CreateNewFile(materials_dir.string(), fileName, ".material");
+}
+
+void ContentBrowser::DrawPopups()
+{
+    // Content browser files manipulations
+    static bool open_confirm_w = false;
+    if (ImGui::BeginPopup("asset_popup"))
+    {
+        if (ImGui::MenuItem("Delete Item"))
+        {
+            open_confirm_w = true;
+        }
+        ImGui::EndPopup();
+    }
+
+    if (open_confirm_w)
+    {
+        ImGui::OpenPopup("confirm_popup");
+    }
+
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+    if (ImGui::BeginPopupModal("confirm_popup", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        ImGui::Text("Are you really want to delete\n%s?", file_to_delete.filename().string().c_str());
+        ImGui::Separator();
+
+        if (ImGui::Button("OK", ImVec2(120, 0)))
+        {
+            std::filesystem::remove_all(file_to_delete);
+            file_to_delete.clear();
+            open_confirm_w = false;
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::SetItemDefaultFocus();
+        ImGui::SameLine();
+
+        if (ImGui::Button("Cancel", ImVec2(120, 0)))
+        {
+            open_confirm_w = false;
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+    }
+
+    // Content browser popup
     if (ImGui::BeginPopup("cont_brows_popup"))
     {
-        // ToDo: replace if into foreach (?)
         if (ImGui::BeginMenu("Add Asset"))
         {
             if (ImGui::MenuItem("Create Component"))
@@ -142,106 +262,68 @@ void ContentBrowser::Draw()
         ImGui::EndPopup();
     }
 
+    // File name popup
     if (openFileNameWnd)
     {
         ImGui::OpenPopup("Create File");
+    }
 
-        ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-        ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+    //ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+    if (ImGui::BeginPopupModal("Create File", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        static std::string fileName = "asset";
 
-        if (ImGui::BeginPopupModal("Create File", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+        ImGui::InputText("File Name", &fileName);
+
+        if (ImGui::Button("Create", ImVec2(120, 0)))
         {
-            static std::string fileName = "asset";
-
-            ImGui::InputText("File Name", &fileName);
-            
-            if (ImGui::Button("Cancel"))
+            // ToDo: check if name is correct
+            switch (a_type)
             {
-                fileName = "asset";
-                openFileNameWnd = false;
-                ImGui::CloseCurrentPopup();
-            }
-            ImGui::SameLine();
+            case assetsTypes::Component:
+                CreateComponent(fileName);
+                break;
 
-            if (ImGui::Button("Create"))
-            {
-                // ToDo: check if the same file exists
-                // ToDo: check if name is correct
-                // ToDo: redo switch case
-                switch (a_type)
-                {
-                case assetsTypes::Component:
-                    CreateComponent(fileName);
-                    break;
+            case assetsTypes::Script:
+                CreateScript(fileName);
+                break;
 
-                case assetsTypes::Script:
-                    CreateScript(fileName);
-                    break;
+            case assetsTypes::Material:
+                CreateMaterial(fileName);
+                break;
 
-                case assetsTypes::Material:
-                    CreateMaterial(fileName);
-                    break;
-
-                case assetsTypes::None:
-                default:
-                    break;
-                }
-
-                fileName = "asset";
-                openFileNameWnd = false;
-                a_type = assetsTypes::None;
-                ImGui::CloseCurrentPopup();
+            case assetsTypes::None:
+            default:
+                break;
             }
 
-            ImGui::EndPopup();
+            fileName = "asset";
+            openFileNameWnd = false;
+            a_type = assetsTypes::None;
+            ImGui::CloseCurrentPopup();
         }
-    }
 
+        ImGui::SetItemDefaultFocus();
+        ImGui::SameLine();
 
-    if (ImGuiFD::BeginDialog("Choose Asset")) {
-        if (ImGuiFD::ActionDone()) {
-            if (ImGuiFD::SelectionMade()) 
-            {
-                // ToDo: check if the same file exists
-                // ToDo: check if name is correct
-                std::filesystem::path copy_to = curr_dir.string() + "\\" + ImGuiFD::GetSelectionNameString(0);
-                std::filesystem::copy_file(std::filesystem::path(ImGuiFD::GetSelectionPathString(0)), copy_to);
-            }
-            ImGuiFD::CloseCurrentDialog();
+        if (ImGui::Button("Cancel", ImVec2(120, 0)))
+        {
+            fileName = "asset";
+            openFileNameWnd = false;
+            ImGui::CloseCurrentPopup();
         }
-        ImGuiFD::EndDialog();
+        ImGui::EndPopup();
     }
-
-    ImGui::End();
 }
 
-ContentBrowser::~ContentBrowser()
+void ContentBrowser::TryChangeFileName(std::filesystem::path path, std::string& filename)
 {
-    directoryTexture->Release();
-    fileTexture->Release();
-}
+    static std::unordered_map<std::string, uint8_t> file_counter;
 
-void ContentBrowser::CreateNewFile(const std::string& dirTo, const std::string& fileName, const std::string& expansion)
-{
-    std::string newAssetPath = dirTo + "\\" + fileName + expansion;
-    std::ofstream ofs(newAssetPath);
-    ofs.close();
-}
-
-void ContentBrowser::CreateComponent(const std::string& fileName)
-{
-    CreateNewFile(components_dir.string(), fileName, ".component");
-    CreateNewFile(scripts_dir.string(), fileName, ".as");
-    CreateNewFile(scripts_dir.string(), fileName, ".script");
-}
-
-void ContentBrowser::CreateScript(const std::string& fileName)
-{
-    CreateNewFile(scripts_dir.string(), fileName, ".as");
-    CreateNewFile(scripts_dir.string(), fileName, ".script");
-}
-
-void ContentBrowser::CreateMaterial(const std::string& fileName)
-{
-    CreateNewFile(materials_dir.string(), fileName, ".material");
+    if (std::filesystem::exists(path))
+    {
+        file_counter[filename]++;
+        filename = std::format("{}_{}", filename, file_counter[filename]);
+    }
 }

@@ -20,6 +20,9 @@ private:
     void CreateScript(const std::string& fileName);
     void CreateMaterial(const std::string& fileName);
 
+    void DrawPopups();
+    void TryChangeFileName(std::filesystem::path path, std::string& filename);
+
 private:
     std::filesystem::path curr_dir;
 
