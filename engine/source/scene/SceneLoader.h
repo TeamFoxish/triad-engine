@@ -73,9 +73,11 @@ public:
 
 	static void RemoveEmptyOverrides(YAML::Node& scnNode);
 
+	// only for components that are part of scene file
 	static void AddSpawnedComponent(const ScriptObject& obj, const YAML::Node& desc);
 	static void RemoveSpawnedComponent(SceneTree::Handle handle);
 	static std::optional<YAML::Node> FindSpawnedComponent(const ScriptObject& obj);
+	static void UpdateSpawnedComponentTransform(SceneTree::Handle handle);
 
 private:
 	// Links components refs to actual components

@@ -7,6 +7,7 @@
 #include "scripts/ScriptSystem.h"
 #include "scriptarray.h"
 #include "resource/ResourceBuilder.h"
+#include "shared/SharedStorage.h"
 #include "logs/Logs.h"
 
 #include <memory>
@@ -312,4 +313,44 @@ std::optional<YAML::Node> SceneLoader::FindSpawnedComponent(const ScriptObject& 
 	assert(obj.GetRaw());
 	const auto iter = spawnedComponents.find(obj.GetRaw());
 	return iter != spawnedComponents.end() ? std::make_optional(iter->second) : std::nullopt;
+}
+
+void SceneLoader::UpdateSpawnedComponentTransform(SceneTree::Handle handle)
+{
+	if (!gSceneTree->IsValidHandle(handle)) {
+		// log error
+		return;
+	}
+	const SceneTree::Entity& entity = gSceneTree->Get(handle);
+	const Math::Transform& transform = SharedStorage::Instance().transforms.AccessRead(entity.transform);
+	std::optional<YAML::Node> sceneNodeOpt = FindSpawnedComponent(entity.obj);
+	if (!sceneNodeOpt) {
+		// log errror
+		return;
+	}
+
+	YAML::Node& sceneNode = (*sceneNodeOpt)["overrides"]["transform"] = YAML::Node();
+	const Math::Vector3 localPos = transform.GetLocalPosition();
+	if (localPos != Math::Vector3::Zero) {
+		YAML::Node& posNode = sceneNode["position"] = YAML::Node();
+		posNode["x"] = localPos.x;
+		posNode["y"] = localPos.y;
+		posNode["z"] = localPos.z;
+	}
+	const Math::Quaternion localRot = transform.GetLocalRotation();
+	if (localRot != Math::Quaternion::Identity) {
+		// Computes rotation about y-axis (y), then x-axis (x), then z-axis (z)
+		const Math::Vector3 euler = Math::RadToDeg(localRot.ToEuler());
+		YAML::Node& rotNode = sceneNode["rotation"] = YAML::Node();
+		rotNode["x"] = euler.y;
+		rotNode["y"] = euler.x;
+		rotNode["z"] = euler.z;
+	}
+	const Math::Vector3 localScale = transform.GetLocalScale();
+	if (localScale != Math::Vector3(1.0f)) {
+		YAML::Node& scaleNode = sceneNode["scale"] = YAML::Node();
+		scaleNode["x"] = localScale.x;
+		scaleNode["y"] = localScale.y;
+		scaleNode["z"] = localScale.z;
+	}
 }

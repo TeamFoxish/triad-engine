@@ -473,12 +473,15 @@ void UIDebug::DrawGizmo()
 
                 ImGui::SeparatorText("");
 
+                bool transformChanged = false;
+
                 // Position
                 const Math::Vector3 pos = trs.GetLocalPosition();
                 Math::Vector3 newPos = pos;
                 DrawVec3Control("Position", newPos, DRAG_SPEED);
                 if (Math::Vector3::DistanceSquared(newPos, pos) > Math::Epsilon) {
                     trs.SetLocalPosition(newPos);
+                    transformChanged = true;
                 }
 
                 // Rotation
@@ -493,6 +496,7 @@ void UIDebug::DrawGizmo()
                     rot *= Math::Quaternion::CreateFromAxisAngle(Math::Vector3::UnitX, delta.x);
                     rot *= Math::Quaternion::CreateFromAxisAngle(Math::Vector3::UnitZ, delta.z);
                     trs.SetLocalRotation(rot);
+                    transformChanged = true;
                 }
 
                 // Scale
@@ -501,6 +505,11 @@ void UIDebug::DrawGizmo()
                 DrawVec3Control("Scale", newScale, DRAG_SPEED, 0.f, 100.f);
                 if (Math::Vector3::DistanceSquared(newScale, scale) > Math::Epsilon) {
                     trs.SetLocalScale(newScale);
+                    transformChanged = true;
+                }
+
+                if (transformChanged) {
+                    SceneLoader::UpdateSpawnedComponentTransform(node);
                 }
 
                 DrawAdditionalFields(&entity.obj);
@@ -531,6 +540,7 @@ void UIDebug::DrawGizmo()
 
             if (ImGuizmo::Manipulate((float*)viewMatrix.m, (float*)projectionMatrix.m, operation, gizmoSpace == (int)GizmoSpace::World ? ImGuizmo::WORLD : ImGuizmo::LOCAL, (float*)matr.m)) {
                 trs.SetMatrix(matr);
+                SceneLoader::UpdateSpawnedComponentTransform(node);
             }
         }
     }

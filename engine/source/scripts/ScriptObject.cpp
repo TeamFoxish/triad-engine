@@ -983,7 +983,7 @@ bool ScriptObject::GetChildSceneRepr(std::string_view name, YAML::Node& out) con
 {
     std::optional<YAML::Node> compSceneRepr = SceneLoader::FindSpawnedComponent(*this);
     if (compSceneRepr) {
-        const YAML::Node& childNode = (*compSceneRepr)["overrides"]["children"][name];
+        const YAML::Node& childNode = out = (*compSceneRepr)["overrides"]["children"][name];
         if (!childNode) {
             out = (*compSceneRepr)["overrides"]["children"][name] = YAML::Node();
         }
