@@ -112,13 +112,17 @@ void UIDebug::TestDraw()
     {
         // Docking space
         {
-            ImVec2 wSize{
-                (float)gRenderSys->GetRenderer()->GetWindow()->GetWidth(),
-                (float)gRenderSys->GetRenderer()->GetWindow()->GetHeigth()
+            const ImVec2 wSize{
+                (float)gRenderSys->GetRenderer()->GetWindow()->GetBorderedWidth(),
+                (float)gRenderSys->GetRenderer()->GetWindow()->GetBorderedHeight()
+            };
+            const ImVec2 wWorkSize{
+                (float)gRenderSys->GetRenderer()->GetWindow()->GetClientWidth(),
+                (float)gRenderSys->GetRenderer()->GetWindow()->GetClientHeight() - 20
             };
             ImGuiViewport* imViewPort = ImGui::GetMainViewport();
             imViewPort->Size = wSize;
-            imViewPort->WorkSize = wSize;
+            imViewPort->WorkSize = wWorkSize;
             ImGui::DockSpaceOverViewport(0, imViewPort);
         }
 
@@ -337,6 +341,7 @@ void UIDebug::Destroy()
 
 #ifdef EDITOR
     viewportInpContext.reset();
+    inspector.reset();
 #endif
 
     ImGui_ImplDX11_Shutdown();

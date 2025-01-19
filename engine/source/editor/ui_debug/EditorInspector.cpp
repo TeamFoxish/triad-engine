@@ -3,9 +3,11 @@
 #include "EditorInspector.h"
 
 #include "scripts/ScriptLoader.h"
+#include "scripts/ScriptSystem.h"
 #include "logs/Logs.h"
 
 #include "imgui.h"
+#include "misc/cpp/imgui_stdlib.h"
 
 #undef max
 #undef min
@@ -111,6 +113,31 @@ struct FieldTypes {
             }
         }
     };
+
+    class FieldText : public FieldBase {
+    public:
+        FieldText(FieldIdx idx, FieldAttributes flags)
+            : FieldBase(idx, flags)
+        {
+        }
+
+        virtual void Show(const SceneTree::Entity& entity) override 
+        {
+            ObjRaw* obj = entity.obj.GetRaw();
+            assert(obj);
+            assert(fieldIdx < obj->GetPropertyCount());
+            const char* name = obj->GetPropertyName(fieldIdx);
+            void* ptr = obj->GetAddressOfProperty(fieldIdx);
+            if (!ptr) {
+                // log error
+                return;
+            }
+            std::string* str = static_cast<std::string*>(ptr);
+            if (ImGui::InputText(name, str)) {
+                UpdateSceneNodeValue(entity, name, *str);
+            }
+        }
+    };
 };
 
 EditorInspector::EditorInspector(SceneTree::Handle entHandle)
@@ -167,11 +194,6 @@ EditorInspector::Component::Component(const SceneTree::Entity& entity)
             continue; // do not add field which is not shown
         }
 
-        const void* data = obj->GetAddressOfProperty(idx);
-        if (!data) {
-            continue;
-        }
-
         switch (propTypeId) {
             case asTYPEID_VOID: {
                 break;
@@ -219,6 +241,14 @@ EditorInspector::Component::Component(const SceneTree::Entity& entity)
             case asTYPEID_DOUBLE: {
                 fields.push_back(std::make_unique<FieldTypes::FieldNumber<double, ImGuiDataType_Double, FieldTypes::FloatingFormat>>(idx, flags));
                 break;
+            }
+            default: {
+                if ((propTypeId & asTYPEID_APPOBJECT) != 0) {
+                    if (propTypeId == gScriptSys->GetStringType()->GetTypeId()) {
+                        fields.push_back(std::make_unique<FieldTypes::FieldText>(idx, flags));
+                        return;
+                    }
+                }
             }
         }
     }
