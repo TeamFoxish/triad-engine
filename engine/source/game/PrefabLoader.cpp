@@ -49,6 +49,7 @@ ScriptObject* PrefabLoader::Create(ResTag tag, ScriptObject* parent, YAML::Node*
 		args = {{asTYPEID_MASK_OBJECT, parent->GetRaw()}};
 	}
 	ScriptObject* root = new ScriptObject("Engine", "CompositeComponent", std::move(args)); // TODO: prefab may have a different scriptable type as root (not CompositeComponent)
+	ComponentLoader::AddComponentTag(*root, tag);
 
 	// scene node reference
 	YAML::Node childrenSceneNode;

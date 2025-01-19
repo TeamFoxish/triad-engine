@@ -8,6 +8,7 @@
 #include "game/GameBindings.h"
 #include "scene/SceneLoader.h"
 #include "editor/runtime/EditorRuntime.h"
+#include "UIDebug.h"
 
 #include "imgui.h"
 
@@ -22,6 +23,10 @@ void Outliner::InputContext::ProceedInput(InputDevice* device)
 {
     if (device->IsKeyDown(Keys::Delete)) {
         outliner->DestroySelectedNode();
+        return;
+    }
+    if (device->IsKeyHold(Keys::LeftControl) && device->IsKeyDown(Keys::S)) {
+        UIDebug::SaveSceneAction();
     }
 }
 

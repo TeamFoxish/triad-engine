@@ -31,7 +31,7 @@ public:
 
 	static std::unique_ptr<ScriptObject> CreateScene(ResTag tag);
 
-	static void SaveScene(ResTag tag, SceneTree::Handle sceneRootHandle);
+	static void SaveScene(SceneTree::Handle sceneRootHandle);
 
 	static std::unique_ptr<ResourceLoader> CreateInstance()
 	{

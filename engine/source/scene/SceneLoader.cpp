@@ -7,6 +7,7 @@
 #include "scripts/ScriptSystem.h"
 #include "scriptarray.h"
 #include "resource/ResourceBuilder.h"
+#include "resource/ResourceSystem.h"
 #include "shared/SharedStorage.h"
 #include "logs/Logs.h"
 
@@ -32,6 +33,7 @@ std::unique_ptr<ScriptObject> SceneLoader::CreateScene(ResTag tag)
 	const YAML::Node& sceneDesc = _scenes[tag];
 	ScriptObject::ArgsT args = {{asTYPEID_MASK_OBJECT, nullptr}};
 	std::unique_ptr<ScriptObject> root = std::make_unique<ScriptObject>("Engine", "CompositeComponent", std::move(args)); // currently scene has no parent
+	ComponentLoader::AddComponentTag(*root, tag); // remove?
 
 	YAML::Node editableSceneDesc = YAML::Clone(sceneDesc);
 	AddSpawnedComponent(*root, editableSceneDesc);
@@ -74,13 +76,28 @@ std::unique_ptr<ScriptObject> SceneLoader::CreateScene(ResTag tag)
 	return root;
 }
 
-void SceneLoader::SaveScene(ResTag tag, SceneTree::Handle sceneRootHandle)
+void SceneLoader::SaveScene(SceneTree::Handle sceneRootHandle)
 {
-	// build yaml representation of sceneObj
-	// locate source file by tag
-	// save scene
-
-	
+	if (!gSceneTree->IsValidHandle(sceneRootHandle)) {
+		// log error
+		return;
+	}
+	const SceneTree::Entity& entity = gSceneTree->Get(sceneRootHandle);
+	const ResTag tag = GetSceneTag(entity.obj);
+	ResPath path;
+	if (!gResourceSys->ResolveTagToFile(tag, path)) {
+		LOG_ERROR("failed to save scene '{}' with tag '{}'. unable to resolve resource tag to file (file not found)", entity.name, tag.string());
+		return;
+	}
+	const YAML::Node sceneRes = SceneLoader::BuildSceneYaml(gSceneTree->GetRoot());
+	if (!sceneRes || sceneRes.IsNull()) {
+		LOG_ERROR("failed to save scene '{}' with tag '{}'. failed to build scene yaml resource", entity.name, tag.string());
+		return;
+	}
+	std::ofstream out(path);
+	out << sceneRes << std::endl;
+	out.flush();
+	out.close();
 }
 
 std::unique_ptr<ScriptObject> GetChild(const std::unique_ptr<ScriptObject>& root, const std::string& childName) {

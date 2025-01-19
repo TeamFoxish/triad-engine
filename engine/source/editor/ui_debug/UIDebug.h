@@ -27,6 +27,8 @@ public:
 
 		InputTarget GetInputTarget() const override { return InputTarget::Game; }
 	};
+
+	static void SaveSceneAction();
 #endif
 
 	static void Init(Window* window);
@@ -69,7 +71,7 @@ public:
 private:
 	static void DrawGizmo();
 	static void DrawAdditionalFields(ScriptObject* obj);
-	
+
 public:
 	static inline Outliner outliner; // TODO: remove
 	static inline ContentBrowser contentBrowser; // TODO: remove

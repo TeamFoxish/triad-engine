@@ -121,11 +121,27 @@ void UIDebug::TestDraw()
         {
             if (ImGui::BeginMainMenuBar())
             {
+                if (ImGui::BeginMenu("File"))
+                {
+                    //bool isSelected = false;
+                    if (start_simulation) {
+                        ImGui::BeginDisabled();
+                    }
+                    if (ImGui::MenuItem("Save scene"))
+                    {
+                        SaveSceneAction();
+                    }
+                    if (start_simulation) {
+                        ImGui::EndDisabled();
+                    }
+
+                    ImGui::EndMenu();
+                }
+
                 if (ImGui::BeginMenu("Assets"))
                 {
                     if (ImGui::BeginMenu("Add Component"))
                     {
-
                         Triad::FileIO::FPath componentPath = "./assets/components";
                         Triad::FileIO::FPath assetsPath = "./assets";
 
@@ -550,6 +566,10 @@ void UIDebug::ViewportInputContext::ProceedInput(InputDevice* device)
 {
     if (device->IsKeyDown(Keys::Delete)) {
         outliner.DestroySelectedNode();
+        return;
+    }
+    if (device->IsKeyHold(Keys::LeftControl) && device->IsKeyDown(Keys::S)) {
+        UIDebug::SaveSceneAction();
     }
 }
 
@@ -730,5 +750,15 @@ void UIDebug::DrawAdditionalFields(ScriptObject* obj)
         }
         }
     }
+}
+
+void UIDebug::SaveSceneAction()
+{
+    const SceneTree::Handle sceneRoot = gSceneTree->GetRoot();
+    if (!gSceneTree->IsValidHandle(sceneRoot)) {
+        LOG_ERROR("failed to save scene. no active scene was found at root");
+        return;
+    }
+    SceneLoader::SaveScene(sceneRoot);
 }
 #endif // EDITOR

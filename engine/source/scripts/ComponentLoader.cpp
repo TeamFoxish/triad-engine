@@ -62,6 +62,12 @@ ResTag ComponentLoader::GetComponentTag(const ScriptObject& obj)
     return iter != cachedCompTags.end() ? iter->second : ResTag{};
 }
 
+void ComponentLoader::AddComponentTag(const ScriptObject& obj, ResTag tag)
+{
+    assert(obj.GetRaw());
+    cachedCompTags[obj.GetRaw()] = tag;
+}
+
 const YAML::Node* ComponentLoader::GetComponentDesc(ResTag tag)
 {
     const auto iter = _components.find(tag);

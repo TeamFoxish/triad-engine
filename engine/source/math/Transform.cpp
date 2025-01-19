@@ -33,9 +33,10 @@ void Transform::SetMatrix(const Matrix& _matr)
 		updateMatrix = false;
 		return;
 	}
+	UpdateMatrix();
 	const Matrix origin = localToWorld * GetMatrix();
 	worldMatr = _matr;
-	Matrix localMatr = origin.Invert() * worldMatr;
+	Matrix localMatr = worldMatr * origin.Invert();
 	localMatr.Decompose(localScale, localRot, localPos);
 	localToWorld = localMatr.Invert();
 }

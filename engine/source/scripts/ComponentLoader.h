@@ -33,6 +33,8 @@ public:
 
 	static ResTag GetComponentTag(const ScriptObject& obj);
 
+	static void AddComponentTag(const ScriptObject& obj, ResTag tag);
+
 	static const YAML::Node* GetComponentDesc(ResTag tag);
 
 	static YAML::Node BuildCompYaml(SceneTree::Handle entHandle, const YAML::Node& origDesc);
