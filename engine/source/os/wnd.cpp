@@ -88,8 +88,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT umessage, WPARAM wparam, LPARAM lparam)
 
 			RAWINPUT* vertFloats = reinterpret_cast<RAWINPUT*>(lpb);
 
-			if (ignoreKeyboard)
-				printf("keyboard ignored");
 			if (vertFloats->header.dwType == RIM_TYPEKEYBOARD && !ignoreKeyboard)
 			{
 				//printf(" Kbd: make=%04i Flags:%04i Reserved:%04i ExtraInformation:%08i, msg=%04i VK=%i \n",

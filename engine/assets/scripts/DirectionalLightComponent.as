@@ -1,7 +1,7 @@
 class DirectionalLightComponent : CompositeComponent {
     protected DirectionalLight light;
 
-    DirectionalLightComponent(ICompositer@ parent) {
+    DirectionalLightComponent(ICompositer@ parent = null) {
         super(parent);
         light = DirectionalLight(GetTransform());
     }

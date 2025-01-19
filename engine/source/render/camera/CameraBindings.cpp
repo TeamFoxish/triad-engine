@@ -95,6 +95,7 @@ void RegisterCameraBindings()
 	int r;
 
 	r = engine->RegisterObjectType("Camera", sizeof(CCamera), asOBJ_VALUE | asGetTypeTraits<CCamera>() | asOBJ_APP_CLASS_MORE_CONSTRUCTORS); assert(r >= 0);
+	//CNativeObject::RecognizeNativeType(engine->GetTypeInfoById(r));
 	r = engine->RegisterObjectBehaviour("Camera", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(CCamera::CreateDefault), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("Camera", asBEHAVE_CONSTRUCT, "void f(const Math::Transform@+)", asFUNCTION(CCamera::CreateFromTransform), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("Camera", asBEHAVE_CONSTRUCT, "void f(Camera &in)", asFUNCTION(CCamera::CreateCopy), asCALL_CDECL_OBJFIRST); assert(r >= 0);

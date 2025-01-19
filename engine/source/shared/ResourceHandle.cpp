@@ -191,6 +191,7 @@ void RegisterResourceHandles()
 	{
 		const int typeId = r = 
 			engine->RegisterObjectType("ResourceHandle", sizeof(CResourceHandle), asOBJ_VALUE | asGetTypeTraits<CResourceHandle>()); assert(r >= 0);
+		CNativeObject::RecognizeNativeType(engine->GetTypeInfoById(r));
 		const int funcId = r = engine->RegisterObjectBehaviour("ResourceHandle", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(CResourceHandleDefaultConstructor), asCALL_CDECL_OBJLAST); assert(r >= 0);
 		//const int funcId = r = 
 			engine->RegisterObjectBehaviour("ResourceHandle", asBEHAVE_CONSTRUCT, "void f(const string &in)", asFUNCTION(CResourceHandleTagConstructor), asCALL_CDECL_OBJLAST); assert(r >= 0);
@@ -205,6 +206,7 @@ void RegisterResourceHandles()
 
 	// TODO: add ref on assign, sub ref on destruct
 	r = engine->RegisterObjectType("SoftRef<class T>", sizeof(CResourceHandleDynamic), asOBJ_VALUE | asOBJ_TEMPLATE | asGetTypeTraits<CResourceHandleDynamic>()); assert(r >= 0);
+	CNativeObject::RecognizeNativeType(engine->GetTypeInfoById(r));
 	r = engine->RegisterObjectBehaviour("SoftRef<T>", asBEHAVE_CONSTRUCT, "void f(int&in)", asFUNCTION(CDynamicHandleTemplateConstructor), asCALL_CDECL_OBJLAST); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("SoftRef<T>", asBEHAVE_CONSTRUCT, "void f(int&in, const string &in)", asFUNCTION(CDynamicHandleTagConstructor), asCALL_CDECL_OBJLAST); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("SoftRef<T>", asBEHAVE_DESTRUCT, "void f()", asFUNCTION(CDynamicHandleDestructor), asCALL_CDECL_OBJLAST); assert(r >= 0);
@@ -213,6 +215,7 @@ void RegisterResourceHandles()
 	r = engine->RegisterObjectMethod("SoftRef<T>", "bool IsValid() const", asMETHOD(CResourceHandleDynamic, IsValid), asCALL_THISCALL); assert(r >= 0);
 
 	r = engine->RegisterObjectType("Mesh", sizeof(CMeshHandle), asOBJ_VALUE | asGetTypeTraits<CMeshHandle>()); assert(r >= 0);
+	CNativeObject::RecognizeNativeType(engine->GetTypeInfoById(r));
 	r = engine->RegisterObjectBehaviour("Mesh", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(CMeshHandleDefaultConstructor), asCALL_CDECL_OBJLAST); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("Mesh", asBEHAVE_CONSTRUCT, "void f(const Mesh &in)", asFUNCTION(CMeshHandleCopyConstructor), asCALL_CDECL_OBJLAST); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("Mesh", asBEHAVE_CONSTRUCT, "void f(const string &in)", asFUNCTION(CMeshHandleTagConstructor), asCALL_CDECL_OBJLAST); assert(r >= 0);
@@ -220,6 +223,7 @@ void RegisterResourceHandles()
 	r = engine->RegisterObjectMethod("Mesh", "Mesh &opAssign(const Mesh &in)", asMETHODPR(CMeshHandle, operator=, (const CMeshHandle&), CMeshHandle&), asCALL_THISCALL); assert(r >= 0);
 
 	r = engine->RegisterObjectType("Material", sizeof(CMaterialHandle), asOBJ_VALUE | asGetTypeTraits<CMaterialHandle>()); assert(r >= 0);
+	CNativeObject::RecognizeNativeType(engine->GetTypeInfoById(r));
 	r = engine->RegisterObjectBehaviour("Material", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(CMaterialHandleDefaultConstructor), asCALL_CDECL_OBJLAST); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("Material", asBEHAVE_CONSTRUCT, "void f(const Material &in)", asFUNCTION(CMaterialHandleCopyConstructor), asCALL_CDECL_OBJLAST); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("Material", asBEHAVE_CONSTRUCT, "void f(const string &in)", asFUNCTION(CMaterialHandleTagConstructor), asCALL_CDECL_OBJLAST); assert(r >= 0);
@@ -227,6 +231,7 @@ void RegisterResourceHandles()
 	r = engine->RegisterObjectMethod("Material", "Material &opAssign(const Material &in)", asMETHODPR(CMaterialHandle, operator=, (const CMaterialHandle&), CMaterialHandle&), asCALL_THISCALL); assert(r >= 0);
 
 	r = engine->RegisterObjectType("Renderable", sizeof(CRenderable), asOBJ_VALUE | asGetTypeTraits<CRenderable>() | asOBJ_APP_CLASS_MORE_CONSTRUCTORS); assert(r >= 0);
+	CNativeObject::RecognizeNativeType(engine->GetTypeInfoById(r));
 	r = engine->RegisterObjectBehaviour("Renderable", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(CRenderableDefaultConstructor), asCALL_CDECL_OBJLAST); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("Renderable", asBEHAVE_CONSTRUCT, "void f(uint64, const Math::Transform@+)", asFUNCTION(CRenderableConstructor), asCALL_CDECL_OBJLAST); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("Renderable", asBEHAVE_CONSTRUCT, "void f(Renderable &in)", asFUNCTION(CRenderableCopyConstructor), asCALL_CDECL_OBJLAST); assert(r >= 0);

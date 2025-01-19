@@ -12,7 +12,7 @@ class OrbiterComponent : Component {
 
     void Update(float deltaTime) {
         UpdatePos(deltaTime);
-        Destroy();
+        //Destroy();
     }
 
     protected void UpdatePos(float deltaTime) {

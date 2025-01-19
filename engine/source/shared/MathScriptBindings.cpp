@@ -279,6 +279,7 @@ static void RegisterTransform()
 {
 	auto engine = gScriptSys->GetRawEngine();
 	int r = engine->RegisterObjectType("Transform", 0, asOBJ_REF); assert(r >= 0);
+	CNativeObject::RecognizeNativeType(engine->GetTypeInfoById(r));
 	r = engine->RegisterObjectBehaviour("Transform", asBEHAVE_FACTORY, "Transform@ f(const Transform@+ parent = null)", asFUNCTION(STransformHandleFactory), asCALL_CDECL); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("Transform", asBEHAVE_ADDREF, "void f()", asMETHOD(CTransformHandle, AddRef), asCALL_THISCALL); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("Transform", asBEHAVE_RELEASE, "void f()", asMETHOD(CTransformHandle, Release), asCALL_THISCALL); assert(r >= 0);

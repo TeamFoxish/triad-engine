@@ -1,7 +1,7 @@
 class PointLightComponent : CompositeComponent {
     protected PointLight light;
 
-    PointLightComponent(ICompositer@ parent) {
+    PointLightComponent(ICompositer@ parent = null) {
         super(parent);
         light = PointLight(GetTransform());
     }

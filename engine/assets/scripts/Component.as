@@ -1,5 +1,5 @@
 abstract class Component {
-    private ICompositer@ parent; // TODO: hold parent as weak ref
+    private ICompositer@ parent; // TODO: hold parent as id
     private string name;
     private string entityKey;
     private Scene::EntityId id;
@@ -13,6 +13,10 @@ abstract class Component {
         id = Scene::Tree::AddEntity(CreateEntity());
         entityKey = formatUInt(id);
     }
+
+    Component(Component@) delete;
+
+    Component@ opAssign(const Component@) delete;
 
     ~Component() {
         Destroy();
@@ -31,6 +35,7 @@ abstract class Component {
         Scene::Tree::RemoveEntity(id);
         if (parent !is null) {
             parent.RemoveChild(this);
+            @parent = null;
         }
     }
 

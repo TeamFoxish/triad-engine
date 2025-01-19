@@ -121,6 +121,12 @@ void EngineRuntime::RunSingleFrame(FrameParams&& params)
 
 void EngineRuntime::Shutdown()
 {
+	std::ofstream out("test.scene");
+	out << SceneLoader::BuildSceneYaml(gSceneTree->GetRoot()) << std::endl;
+	out.flush();
+	out.close();
+	UIDebug::start_simulation = false;
+
 	UIDebug::Destroy();
 	gTempGame->Shutdown();
 	// delete globalInputDevice; crushes

@@ -9,12 +9,13 @@ class CompositeComponent : Component, ICompositer {
         Scene::Tree::AddEntityTransform(GetId(), transform);
     }
 
+    CompositeComponent(CompositeComponent@) delete;
+
+    CompositeComponent@ opAssign(const CompositeComponent@) delete;
+
     Math::Transform@ GetTransform() const { return transform; }
 
     void SetTransform(const Math::Transform@ trs) { transform = trs; } // copy transform
-
-    // TODO: replace reference with handle
-    const array<Component@>& GetChildren() const { return children; }
 
     // TODO: extract user Init logic to OnInit
     void Init() {
@@ -57,9 +58,10 @@ class CompositeComponent : Component, ICompositer {
             return;
         }
         if (children !is null) {
-            for( int n = children.length() - 1; n >= 0; --n ) {
-                if (children[n] !is null) {
-                    children[n].Destroy();
+            array<Component@> childrenCopy = children;
+            for( int n = childrenCopy.length() - 1; n >= 0; --n ) {
+                if (childrenCopy[n] !is null) {
+                    childrenCopy[n].Destroy();
                 }
             }
             children.resize(0);

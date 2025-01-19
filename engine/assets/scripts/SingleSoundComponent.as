@@ -5,7 +5,7 @@ class SingleSoundComponent : Component {
 
     protected string eventName;
 
-    SingleSoundComponent(ICompositer@ parent) {
+    SingleSoundComponent(ICompositer@ parent = null) {
         super(parent);
     }
 

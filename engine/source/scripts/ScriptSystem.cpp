@@ -142,7 +142,7 @@ void ScriptSystem::AddComponentToContext(ScriptObject *component, uint64_t id)
 
 void ScriptSystem::SetScene(ScriptObject *sceneRoot)
 {
-    CallFunction("Engine", "void SetScene(SceneInstance@ scene)", [sceneRoot] (asIScriptContext* context) {
+    CallFunction("Engine", "void SetScene(CompositeComponent@ scene)", [sceneRoot] (asIScriptContext* context) {
         asIScriptObject* valObj = sceneRoot->GetRaw();
         context->SetArgObject(0, valObj);
     });

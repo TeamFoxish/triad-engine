@@ -1,7 +1,7 @@
-class SceneInstance : CompositeComponent {
+//class SceneInstance : CompositeComponent {
 
-    SceneInstance(ICompositer@ parent){
-        super(parent);
-    }
+//    SceneInstance(ICompositer@ parent = null){
+//        super(parent);
+//    }
     
-};
+//};

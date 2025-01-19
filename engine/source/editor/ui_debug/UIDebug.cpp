@@ -23,6 +23,9 @@
 #include "runtime/EngineRuntime.h"
 #include "game/Game.h"
 #include "scene/Scene.h"
+#include "scene/SceneLoader.h"
+#include "scene/SceneBindings.h"
+#include "scripts/ComponentLoader.h"
 #include "components/CompositeComponent.h"
 #include "game/ComponentStorage.h"
 #include "components/EditorCamera.h"
@@ -137,7 +140,24 @@ void UIDebug::TestDraw()
                                     ResTag tag = ResTag(ToStrid("res://" + filePath));
 
                                     SceneTree::Entity& rootEntity = gSceneTree->Get(gSceneTree->GetRoot());
-                                    PrefabLoader::Create(tag, &rootEntity.obj);
+                                    std::optional<YAML::Node> sceneDesc = SceneLoader::FindSpawnedComponent(rootEntity.obj);
+                                    if (sceneDesc) {
+                                        // TODO: delete obj ptr
+                                        ScriptObject* obj = ComponentLoader::CreateComponent(tag, &rootEntity.obj);
+                                        const SceneTree::Handle entHandle = GetEntityHandleFromScriptObject(obj->GetRaw());
+                                        if (entHandle != SceneTree::Handle{}) {
+                                            asQWORD entId = GetEntityIdFromHandle(entHandle);
+                                            const std::string fName = Triad::FileIO::FPath(filePath).filename().replace_extension().string();
+                                            std::string entName = std::format("{}_{}", fName, entId);
+                                            while ((*sceneDesc)["objects"][entName]) {
+                                                entName = std::format("{}_{}", fName, ++entId); // TEMP
+                                            }
+                                            ComponentLoader::SetComponentName(*obj, entName);
+                                            YAML::Node& compNode = (*sceneDesc)["objects"][entName] = YAML::Node();
+                                            ComponentLoader::PopulateEmptySceneYaml(compNode, tag);
+                                            SceneLoader::AddSpawnedComponent(*obj, compNode);
+                                        }
+                                    }
                                 }
                             },
                             ".component"
@@ -161,8 +181,23 @@ void UIDebug::TestDraw()
                                     ResTag tag = ResTag(ToStrid("res://" + filePath));
 
                                     SceneTree::Entity& rootEntity = gSceneTree->Get(gSceneTree->GetRoot());
-                                    PrefabLoader::Create(tag, &rootEntity.obj);
-
+                                    std::optional<YAML::Node> sceneDesc = SceneLoader::FindSpawnedComponent(rootEntity.obj);
+                                    if (sceneDesc) {
+                                        // TODO: delete obj ptr
+                                        ScriptObject* obj = PrefabLoader::Create(tag, &rootEntity.obj);
+                                        const SceneTree::Handle entHandle = GetEntityHandleFromScriptObject(obj->GetRaw());
+                                        if (entHandle != SceneTree::Handle{}) {
+                                            asQWORD entId = GetEntityIdFromHandle(entHandle);
+                                            const std::string fName = Triad::FileIO::FPath(filePath).filename().replace_extension().string();
+                                            std::string entName = std::format("{}_{}", fName, entId);
+                                            while ((*sceneDesc)["objects"][entName]) {
+                                                entName = std::format("{}_{}", fName, ++entId); // TEMP
+                                            }
+                                            YAML::Node& compNode = (*sceneDesc)["objects"][entName] = YAML::Node();
+                                            PrefabLoader::PopulateEmptySceneYaml(compNode, tag);
+                                            SceneLoader::AddSpawnedComponent(*obj, compNode);
+                                        }
+                                    }
                                 }
                             },
                             ".prefab"

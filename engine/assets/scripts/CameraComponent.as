@@ -3,7 +3,7 @@ class CameraComponent : CompositeComponent {
     protected bool activateAtInit = false;
     protected bool isPerspective = true;
 
-    CameraComponent(ICompositer@ parent) {
+    CameraComponent(ICompositer@ parent = null) {
         super(parent);
         camera = Camera(GetTransform());
     }

@@ -14,11 +14,11 @@ public:
 	using Handle = Storage::Handle;
 
 	struct Entity {
-		ScriptObject obj;
+		ScriptObject obj; // note: if obj ever gets invalidated with another value, then tags cache in loaders should be invalidated as well
 		Handle parent;
 		TransformStorage::Handle transform;
 		std::vector<Handle> children;
-		std::string name;
+		std::string name; // TODO: hold as Strid?
 		bool isComposite = false;
 #ifdef EDITOR
 		bool isSelected = false;

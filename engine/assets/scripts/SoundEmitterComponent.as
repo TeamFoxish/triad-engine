@@ -2,7 +2,7 @@ class SoundEmitterComponent : Component {
     protected array<Sound::Event> sndEvents;
     protected bool allowFadeOnDestroy = true;
 
-    SoundEmitterComponent(ICompositer@ parent) {
+    SoundEmitterComponent(ICompositer@ parent = null) {
         super(parent);
     }
 

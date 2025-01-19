@@ -13,7 +13,7 @@ void ShutdownImpl() {
     Game::Shutdown();
 }
 
-void SetScene(SceneInstance@ scene) {
+void SetScene(CompositeComponent@ scene) {
     if (scene is null) {
         return;
     }

@@ -140,6 +140,7 @@ void RegisterLightsBindings()
     int r;
 
     r = engine->RegisterObjectType("DirectionalLight", sizeof(CDirectionalLight), asOBJ_VALUE | asGetTypeTraits<CDirectionalLight>() | asOBJ_APP_CLASS_MORE_CONSTRUCTORS); assert(r >= 0);
+    CNativeObject::RecognizeNativeType(engine->GetTypeInfoById(r));
     r = engine->RegisterObjectBehaviour("DirectionalLight", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(CDirectionalLight::CreateDefault), asCALL_CDECL_OBJFIRST); assert(r >= 0);
     r = engine->RegisterObjectBehaviour("DirectionalLight", asBEHAVE_CONSTRUCT, "void f(const Math::Transform@+)", asFUNCTION(CDirectionalLight::CreateFromTransform), asCALL_CDECL_OBJFIRST); assert(r >= 0);
     r = engine->RegisterObjectBehaviour("DirectionalLight", asBEHAVE_CONSTRUCT, "void f(const DirectionalLight &in)", asFUNCTION(CDirectionalLight::CreateCopy), asCALL_CDECL_OBJFIRST); assert(r >= 0);
@@ -149,6 +150,7 @@ void RegisterLightsBindings()
     r = engine->RegisterObjectMethod("DirectionalLight", "void SetColor(const Math::Vector3 &in color)", asFUNCTION(CDirectionalLight::SetColor), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 
     r = engine->RegisterObjectType("PointLight", sizeof(CPointLight), asOBJ_VALUE | asGetTypeTraits<CPointLight>() | asOBJ_APP_CLASS_MORE_CONSTRUCTORS); assert(r >= 0);
+    CNativeObject::RecognizeNativeType(engine->GetTypeInfoById(r));
     r = engine->RegisterObjectBehaviour("PointLight", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(CPointLight::CreateDefault), asCALL_CDECL_OBJFIRST); assert(r >= 0);
     r = engine->RegisterObjectBehaviour("PointLight", asBEHAVE_CONSTRUCT, "void f(const Math::Transform@+)", asFUNCTION(CPointLight::CreateFromTransform), asCALL_CDECL_OBJFIRST); assert(r >= 0);
     r = engine->RegisterObjectBehaviour("PointLight", asBEHAVE_CONSTRUCT, "void f(const PointLight &in)", asFUNCTION(CPointLight::CreateCopy), asCALL_CDECL_OBJFIRST); assert(r >= 0);

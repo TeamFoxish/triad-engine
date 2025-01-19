@@ -6,6 +6,7 @@
 #include "input/InputDevice.h"
 #include "render/RenderSystem.h"
 #include "game/GameBindings.h"
+#include "scene/SceneLoader.h"
 #include "editor/runtime/EditorRuntime.h"
 
 #include "imgui.h"
@@ -141,6 +142,7 @@ void Outliner::DestroySelectedNode()
         ClearSelectedNode();
         SceneTree::Entity& entity = gSceneTree->Get(node);
         assert(entity.obj.GetRaw()); // check if entity has a valid script object attached
+        SceneLoader::RemoveSpawnedComponent(node);
         GameBindings::DestroyComponent(entity.obj);
     }
 }

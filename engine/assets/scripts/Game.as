@@ -12,14 +12,16 @@ namespace Game {
         Math::Transform@ trs = Math::Transform();
         trs.SetLocalPosition(Math::Vector3(3.0f, 3.0f, 3.0f));
         Game::SpawnPrefab(prefabRef.Load(), trs);
-        SingleSoundComponent@ soundComp = cast<SingleSoundComponent@>(Game::SpawnComponent(compRef.Load()));
-        soundComp.SetEvent("event:/Bubbles/Bubble3D");
-        soundComp.Play();
+        {
+            SingleSoundComponent@ soundComp = cast<SingleSoundComponent@>(Game::SpawnComponent(compRef.Load()));
+            soundComp.SetEvent("event:/Bubbles/Bubble3D");
+            soundComp.Play();
+        }
 
         Game::SpawnComposite(meshCompRef.Load());
 
         println("LOAD");
-        TransitToScene(sceneRef.Load());
+        //TransitToScene(sceneRef.Load());
         println("FINISH");
     }
 
@@ -42,7 +44,7 @@ namespace Game {
     }
 
     void Shutdown() {
-        for (uint i = 0; i < Private::scenes.length(); ++i) {
+        for (int i = Private::scenes.length() - 1; i >= 0; --i) {
             if (!Private::scenes[i].IsAlive()) {
                 continue;
             }
@@ -58,12 +60,12 @@ namespace Game {
         CreateScene(sceneRef);
     }
 
-    SceneInstance@ CreateScene(const ResourceHandle &in sceneRef) {
+    CompositeComponent@ CreateScene(const ResourceHandle &in sceneRef) {
         ref@ scene = Impl::CreateScene(sceneRef);
         if (scene is null) {
             return null;
         }
-        SceneInstance@ sceneInst = cast<SceneInstance@>(scene);
+        CompositeComponent@ sceneInst = cast<CompositeComponent@>(scene);
         Private::scenes.insertLast(sceneInst);
         sceneInst.Init();
         return sceneInst;
@@ -117,7 +119,7 @@ namespace Game {
     }
 
     namespace Private {
-        array<SceneInstance@> scenes;
+        array<CompositeComponent@> scenes;
 
         dictionary gPendingDeadComponents = {};
 

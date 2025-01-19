@@ -3,6 +3,7 @@
 #include "resource/ResourceLoader.h"
 #include "misc/Factory.h"
 #include "scripts/ScriptObject.h"
+#include "scene/SceneTree.h"
 #include <unordered_map>
 #include <functional>
 #include "logs/Logs.h"
@@ -17,7 +18,12 @@ public:
 	void Load(ResTag tag, const YAML::Node& desc) override;
 	void Unload(ResTag tag) override {}
 
-	static ScriptObject* Create(ResTag tag, ScriptObject* parent = nullptr);
+	// TODO: replace sceneRepr pointer with std::optional?
+	static ScriptObject* Create(ResTag tag, ScriptObject* parent = nullptr, YAML::Node* sceneRepr = nullptr);
+
+	static YAML::Node BuildPrefabYaml(SceneTree::Handle instHandle, std::string& keyOut);
+
+	static void PopulateEmptySceneYaml(YAML::Node& prefabNode, ResTag tag);
 
     static std::unique_ptr<ResourceLoader> CreateInstance()
 	{
@@ -29,6 +35,10 @@ public:
 		return "prefab";
 	}
 
+	static ResTag GetPrefabTag(const ScriptObject& obj);
+
 private:
 	static inline std::unordered_map<ResTag, const YAML::Node> _prefabs;
+
+	static inline std::unordered_map<asIScriptObject*, ResTag> cachedPrefabTags;
 };

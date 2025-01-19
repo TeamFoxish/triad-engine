@@ -16,20 +16,22 @@ public:
     ScriptObject(asITypeInfo* type, ArgsT&& args = {}, asIScriptFunction* factory = nullptr);
     explicit ScriptObject(asIScriptObject* object);
     ScriptObject(const ScriptObject& other);
-    ScriptObject(ScriptObject&& other) noexcept;
+    //ScriptObject(ScriptObject&& other) noexcept;
     ~ScriptObject();
-    ScriptObject& operator=(const ScriptObject& other);
-    ScriptObject& operator=(ScriptObject&& other) noexcept;
+    //ScriptObject& operator=(const ScriptObject& other);
+    //ScriptObject& operator=(ScriptObject&& other) noexcept;
     void SetField(const std::string& name, void* value);
     void SetField(const std::string &name, const std::string &value);
     static void SetArrayValue(CScriptArray *array, asUINT index, const std::string &value);
-    void *GetField(std::string name);
+    void *GetField(const std::string& name);
     void AssignField(const std::string& name, void* value);
     // only for objects
     void ApplyOverrides(const YAML::Node& overrides);
     asITypeInfo* GetTypeInfo() const { return _type; };
     asIScriptObject* GetRaw() const { return _object; };
     const std::string GetComponentPath();
+
+    YAML::Node BuildYaml(const YAML::Node& origDesc) const;
 
 private:
     void Init(asITypeInfo* type, ArgsT&& args = {}, asIScriptFunction* factory = nullptr);
@@ -43,6 +45,10 @@ private:
     void OverrideChildren(const YAML::Node &node);
     void OverrideRef(const std::string &fieldName, const std::string &ref);
     void OverrideSimpleField(const std::string &fieldName, const std::string &value);
+
+    void BuildFieldYaml(std::string_view name, asUINT fieldIdx, YAML::Node& parent, const YAML::Node& origDesc) const;
+
+    bool GetChildSceneRepr(std::string_view name, YAML::Node& out) const;
 
 private:
     std::unordered_map<std::string, asUINT> _fields;

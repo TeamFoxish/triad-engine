@@ -31,7 +31,7 @@ void DestroyComponent(ScriptObject& comp)
     CScriptHandle compHandle(comp.GetRaw(), comp.GetTypeInfo());
     gScriptSys->GetEngine()->CallFunction(destroyComponentFunc, [&compHandle](asIScriptContext* context) {
         context->SetArgObject(0, &compHandle);
-        });
+    });
 }
 
 } // GameBindings

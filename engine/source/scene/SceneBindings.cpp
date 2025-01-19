@@ -1,8 +1,9 @@
 #include "SceneBindings.h"
 
 #include "scripts/ScriptSystem.h"
-#include "scene/SceneTree.h"
 #include "shared/MathScriptBindings.h"
+#include "scene/SceneLoader.h"
+#include "logs/Logs.h"
 
 #include <scripthandle.h>
 
@@ -12,6 +13,8 @@ union EntityId {
 };
 
 static constexpr EntityId InvalidEntityId = {};
+
+static std::unordered_map<const asIScriptObject*, SceneTree::Handle> objToEntity;
 
 int32_t GetEntityInt32(asQWORD id)
 { 
@@ -23,6 +26,17 @@ int32_t GetEntityInt32(asQWORD id)
 static bool IsValidEntity(EntityId id) 
 {
     return id.id != EntityId{}.id;
+}
+
+SceneTree::Handle GetEntityHandleFromScriptObject(const asIScriptObject* obj)
+{
+    const auto iter = objToEntity.find(obj);
+    return iter != objToEntity.end() ? iter->second : SceneTree::Handle{};
+}
+
+asQWORD GetEntityIdFromHandle(SceneTree::Handle handle) 
+{
+    return EntityId(handle).id;
 }
 
 struct CEntityInfo {
@@ -43,8 +57,8 @@ static EntityId AddEntityToSceneTree(CEntityInfo& info)
 {
     assert((info.entity.GetTypeId() & asTYPEID_SCRIPTOBJECT) > 0 && (info.entity.GetTypeId() & asTYPEID_OBJHANDLE) > 0);
     
-    SceneTree::Entity entity(ScriptObject(static_cast<asIScriptObject*>(info.entity.GetRef())));
-    // TODO: assign info.entity
+    ScriptObject obj(static_cast<asIScriptObject*>(info.entity.GetRef()));
+    SceneTree::Entity entity(obj);
     entity.parent = info.parent.handle;
     entity.name = info.name;
     entity.isComposite = info.isComposite;
@@ -55,6 +69,7 @@ static EntityId AddEntityToSceneTree(CEntityInfo& info)
 
     EntityId id;
     id.handle = gSceneTree->Add(std::move(entity));
+    objToEntity[obj.GetRaw()] = id.handle;
     return id;
 }
 
@@ -66,6 +81,12 @@ static void AddEntityTransformToSceneTree(EntityId id, const CTransformHandle* t
 
 static void RemoveEntityFromSceneTree(EntityId id) 
 {
+    const SceneTree::Entity& entity = gSceneTree->Get(id.handle);
+    if (SceneLoader::FindSpawnedComponent(entity.obj)) {
+        LOG_ERROR("component should be deleted before its entity is getting destroyed");
+        SceneLoader::RemoveSpawnedComponent(id.handle);
+    }
+    objToEntity.erase(entity.obj.GetRaw());
     gSceneTree->Remove(id.handle);
 }
 

@@ -5,6 +5,7 @@
 #include <string>
 #include <iostream>
 #include "scene/SceneLoader.h"
+#include "scene/SceneBindings.h"
 #include "shared/ResourceHandle.h"
 #include "scripts/ComponentLoader.h"
 #include "game/PrefabLoader.h"
@@ -37,8 +38,8 @@ ScriptObject::ScriptObject(asIScriptObject *object)
     asIScriptEngine* engine = gScriptSys->GetRawEngine();
     _type = engine->GetTypeInfoById(object->GetTypeId());
     _object = object;
-    int fieldsCount = _object->GetPropertyCount();
-    for (int i = 0; i < fieldsCount; i++) {
+    const asUINT fieldsCount = _object->GetPropertyCount();
+    for (asUINT i = 0; i < fieldsCount; i++) {
         _fields[_object->GetPropertyName(i)] = i;
     }
 }
@@ -49,37 +50,37 @@ ScriptObject::ScriptObject(const ScriptObject& other) :
     _type(other._type)
 {}
 
-ScriptObject::ScriptObject(ScriptObject&& other) noexcept : 
-    _object(std::exchange(other._object, nullptr)),
-    _fields(std::move(other._fields)),
-    _type(std::exchange(other._type, nullptr))
-{}
+//ScriptObject::ScriptObject(ScriptObject&& other) noexcept : 
+//    _object(std::exchange(other._object, nullptr)),
+//    _fields(std::move(other._fields)),
+//    _type(std::exchange(other._type, nullptr))
+//{}
 
 ScriptObject::~ScriptObject()
 {}
 
-ScriptObject& ScriptObject::operator=(const ScriptObject &other)
-{
-    if (this == &other)
-        return *this;
-
-    ScriptObject temp(other);
-    std::swap(_object, temp._object);
-    std::swap(_fields, temp._fields);
-    std::swap(_type, temp._type);
-
-    return *this;
-}
-
-ScriptObject& ScriptObject::operator=(ScriptObject &&other) noexcept
-{
-    ScriptObject temp(std::move(other));
-    std::swap(_object, temp._object);
-    std::swap(_fields, temp._fields);
-    std::swap(_type, temp._type);
-    return *this;
-
-}
+//ScriptObject& ScriptObject::operator=(const ScriptObject &other)
+//{
+//    if (this == &other)
+//        return *this;
+//
+//    ScriptObject temp(other);
+//    std::swap(_object, temp._object);
+//    std::swap(_fields, temp._fields);
+//    std::swap(_type, temp._type);
+//
+//    return *this;
+//}
+//
+//ScriptObject& ScriptObject::operator=(ScriptObject &&other) noexcept
+//{
+//    ScriptObject temp(std::move(other));
+//    std::swap(_object, temp._object);
+//    std::swap(_fields, temp._fields);
+//    std::swap(_type, temp._type);
+//    return *this;
+//
+//}
 
 void ScriptObject::Init(asITypeInfo* type, ArgsT&& args, asIScriptFunction* factory)
 {
@@ -118,7 +119,7 @@ asIScriptObject* ScriptObject::Construct(ArgsT&& args, asIScriptFunction* factor
     asIScriptContext* ctx = gScriptSys->GetContext();
 
     // push state to reuse active context (allow nested calls)
-    bool nested = (ctx->PushState() == asSUCCESS);
+    const bool nested = (ctx->PushState() == asSUCCESS);
 
     // push constructor to context
     rc = ctx->Prepare(factory);
@@ -134,9 +135,9 @@ asIScriptObject* ScriptObject::Construct(ArgsT&& args, asIScriptFunction* factor
     const asUINT paramsCount = factory->GetParamCount();
     for (asUINT j = 0; j < paramsCount; ++j) {
         auto& [_, argValue] = args[j];
-        if (!argValue) {
+        /*if (!argValue) {
             continue;
-        }
+        }*/
         ctx->SetArgObject(j, argValue);
     }
 
@@ -513,7 +514,7 @@ void ScriptObject::SetArrayValue(CScriptArray* array, asUINT index, const std::s
     }
 }
 
-void *ScriptObject::GetField(std::string name)
+void *ScriptObject::GetField(const std::string& name)
 {
     return _object->GetAddressOfProperty(_fields[name]);
 }
@@ -545,12 +546,226 @@ const std::string ScriptObject::GetComponentPath() {
     return path;
 }
 
+// TODO: move to the bottom of the file
+YAML::Node ScriptObject::BuildYaml(const YAML::Node& origDesc) const
+{
+    YAML::Node root;
+
+    // avoid iterating over _fields map to to preserve the order of declaration
+    const asUINT fieldsNum = _object->GetPropertyCount();
+    assert(fieldsNum == _type->GetPropertyCount());
+    for (asUINT fieldIdx = 0; fieldIdx < fieldsNum; ++fieldIdx) {
+        const char* name = _object->GetPropertyName(fieldIdx);
+        const int fieldTypeId = _object->GetPropertyTypeId(fieldIdx);
+        const void* fieldPtr = _object->GetAddressOfProperty(fieldIdx);
+        if (!fieldPtr) {
+            continue;
+        }
+
+        // TODO: full path to component reconstruction should be applied in future instead of caching
+        // Component@ special case
+        if ((fieldTypeId & asTYPEID_SCRIPTOBJECT) != 0 && (fieldTypeId & asTYPEID_OBJHANDLE) != 0) {
+            const std::string& ref = SceneLoader::GetCachedComponentRef(fieldPtr);
+            if (!ref.empty()) {
+                root[name] = ref;
+                continue;
+            }
+        }
+
+        // array<Component@> special case
+        if ((fieldTypeId & asTYPEID_APPOBJECT) != 0 && (fieldTypeId & asTYPEID_TEMPLATE) != 0 && 
+            ((std::string_view(_type->GetName()) != "CompositeComponent" && !_type->DerivesFrom(gScriptSys->GetRawEngine()->GetTypeInfoByName("CompositeComponent"))) || (std::string_view(name) != "children"))) {
+            const std::string_view fieldDecl = _type->GetPropertyDeclaration(fieldIdx);
+            if (fieldDecl.starts_with("array<")) {
+                const CScriptArray* array = static_cast<const CScriptArray*>(fieldPtr);
+                const int elemTypeId = array->GetElementTypeId();
+                if ((fieldTypeId & asTYPEID_SCRIPTOBJECT) != 0 && (fieldTypeId & asTYPEID_OBJHANDLE) != 0) {
+                    const std::vector<std::string>& refs = SceneLoader::GetCachedArrayComponentRefs(fieldPtr);
+                    if (!refs.empty()) {
+                        YAML::Node& arrNode = root[name] = {};
+                        for (const std::string& ref : refs) {
+                            arrNode.push_back(ref);
+                        }
+                        continue;
+                    }
+                }
+            }
+        }
+
+        BuildFieldYaml(name, fieldIdx, root, origDesc);
+    }
+    
+    return root;
+}
+
+void ScriptObject::BuildFieldYaml(std::string_view name, asUINT fieldIdx, YAML::Node& parent, const YAML::Node& origDesc) const
+{
+    const void* data = _object->GetAddressOfProperty(fieldIdx);
+    if (!data) {
+        return;
+    }
+
+    const int fieldType = _object->GetPropertyTypeId(fieldIdx);
+    switch (fieldType) {
+        // serialize primitives
+        case asTYPEID_VOID: {
+            break;
+        }
+        case asTYPEID_BOOL: {
+            const bool val = *static_cast<const bool*>(data);
+            parent[name] = val;
+            break;
+        }
+        case asTYPEID_INT8: {
+            const asINT8 val = *static_cast<const asINT8*>(data);
+            parent[name] = static_cast<int32_t>(val);
+            break;
+        }
+        case asTYPEID_INT16: {
+            const asINT16 val = *static_cast<const asINT16*>(data);
+            parent[name] = static_cast<int32_t>(val);
+            break;
+        }
+        case asTYPEID_INT32: {
+            const asINT32 val = *static_cast<const asINT32*>(data);
+            parent[name] = static_cast<int32_t>(val);
+            break;
+        }
+        case asTYPEID_INT64: {
+            const asINT64 val = *static_cast<const asINT64*>(data);
+            parent[name] = static_cast<int64_t>(val);
+            break;
+        }
+        case asTYPEID_UINT8: {
+            const asBYTE val = *static_cast<const asBYTE*>(data);
+            parent[name] = static_cast<uint32_t>(val);
+            break;
+        }
+        case asTYPEID_UINT16: {
+            const asWORD val = *static_cast<const asWORD*>(data);
+            parent[name] = static_cast<uint32_t>(val);
+            break;
+        }
+        case asTYPEID_UINT32: {
+            const asUINT val = *static_cast<const asUINT*>(data);
+            parent[name] = static_cast<uint32_t>(val);
+            break;
+        }
+        case asTYPEID_UINT64: {
+            const asQWORD val = *static_cast<const asQWORD*>(data);
+            parent[name] = static_cast<uint64_t>(val);
+            break;
+        }
+        case asTYPEID_FLOAT: {
+            const float val = *static_cast<const float*>(data);
+            parent[name] = val;
+            break;
+        }
+        case asTYPEID_DOUBLE: {
+            const double val = *static_cast<const double*>(data);
+            parent[name] = val;
+            break;
+        }
+        default: {
+            // never works :(
+            // auto* temptmep = gScriptSys->GetRawEngine()->GetTypeInfoByDecl("Component");
+            if (name == "parent" || name == "name" || name == "entityKey" || name == "id" || name == "isDead" || name == "isUpdating") {
+                return;
+            }
+            // null as well :(
+            // gScriptSys->GetRawEngine()->GetTypeInfoByName("CompositeComponent")
+            if (name == "children") {
+                const int childrenArrTypeId = gScriptSys->GetRawEngine()->GetTypeIdByDecl("array<Component@>");
+                if ((fieldType & childrenArrTypeId) != 0) {
+                    // iterate over child entities
+                    asIScriptObject* obj = static_cast<asIScriptObject*>(_object->GetAddressOfProperty(fieldIdx));
+                    const SceneTree::Handle entHandle = GetEntityHandleFromScriptObject(obj);
+                    if (gSceneTree->IsValidHandle(entHandle)) {
+                        const SceneTree::Entity& entity = gSceneTree->Get(entHandle);
+                        assert(entity.obj.GetRaw());
+                        assert(entity.isComposite);
+                        const ScriptObject tempObj(obj);
+                        YAML::Node& childrenMap = parent[name] = {};
+                        for (SceneTree::Handle childHandle : entity.children) {
+                            if (!gSceneTree->IsValidHandle(childHandle)) {
+                                // TODO: log error
+                                continue;
+                            }
+                            const SceneTree::Entity& childEnt = gSceneTree->Get(childHandle);
+                            // TODO: serialize component and add as key
+                            //       if component is presented in composite default state or in cached original desc
+                            //         (1) then use its name as it is
+                            //       else
+                            //         (2) then use $name form and supply it with component tag
+                                
+                                
+                            const YAML::Node& childNode = origDesc["overrides"]["children"][childEnt.name];
+                            if (childNode) {
+                                // 1
+                                childrenMap[childEnt.name]["overrides"] = ComponentLoader::BuildOverridesList(childHandle, childNode);
+                            } else {
+                                // 2
+                                const std::string taggedName = std::format("${}", childEnt.name);
+                                childrenMap[taggedName] = ComponentLoader::BuildCompYaml(childHandle, YAML::Node());
+                            }
+                        }
+                    } else {
+                        LOG_ERROR("failed to serialize component object '{}' to yaml. its entity was invalid", _type->GetName());
+                    }
+                    return;
+                }
+            }
+            // serialize objects
+            if ((fieldType & asTYPEID_APPOBJECT) != 0) {
+                //const std::string_view typeDecl =
+                //    gScriptSys->GetRawEngine()->GetTypeInfoById(fieldType)->GetPropertyDeclaration(fieldIdx);
+                //if (typeDecl.starts_with("array<") || typeDecl.starts_with("dictionary ")) {
+                //    // TODO: support array and dict
+                //    return;
+                //}
+
+                if (fieldType == gScriptSys->GetStringType()->GetTypeId()) {
+                    const std::string* str = static_cast<const std::string*>(data);
+                    parent[name] = *str;
+                    return;
+                }
+                asITypeInfo* typeInfo = gScriptSys->GetRawEngine()->GetTypeInfoById(fieldType);
+                if (typeInfo && CNativeObject::IsTypeNative(typeInfo)) {
+                    // TODO: check if such cast ever works for asTYPEID_HANDLETOCONST
+                    if ((fieldType & asTYPEID_OBJHANDLE) != 0 || (fieldType & asTYPEID_HANDLETOCONST) != 0) {
+                        // script handles are unsupported for serialization
+                        // component refs are supported by looking into source yaml desc
+                        // the only exception is CNativeObject
+                        auto obj = static_cast<CNativeObject* const *>(data);
+                        parent[name] = (*obj)->Serialize();
+                    } else {
+                        // Plain object case
+                        auto obj = static_cast<const CNativeObject*>(data);
+                        parent[name] = obj->Serialize();
+                    }
+                    return;
+                }
+            } else if ((fieldType & asTYPEID_SCRIPTOBJECT) != 0 && (fieldType & asTYPEID_OBJHANDLE) == 0) {
+                // avoid using const_cast here
+                auto objRaw = static_cast<asIScriptObject*>(_object->GetAddressOfProperty(fieldIdx));
+                const ScriptObject obj(objRaw);
+                parent[name] = obj.BuildYaml(origDesc[name]);
+            } else {
+                // should place assert here
+                LOG_ERROR("unsupported type '{}' for field '{}' in class '{}'", fieldType, name, _type->GetName());
+                return;
+            }
+        }
+    }
+}
+
 void ScriptObject::OverrideSimpleField(const std::string& fieldName, const std::string& value) {
     SetField(fieldName, value);
 }
 
 void ScriptObject::OverrideArray(const std::string& fieldName, const YAML::Node& node) {
     CScriptArray* array = static_cast<CScriptArray*>(GetField(fieldName));
+    // TODO: allocate array storage by the node.size()???
     for (const auto& arrayOverride: node) {
         asUINT index = std::stoul(arrayOverride.first.Scalar().substr(1));
         // Assuming it's array of primitives or component refs
@@ -604,7 +819,9 @@ void ScriptObject::OverrideArray(const std::string& fieldName, const YAML::Node&
 void ScriptObject::OverrideChildren(const YAML::Node& node) {
     CScriptArray* array = static_cast<CScriptArray*>(GetField("children"));
     for(const auto& arrayNode: node) {
-        const std::string& childComponentName = arrayNode.first.Scalar().substr(1);
+        // TODO: replace with std::string_view
+        const std::string childComponentName = arrayNode.first.Scalar().substr(1);
+        bool foundChild = false;
         for (asUINT i = 0; i < array->GetSize(); i++) {
             asIScriptObject* childRaw = *static_cast<asIScriptObject**>(array->At(i));
             if (childRaw == nullptr) {
@@ -614,8 +831,12 @@ void ScriptObject::OverrideChildren(const YAML::Node& node) {
             std::string* name = static_cast<std::string*>(child.GetField("name"));
             if (*name == childComponentName) {
                 child.ApplyOverrides(arrayNode.second["overrides"]);
-                return;
+                foundChild = true;
+                break;
             }
+        }
+        if (foundChild) {
+            continue;
         }
         if (arrayNode.second["prefab"]) {
             const YAML::Node parameters = arrayNode.second;
@@ -628,18 +849,22 @@ void ScriptObject::OverrideChildren(const YAML::Node& node) {
             if (componentNode.IsDefined()) {
                 objectTag = ResTag(ToStrid(componentNode.Scalar()));
             }
-            ScriptObject* component = PrefabLoader::Create(objectTag, this);
+            YAML::Node childNode; 
+            const bool isValid = GetChildSceneRepr(arrayNode.first.Scalar(), childNode);
+            ScriptObject* component = PrefabLoader::Create(objectTag, this, isValid ? &childNode : nullptr);
             if (!component) {
                 LOG_WARN("Failed to load component or prefab \"{}\"", objectTag.string());
                 continue;
             }
             component->ApplyOverrides(parameters["overrides"]);
             component->SetField("name", childComponentName);
-        }
-        if (arrayNode.second["component"]) {
+        } else if (arrayNode.second["component"]) {
             const YAML::Node parameters = arrayNode.second;
             ResTag componentTag = ResTag(ToStrid(parameters["component"].Scalar()));
-            ScriptObject* component = ComponentLoader::CreateComponent(componentTag, this);
+            YAML::Node childNode;
+            const bool isValid = GetChildSceneRepr(arrayNode.first.Scalar(), childNode);
+            ScriptObject* component = ComponentLoader::CreateComponent(componentTag, this, isValid ? &childNode : nullptr);
+            // TODO: add spawned component to SceneLoader map with overrides
             component->ApplyOverrides(parameters["overrides"]);
             component->SetField("name", childComponentName);
         }
@@ -752,4 +977,18 @@ void ScriptObject::ApplyOverrides(const YAML::Node& overrides)
             // not implemented yet
         }
     }
+}
+
+bool ScriptObject::GetChildSceneRepr(std::string_view name, YAML::Node& out) const
+{
+    std::optional<YAML::Node> compSceneRepr = SceneLoader::FindSpawnedComponent(*this);
+    if (compSceneRepr) {
+        const YAML::Node& childNode = (*compSceneRepr)["overrides"]["children"][name];
+        if (!childNode) {
+            out = (*compSceneRepr)["overrides"]["children"][name] = YAML::Node();
+        }
+        return true; // this object was added from scene editor
+    }
+    out = YAML::Node();
+    return false; // this object was added during gameplay
 }

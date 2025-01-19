@@ -28,5 +28,10 @@ struct Resource {
 	
 	static bool ResolveFileTagToFile(ResTag source, const YAML::Node& filetag, Triad::FileIO::FPath& path);
 	static bool ResolveFileTagToFile(ResTag source, std::string_view filetag, Triad::FileIO::FPath& path);
+
+	static YAML::Node DiffDescs(const YAML::Node& modified, const YAML::Node& original);
+	static bool AreEqualNodes(const YAML::Node& a, const YAML::Node& b);
+	static bool AreEqualSequences(const YAML::Node& a, const YAML::Node& b);
+	static bool AreEqualMaps(const YAML::Node& a, const YAML::Node& b);
 };
 }

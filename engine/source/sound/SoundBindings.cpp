@@ -198,6 +198,7 @@ void RegisterSoundBindings()
 	r = engine->SetDefaultNamespace("Sound"); assert(r >= 0);
 
 	r = engine->RegisterObjectType("Event", sizeof(CSoundEvent), asOBJ_VALUE | asGetTypeTraits<CSoundEvent>()); assert(r >= 0);
+	CNativeObject::RecognizeNativeType(engine->GetTypeInfoById(r));
 	r = engine->RegisterObjectBehaviour("Event", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(CSoundEvent::CreateDefault), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("Event", asBEHAVE_CONSTRUCT, "void f(const Event &in)", asFUNCTION(CSoundEvent::CreateCopy), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("Event", asBEHAVE_DESTRUCT, "void f()", asFUNCTION(CSoundEvent::Destroy), asCALL_CDECL_OBJFIRST); assert(r >= 0);
