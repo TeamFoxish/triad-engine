@@ -102,11 +102,11 @@ void ResourceSystem::LoadResourceImpl(ResTag tag)
     }
 
     // create loader by type string and call Load
-    if (!Factory<ResourceLoader>::IsRegistered(type.c_str())) {
+    if (!Factory_<ResourceLoader>::IsRegistered(type.c_str())) {
         LOG_ERROR("Unable to load resource with tag \"{}\". there is no registered loader for type \"{}\"", tag.string(), type);
         return;
     }
-    std::unique_ptr<ResourceLoader> loader = Factory<ResourceLoader>::Create(type.c_str());
+    std::unique_ptr<ResourceLoader> loader = Factory_<ResourceLoader>::Create(type.c_str());
     loader->Load(tag, desc);
 }
 
@@ -127,11 +127,11 @@ void ResourceSystem::UnloadResource(ResTag tag)
         UnloadResource(ref);
     }
     // create loader by type string and call Unload
-    if (!Factory<ResourceLoader>::IsRegistered(res.type.string())) {
+    if (!Factory_<ResourceLoader>::IsRegistered(res.type.string())) {
         LOG_ERROR("Unable to unload resource with tag \"{}\". There is no registered loader for type \"{}\"", tag.string(), res.type.string());
         return;
     }
-    std::unique_ptr<ResourceLoader> loader = Factory<ResourceLoader>::Create(res.type.string());
+    std::unique_ptr<ResourceLoader> loader = Factory_<ResourceLoader>::Create(res.type.string());
     loader->Unload(tag);
 }
 

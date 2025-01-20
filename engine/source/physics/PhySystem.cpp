@@ -3,7 +3,23 @@
 #include "Physics.h"
 #include "logs/Logs.h"
 
+#include "Jolt/Core/Factory.h"
+
 std::unique_ptr<class PhySystem> gPhySys;
+
+// Callback for traces, connect this to your own trace function if you have one
+static void TraceImpl(const char* inFMT, ...)
+{
+	// Format the message
+	va_list list;
+	va_start(list, inFMT);
+	char buffer[1024];
+	vsnprintf(buffer, sizeof(buffer), inFMT, list);
+	va_end(list);
+
+	// Print to the TTY
+	//cout << buffer << endl;
+}
 
 // An example contact listener
 // Interface with functions to call onOverlap Begin, Continue and End
@@ -62,12 +78,46 @@ public:
 	}
 };
 
+// Callback for asserts, connect this to your own assert handler if you have one
+static bool AssertFailedImpl(const char* inExpression, const char* inMessage, const char* inFile, uint inLine)
+{
+	// Print to the TTY
+	//cout << inFile << ":" << inLine << ": (" << inExpression << ") " << (inMessage != nullptr ? inMessage : "") << endl;
 
+	// Breakpoint
+	return true;
+};
 
 bool PhySystem::Init()
 {
 	RegisterDefaultAllocator();
-	Factory::sInstance = new Factory();
+	//JPH::Trace = TraceImpl;
+
+	JPH::Factory::sInstance = new JPH::Factory();
+	
+	{
+		//if (!VerifyJoltVersionIDInternal(JPH_VERSION_ID))
+		//{
+		//	Trace("Version mismatch, make sure you compile the client code with the same Jolt version and compiler definitions!");
+		//	uint64 mismatch = JPH_VERSION_ID ^ JPH_VERSION_ID;
+		//	auto check_bit = [mismatch](int inBit, const char* inLabel) { if (mismatch & (uint64(1) << (inBit + 23))) Trace("Mismatching define %s.", inLabel); };
+		//	check_bit(1, "JPH_DOUBLE_PRECISION");
+		//	check_bit(2, "JPH_CROSS_PLATFORM_DETERMINISTIC");
+		//	check_bit(3, "JPH_FLOATING_POINT_EXCEPTIONS_ENABLED");
+		//	check_bit(4, "JPH_PROFILE_ENABLED");
+		//	check_bit(5, "JPH_EXTERNAL_PROFILE");
+		//	check_bit(6, "JPH_DEBUG_RENDERER");
+		//	check_bit(7, "JPH_DISABLE_TEMP_ALLOCATOR");
+		//	check_bit(8, "JPH_DISABLE_CUSTOM_ALLOCATOR");
+		//	check_bit(9, "JPH_OBJECT_LAYER_BITS");
+		//	check_bit(10, "JPH_ENABLE_ASSERTS");
+		//	check_bit(11, "JPH_OBJECT_STREAM");
+		//	std::abort();
+		//}
+	}
+
+	//JPH_IF_ENABLE_ASSERTS(JPH::AssertFailed = AssertFailedImpl;)
+
 	RegisterTypes();
 
 	temp_allocator = new TempAllocatorImpl(10 * 1024 * 1024);
@@ -110,8 +160,8 @@ void PhySystem::Term()
 	}
 
 	UnregisterTypes();
-	delete Factory::sInstance;
-	Factory::sInstance = nullptr;
+	delete JPH::Factory::sInstance;
+	JPH::Factory::sInstance = nullptr;
 }
 
 auto PhySystem::Add(PhysicsEntity&& entity) -> PhysicsHandle

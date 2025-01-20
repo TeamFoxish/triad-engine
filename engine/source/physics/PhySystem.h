@@ -1,6 +1,5 @@
 #pragma once
 
-#include "PhyEvent.h"
 #include "misc/Handles.h"
 #include "shared/TransformStorage.h" // TEMP
 
@@ -19,8 +18,8 @@ public:
         Body* body = nullptr;
         TransformStorage::Handle transform;
 
-        void (*beginOverlap)(PhysicsEntity& other) = nullptr;
-        void (*endOverlap)(PhysicsEntity& other) = nullptr;
+        void (*beginOverlap)(PhysicsEntity&) = nullptr;
+        void (*endOverlap)(PhysicsEntity&) = nullptr;
     };
     using PhysicsStorage = HandleStorage<PhysicsEntity>;
     using PhysicsHandle = PhysicsStorage::Handle;
@@ -59,6 +58,8 @@ private:
     JPH::PhysicsSystem physics_system;
     TempAllocatorImpl* temp_allocator;
     JobSystemThreadPool* job_system;
+
+    // add: PhyEvent_array;
 };
 
 extern std::unique_ptr<class PhySystem> gPhySys;
