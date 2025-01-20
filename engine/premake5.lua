@@ -22,7 +22,7 @@ project("Engine")
   
   filter {  }
   
-  links({ "d3d11", "dxgi", "d3dcompiler", "dxguid", "DirectXTK", "foonathan_string_id", "FrameGraph" })
+  links({ "d3d11", "dxgi", "d3dcompiler", "dxguid", "DirectXTK", "foonathan_string_id", "FrameGraph", "Jolt" })
   
   files({ "source/**.h", "source/**.cpp", "source/**.hpp" })
 
