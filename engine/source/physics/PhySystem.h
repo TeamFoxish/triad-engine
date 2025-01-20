@@ -10,6 +10,7 @@
 #include "Jolt/Physics/Body/Body.h"
 #include "jolt/Core/JobSystemThreadPool.h"
 
+// TODO: remove
 using namespace JPH;
 
 class PhySystem {
@@ -33,19 +34,16 @@ public:
     PhysicsEntity& Get(PhysicsHandle handle) { return phy_storage[handle]; }
     const PhysicsEntity& Get(PhysicsHandle handle) const { return phy_storage[handle]; }
     
-    PhysicsEntity& GetEntityByBodyID(const BodyID& id)
+    PhysicsEntity* GetEntityByBodyID(const BodyID& id)
     {
-        PhysicsEntity e;
-
         for (auto& entity : phy_storage)
         {
             if (entity.body->GetID() == id)
             {
-                e = entity;
+                return &entity;
             }
         }
-
-        return e;
+        return nullptr;
     }
    
     PhysicsHandle Add(PhysicsEntity&& entity);

@@ -41,9 +41,13 @@ public:
 
 		auto entity1 = gPhySys->GetEntityByBodyID(inBody1.GetID());
 		auto entity2 = gPhySys->GetEntityByBodyID(inBody2.GetID());
+		if (!entity1 || !entity2) {
+			// log error
+			return;
+		}
 
-		entity1.beginOverlap(entity2);
-		entity2.beginOverlap(entity1);
+		entity1->beginOverlap(*entity2);
+		entity2->beginOverlap(*entity1);
 	}
 
 	virtual void OnContactPersisted(const Body& inBody1, const Body& inBody2, const ContactManifold& inManifold, ContactSettings& ioSettings) override
@@ -57,9 +61,13 @@ public:
 
 		auto entity1 = gPhySys->GetEntityByBodyID(inSubShapePair.GetBody1ID());
 		auto entity2 = gPhySys->GetEntityByBodyID(inSubShapePair.GetBody2ID());
+		if (!entity1 || !entity2) {
+			// log error
+			return;
+		}
 
-		entity1.endOverlap(entity2);
-		entity2.endOverlap(entity1);
+		entity1->endOverlap(*entity2);
+		entity2->endOverlap(*entity1);
 	}
 };
 
@@ -129,9 +137,10 @@ bool PhySystem::Init()
 	const uint cMaxContactConstraints = 1024; // For a real project: 65536
 
 	// Get from Physics.h
-	BPLayerInterfaceImpl broad_phase_layer_interface;
-	ObjectVsBroadPhaseLayerFilterImpl object_vs_broadphase_layer_filter;
-	ObjectLayerPairFilterImpl object_vs_object_layer_filter;
+	// TODO: move somewhere more appropriate
+	static BPLayerInterfaceImpl broad_phase_layer_interface;
+	static ObjectVsBroadPhaseLayerFilterImpl object_vs_broadphase_layer_filter;
+	static ObjectLayerPairFilterImpl object_vs_object_layer_filter;
 
 	// Setup physics system
 	physics_system.Init(cMaxBodies, cNumBodyMutexes, cMaxBodyPairs, cMaxContactConstraints,
