@@ -11,6 +11,10 @@
 #include "render/RenderSystem.h"
 
 #include <iostream>
+#include <Jolt/Physics/Collision/Shape/BoxShape.h>
+
+#include <physics/Physics.h>
+#include "logs/Logs.h"
 
 PlayerBall::PlayerBall(Game* game)
 	: CompositeComponent(game)
@@ -20,6 +24,29 @@ PlayerBall::PlayerBall(Game* game)
 
 void PlayerBall::Initialize(Compositer* parent)
 {
+	{
+		BodyInterface& body_interface = gPhySys->GetPhySystem()->GetBodyInterface();
+
+		BoxShapeSettings floor_shape_settings(Vec3(100.0f, 1.0f, 100.0f));
+		floor_shape_settings.SetEmbedded();
+
+		ShapeSettings::ShapeResult floor_shape_result = floor_shape_settings.Create();
+		ShapeRefC floor_shape = floor_shape_result.Get();
+
+		BodyCreationSettings floor_settings(floor_shape, RVec3(0.0, -1.0, 0.0), Quat::sIdentity(), EMotionType::Static, Layers::MOVING);
+
+		body = body_interface.CreateBody(floor_settings);
+		body_interface.AddBody(body->GetID(), EActivation::Activate);
+
+		PhySystem::PhysicsEntity entity;
+
+		entity.body = body;
+		entity.beginOverlap = StartOverlap;
+		entity.endOverlap = EndOverlap;
+
+		gPhySys->Add(std::move(entity));
+	}
+
 	CompositeComponent* camHolder = new CompositeComponent(GetGame(), this);
 
 	Camera::Params params;
@@ -86,4 +113,14 @@ void PlayerBall::ProceedInput(InputDevice* inpDevice)
 	}
 	meshSocket->SetScale(Math::Vector3{targetScale});
 	camera->SetRadius(targetCamDist);
+}
+
+void PlayerBall::StartOverlap(PhySystem::PhysicsEntity& other)
+{
+	LOG_INFO("Player start overlap");
+}
+
+void PlayerBall::EndOverlap(PhySystem::PhysicsEntity& other)
+{
+	LOG_INFO("Player end overlap");
 }

@@ -20,7 +20,7 @@
 
 // define FACTORY_TYPE_NAME in your code if you want to change Factory<...> to some other name, in case of a name conflict.
 #ifndef FACTORY_TYPE_NAME
-  #define FACTORY_TYPE_NAME Factory
+  #define FACTORY_TYPE_NAME Factory_
 #endif
 
 // define FACTORY_KEY_TYPE in your code if you want to change the type of the key from const char* to something else.

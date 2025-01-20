@@ -40,7 +40,7 @@ void ScriptLoader::LoadAll(const std::string &scriptDirPath)
         [assetsBasePath] (YAML::Node scriptDesc, const Triad::FileIO::FPath path) {
             std::string resFilePath = std::filesystem::relative(path, assetsBasePath).generic_string();
             ResTag tag = ResTag(ToStrid("res://" + resFilePath));
-            std::unique_ptr<ResourceLoader> loader = Factory<ResourceLoader>::Create("script");
+            std::unique_ptr<ResourceLoader> loader = Factory_<ResourceLoader>::Create("script");
             loader->Load(tag, scriptDesc["content"]);
     }, true, ".script");
 }

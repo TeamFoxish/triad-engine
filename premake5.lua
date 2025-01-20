@@ -33,6 +33,8 @@ workspace("Triad")
   
   defines({"_CRT_SECURE_NO_WARNINGS"}) -- ignore strncpy unsafety warnings caused by Strid
   defines({"YAML_CPP_STATIC_DEFINE"}) -- tried to define in code, but fails to link yaml-cpp in release configuration
+  --defines({"JPH_FLOATING_POINT_EXCEPTIONS_ENABLED", "JPH_PROFILE_ENABLED"})
+  defines({"JPH_DEBUG_RENDERER", "JPH_OBJECT_STREAM"})
   
   location("build")
   targetdir("bin/%{cfg.buildcfg}")

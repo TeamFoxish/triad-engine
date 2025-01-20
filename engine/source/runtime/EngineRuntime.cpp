@@ -25,6 +25,8 @@
 
 #include "sound/SoundSystem.h"
 
+#include "physics/PhySystem.h"
+
 #include "logs/Logs.h"
 
 
@@ -79,6 +81,10 @@ bool EngineRuntime::Init(const InitParams& params)
 		return false;
 	}
 
+	if (!InitPhysicsSystem()) {
+		return false;
+	}
+
 	globalInputDevice = new InputDevice(this);
 
 	gResourceSys->LoadResource(ToStrid(cfgInitResource.GetRef().data()));
@@ -104,6 +110,7 @@ void EngineRuntime::RunSingleFrame(FrameParams&& params)
 		UpdateSoundListener();
 		gSoundSys->Update(gTempGame->GetDeltaTime());
 	}
+	gPhySys->Update(gTempGame->GetDeltaTime());
 	// TODO: replace with update input sys
 	gTempGame->UpdateFrame(); // TODO: move to simulation branch
 	isRunning = gTempGame->isRunning;
@@ -124,6 +131,7 @@ void EngineRuntime::Shutdown()
 	UIDebug::Destroy();
 	gTempGame->Shutdown();
 	// delete globalInputDevice; crushes
+	TermPhysicsSystem();
 	TermScript(this);
 	extern void TermSceneTree();
 	TermSceneTree();

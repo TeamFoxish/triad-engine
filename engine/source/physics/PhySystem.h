@@ -1,6 +1,5 @@
 #pragma once
 
-#include "PhyEvent.h"
 #include "misc/Handles.h"
 #include "shared/TransformStorage.h" // TEMP
 
@@ -11,6 +10,7 @@
 #include "Jolt/Physics/Body/Body.h"
 #include "jolt/Core/JobSystemThreadPool.h"
 
+// TODO: remove
 using namespace JPH;
 
 class PhySystem {
@@ -19,8 +19,8 @@ public:
         Body* body = nullptr;
         TransformStorage::Handle transform;
 
-        void (*beginOverlap)(PhysicsEntity& other) = nullptr;
-        void (*endOverlap)(PhysicsEntity& other) = nullptr;
+        void (*beginOverlap)(PhysicsEntity&) = nullptr;
+        void (*endOverlap)(PhysicsEntity&) = nullptr;
     };
     using PhysicsStorage = HandleStorage<PhysicsEntity>;
     using PhysicsHandle = PhysicsStorage::Handle;
@@ -34,19 +34,16 @@ public:
     PhysicsEntity& Get(PhysicsHandle handle) { return phy_storage[handle]; }
     const PhysicsEntity& Get(PhysicsHandle handle) const { return phy_storage[handle]; }
     
-    PhysicsEntity& GetEntityByBodyID(const BodyID& id)
+    PhysicsEntity* GetEntityByBodyID(const BodyID& id)
     {
-        PhysicsEntity e;
-
         for (auto& entity : phy_storage)
         {
             if (entity.body->GetID() == id)
             {
-                e = entity;
+                return &entity;
             }
         }
-
-        return e;
+        return nullptr;
     }
    
     PhysicsHandle Add(PhysicsEntity&& entity);
@@ -59,6 +56,8 @@ private:
     JPH::PhysicsSystem physics_system;
     TempAllocatorImpl* temp_allocator;
     JobSystemThreadPool* job_system;
+
+    // add: PhyEvent_array;
 };
 
 extern std::unique_ptr<class PhySystem> gPhySys;
