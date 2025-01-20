@@ -1,5 +1,7 @@
 class PaddleComponent : Component {
+    [Editable]
     float boundY = 10.0f;
+    [Editable]
     float moveSpeed = 1.0f;
 
     PaddleComponent(ICompositer@ parent = null) {

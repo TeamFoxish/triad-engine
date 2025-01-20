@@ -1,4 +1,5 @@
 class PointLightComponent : CompositeComponent {
+    [Editable]
     protected PointLight light;
 
     PointLightComponent(ICompositer@ parent = null) {

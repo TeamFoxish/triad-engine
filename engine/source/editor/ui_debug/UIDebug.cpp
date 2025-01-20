@@ -496,13 +496,6 @@ void UIDebug::DrawGizmo()
                 }
                 ImGui::SameLine();
 
-                if (ImGui::Button("Stop"))
-                {
-                    outliner.gizmo_focused = false;
-                }
-
-                ImGui::SameLine();
-
                 ImGui::RadioButton("World", &gizmoSpace, (int)GizmoSpace::World);
                 ImGui::SameLine();
                 ImGui::RadioButton("Local", &gizmoSpace, (int)GizmoSpace::Local);
@@ -554,6 +547,10 @@ void UIDebug::DrawGizmo()
                 }
 
                 ImGui::End();
+            }
+
+            if (start_simulation) {
+                return;
             }
 
             ImGuizmo::SetOrthographic(false);

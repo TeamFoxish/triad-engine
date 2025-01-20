@@ -1,4 +1,5 @@
 class MeshComponent : CompositeComponent {
+    [Editable]
     protected Renderable renderObj;
 
     MeshComponent(ICompositer@ parent = null) {

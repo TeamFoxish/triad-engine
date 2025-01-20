@@ -1,5 +1,6 @@
 class SoundEmitterComponent : Component {
     protected array<Sound::Event> sndEvents;
+    [Editable]
     protected bool allowFadeOnDestroy = true;
 
     SoundEmitterComponent(ICompositer@ parent = null) {

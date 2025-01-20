@@ -11,6 +11,7 @@ class TestComponent : Component {
     [Editable]
     string someString = "Same";
     Material material;
+    [Editable]
     TestClass testClass;
     TestComponent@ testComponent;
 

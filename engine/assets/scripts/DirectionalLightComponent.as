@@ -1,4 +1,5 @@
 class DirectionalLightComponent : CompositeComponent {
+    [Editable]
     protected DirectionalLight light;
 
     DirectionalLightComponent(ICompositer@ parent = null) {

@@ -31,13 +31,13 @@ private:
         {
         }
 
-        virtual void Show(const SceneTree::Entity& entity) = 0;
+        virtual void Show(const ScriptObject& scpObj, const ScriptObject& compObj, std::vector<std::string_view>& path) = 0;
 
         virtual bool IsDisabled() const;
 
     protected:
         template<typename ValT>
-        void UpdateSceneNodeValue(const SceneTree::Entity& entity, const char* fieldName, const ValT& val);
+        static void UpdateSceneNodeValue(const ScriptObject& entity, const char* fieldName, const ValT& val, const std::vector<std::string_view>& path);
 
     protected:
         FieldIdx fieldIdx;
@@ -55,18 +55,36 @@ private:
     };
 
     std::vector<std::pair<SceneTree::Handle, Component>> components;
+
+    static constexpr float INDENT = 16.0f;
 };
 
 template<typename ValT>
-inline void EditorInspector::FieldBase::UpdateSceneNodeValue(const SceneTree::Entity& entity, const char* fieldName, const ValT& val)
+inline void EditorInspector::FieldBase::UpdateSceneNodeValue(const ScriptObject& obj, const char* fieldName, const ValT& val, const std::vector<std::string_view>& path)
 {
     std::optional<YAML::Node> sceneNodeOpt = 
-        SceneLoader::FindSpawnedComponent(entity.obj);
+        SceneLoader::FindSpawnedComponent(obj);
     if (!sceneNodeOpt) {
+        return;
+    }
+    if (!path.empty()) {
+        YAML::Node node = (*sceneNodeOpt)["overrides"];
+        if (!node) {
+            node = (*sceneNodeOpt)["overrides"] = YAML::Node();
+        }
+        for (const std::string_view& name : path) {
+            if (!node[name]) {
+                node[name] = YAML::Node();
+            }
+            node.reset(node[name]);
+        }
+        node[fieldName] = val;
         return;
     }
     YAML::Node& sceneNode = *sceneNodeOpt;
     sceneNode["overrides"][fieldName] = val;
 }
+
+// TODO: create UpdateSceneNodeValue with upward search ?
 
 #endif // EDITOR

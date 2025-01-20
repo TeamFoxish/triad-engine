@@ -18,12 +18,28 @@ void CResourceHandle::ApplyOverrides(const YAML::Node& _tag)
 	tag = ToStrid(_tag.Scalar());
 }
 
+YAML::Node CResourceHandle::Serialize() const
+{
+	YAML::Node res;
+	res = tag != ResTag() ? tag.string() : "";
+	res.SetTag(STR_TAG);
+	return res;
+}
+
 void CResourceHandleDynamic::ApplyOverrides(const YAML::Node& _tag)
 {
 	if (!_tag.IsScalar() || _tag.Scalar().empty()) {
 		return;
 	}
 	tagStr = _tag.Scalar();
+}
+
+YAML::Node CResourceHandleDynamic::Serialize() const
+{
+	YAML::Node res;
+	res = tagStr;
+	res.SetTag(STR_TAG);
+	return res;
 }
 
 static std::string gTempResTag;
@@ -70,6 +86,14 @@ void CRenderable::ApplyOverrides(const YAML::Node& overrides)
 	if (materialH) {
 		Set_material(CMaterialHandle(ToStrid(materialH.Scalar())));
 	}
+}
+
+YAML::Node CRenderable::Serialize() const
+{
+	YAML::Node res;
+	res["mesh"] = mesh.Serialize();
+	res["material"] = material.Serialize();
+	return res;
 }
 
 // TODO: replace constructors with common mixin

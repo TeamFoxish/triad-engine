@@ -1,7 +1,11 @@
 class PongBallComponent : Component {
+    [Editable]
     float boundY = 10.0f;
+    [Editable]
     float boundX = 10.0f;
+    [Editable]
     float moveSpeed = 1.0f;
+    [Editable]
     float startMoveSpeed = 0.0f;
     Math::Vector3 moveDir = Math::Vector3(3.0, 2.0, 0.0);
 

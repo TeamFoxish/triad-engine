@@ -1,9 +1,13 @@
 class OrbiterComponent : Component {
     // TODO: add overrides for vectors separatly from transform
     Math::Vector3 center = Math::Vector3(0, 0, 0);
+    [Editable]
     float radius = 5.0f;
+    [Editable]
     float angle = 0.0f;
+    [Editable]
     float moveSpeed = 1.0f;
+    [Editable]
     float rotSpeed = 1.0f;
 
     OrbiterComponent(ICompositer@ parent = null) {
