@@ -34,24 +34,24 @@ enum NavMeshPartitionType
 };
 
 struct RasterizationConfig {
-	float cellSize;
-	float cellHeigth;
+	float cellSize = 0.30f;
+	float cellHeigth = 0.20f;
 };
 
 struct RegionConfig {
-	float minRegionSize;
-	float mergedRegionSize;
+	float minRegionSize = 8.0f;
+	float mergedRegionSize = 20.0f;
 };
 
 struct PolygonizationConfig {
-	float maxEdgeLength;
-	float maxEdgeError;
-	uint16_t vertsPerPoly;
+	float maxEdgeLength = 12.0f;
+	float maxEdgeError = 1.3f;
+	float vertsPerPoly = 6.0f;
 };
 
 struct DetailMesh {
-	uint16_t sampleDistance;
-	uint16_t maxSampleError;
+	float sampleDistance = 6.0f;
+	float maxSampleError = 1.0f;
 };
 
 struct OffMeshConnection {
@@ -65,17 +65,17 @@ struct OffMeshConnection {
 };
 
 struct BuildConfig {
-    float bMin[3];
-    float bMax[3];
-    bool filterLowHangingObstacles;
-    bool filterLedgeSpans;
-    bool filterWalkableLowHeightSpans;
-    NavMeshPartitionType partitionType;
-	RasterizationConfig rasterization;
-	RegionConfig region;
-	PolygonizationConfig polygonization;
-	DetailMesh detail;
-	std::vector<OffMeshConnection> OffMeshConnections;
+    float bMin[3] = {-10000, -10000, -10000};
+    float bMax[3] = {10000, 10000, 10000};
+    bool filterLowHangingObstacles = true;
+    bool filterLedgeSpans = true;
+    bool filterWalkableLowHeightSpans = true;
+    NavMeshPartitionType partitionType = PARTITION_WATERSHED;
+	RasterizationConfig rasterization = {};
+	RegionConfig region = {};
+	PolygonizationConfig polygonization = {};
+	DetailMesh detail = {};
+	std::vector<OffMeshConnection> OffMeshConnections = {};
 };
 
 static const int MAX_CONVEXVOL_PTS = 12;
@@ -91,7 +91,11 @@ struct ConvexVolume
 
 class NavMeshBuilder {
     public:
+		NavMeshBuilder();
+		~NavMeshBuilder();
        	bool buildNavMesh(std::vector<Renderable> meshes, NavMeshAgent* agent, BuildConfig bconfig, std::vector<ConvexVolume> convexVolumes, NavMesh* nav);
+		// Not thread-safe
+		BuildConfig* GetCurrentConfig() { return currentConfig; }
     private:
-
+		BuildConfig* currentConfig = nullptr;
 };

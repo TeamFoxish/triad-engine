@@ -27,6 +27,8 @@
 
 #include "physics/PhySystem.h"
 
+#include "navigation/NavMeshSystem.h"
+
 #include "logs/Logs.h"
 
 
@@ -85,6 +87,10 @@ bool EngineRuntime::Init(const InitParams& params)
 		return false;
 	}
 
+	if (!InitNavigation(this)) {
+		return false;
+	}
+
 	globalInputDevice = new InputDevice(this);
 
 	gResourceSys->LoadResource(ToStrid(cfgInitResource.GetRef().data()));
@@ -131,6 +137,7 @@ void EngineRuntime::Shutdown()
 	UIDebug::Destroy();
 	gTempGame->Shutdown();
 	// delete globalInputDevice; crushes
+	TermNavigation(this);
 	TermPhysicsSystem();
 	TermScript(this);
 	extern void TermSceneTree();

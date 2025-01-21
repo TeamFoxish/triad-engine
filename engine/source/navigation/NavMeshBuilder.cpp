@@ -14,12 +14,22 @@
 #include "render/mesh/Mesh.h"
 #include <algorithm>
 
+NavMeshBuilder::NavMeshBuilder()
+{
+	currentConfig = new BuildConfig();
+}
+
+NavMeshBuilder::~NavMeshBuilder()
+{
+	delete currentConfig;
+}
+
 bool NavMeshBuilder::buildNavMesh(
     std::vector<Renderable> meshes,
-    NavMeshAgent* agent,
+    NavMeshAgent *agent,
     BuildConfig config,
-	std::vector<ConvexVolume> convexVolumes,
-	NavMesh* nav)
+    std::vector<ConvexVolume> convexVolumes,
+    NavMesh *nav)
 {
     if (meshes.empty())
 	{
