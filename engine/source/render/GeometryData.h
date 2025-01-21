@@ -24,4 +24,11 @@ struct GeometryData {
 	const std::vector<uint32_t> offsets;
 
 	int idxNum;
+
+#ifdef EDITOR
+	const void* vertices;
+	int verticesSize; 
+	const uint32_t* indices;
+	int indicesSize;
+#endif //EDITOR
 };

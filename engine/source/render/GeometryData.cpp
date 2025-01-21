@@ -49,6 +49,13 @@ GeometryData::GeometryData(
 
 	device->CreateBuffer(&indexBufDesc, &indexData, &indexBuf);
 	idxNum = idxSize / sizeof(uint32_t);
+
+#ifdef EDITOR
+	vertices = vertData;
+	verticesSize = vertSize;
+	indices = idxData;
+	indicesSize = idxNum;
+#endif //EDITOR
 }
 
 void GeometryData::Activate(ID3D11DeviceContext* context) const

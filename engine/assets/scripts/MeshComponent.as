@@ -1,5 +1,6 @@
 class MeshComponent : CompositeComponent {
     protected Renderable renderObj;
+    private bool isDynamic = false;
 
     MeshComponent(ICompositer@ parent = null) {
         super(parent);
@@ -15,4 +16,7 @@ class MeshComponent : CompositeComponent {
     void OnDestroy() {
         renderObj = Renderable();
     }
+
+    bool GetIsDynamic() { return isDynamic; }
+    void SetIsDynamic(bool _isDynamic) { isDynamic = _isDynamic; }
 }
