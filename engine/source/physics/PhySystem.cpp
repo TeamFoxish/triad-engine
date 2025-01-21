@@ -3,7 +3,6 @@
 #include "Physics.h"
 #include "logs/Logs.h"
 
-#include "Jolt/Core/Factory.h"
 
 std::unique_ptr<class PhySystem> gPhySys;
 
@@ -18,8 +17,23 @@ static void TraceImpl(const char* inFMT, ...)
 	va_end(list);
 
 	// Print to the TTY
-	//cout << buffer << endl;
+	LOG_INFO("Trace {}", buffer);
 }
+
+// An example activation listener
+class MyBodyActivationListener : public BodyActivationListener
+{
+public:
+	virtual void OnBodyActivated(const BodyID& inBodyID, uint64 inBodyUserData) override
+	{
+		//cout << "A body got activated" << endl;
+	}
+
+	virtual void OnBodyDeactivated(const BodyID& inBodyID, uint64 inBodyUserData) override
+	{
+		//cout << "A body went to sleep" << endl;
+	}
+};
 
 // An example contact listener
 // Interface with functions to call onOverlap Begin, Continue and End
@@ -43,8 +57,16 @@ public:
 		auto entity2 = gPhySys->GetEntityByBodyID(inBody2.GetID());
 		if (!entity1 || !entity2) {
 			// log error
+			LOG_ERROR("PhysicsEntity was not found");
 			return;
 		}
+
+		PhySystem::PhyEvent event;
+		event.type = PhySystem::PhyEvenType::OverlapStart;
+		event.body1 = entity1;
+		event.body2 = entity2;
+
+		gPhySys->AddEventToQueue(event);
 
 		entity1->beginOverlap(*entity2);
 		entity2->beginOverlap(*entity1);
@@ -63,68 +85,29 @@ public:
 		auto entity2 = gPhySys->GetEntityByBodyID(inSubShapePair.GetBody2ID());
 		if (!entity1 || !entity2) {
 			// log error
+			LOG_ERROR("PhysicsEntity was not found");
 			return;
 		}
+
+		PhySystem::PhyEvent event;
+		event.type = PhySystem::PhyEvenType::OverlapEnd;
+		event.body1 = entity1;
+		event.body2 = entity2;
+
+		gPhySys->AddEventToQueue(event);
 
 		entity1->endOverlap(*entity2);
 		entity2->endOverlap(*entity1);
 	}
 };
 
-// An example activation listener
-class MyBodyActivationListener : public BodyActivationListener
-{
-public:
-	virtual void OnBodyActivated(const BodyID& inBodyID, uint64 inBodyUserData) override
-	{
-		//cout << "A body got activated" << endl;
-	}
-
-	virtual void OnBodyDeactivated(const BodyID& inBodyID, uint64 inBodyUserData) override
-	{
-		//cout << "A body went to sleep" << endl;
-	}
-};
-
-// Callback for asserts, connect this to your own assert handler if you have one
-static bool AssertFailedImpl(const char* inExpression, const char* inMessage, const char* inFile, uint inLine)
-{
-	// Print to the TTY
-	//cout << inFile << ":" << inLine << ": (" << inExpression << ") " << (inMessage != nullptr ? inMessage : "") << endl;
-
-	// Breakpoint
-	return true;
-};
 
 bool PhySystem::Init()
 {
 	RegisterDefaultAllocator();
-	//JPH::Trace = TraceImpl;
 
+	JPH::Trace = TraceImpl;
 	JPH::Factory::sInstance = new JPH::Factory();
-	
-	{
-		//if (!VerifyJoltVersionIDInternal(JPH_VERSION_ID))
-		//{
-		//	Trace("Version mismatch, make sure you compile the client code with the same Jolt version and compiler definitions!");
-		//	uint64 mismatch = JPH_VERSION_ID ^ JPH_VERSION_ID;
-		//	auto check_bit = [mismatch](int inBit, const char* inLabel) { if (mismatch & (uint64(1) << (inBit + 23))) Trace("Mismatching define %s.", inLabel); };
-		//	check_bit(1, "JPH_DOUBLE_PRECISION");
-		//	check_bit(2, "JPH_CROSS_PLATFORM_DETERMINISTIC");
-		//	check_bit(3, "JPH_FLOATING_POINT_EXCEPTIONS_ENABLED");
-		//	check_bit(4, "JPH_PROFILE_ENABLED");
-		//	check_bit(5, "JPH_EXTERNAL_PROFILE");
-		//	check_bit(6, "JPH_DEBUG_RENDERER");
-		//	check_bit(7, "JPH_DISABLE_TEMP_ALLOCATOR");
-		//	check_bit(8, "JPH_DISABLE_CUSTOM_ALLOCATOR");
-		//	check_bit(9, "JPH_OBJECT_LAYER_BITS");
-		//	check_bit(10, "JPH_ENABLE_ASSERTS");
-		//	check_bit(11, "JPH_OBJECT_STREAM");
-		//	std::abort();
-		//}
-	}
-
-	//JPH_IF_ENABLE_ASSERTS(JPH::AssertFailed = AssertFailedImpl;)
 
 	RegisterTypes();
 
@@ -146,8 +129,11 @@ bool PhySystem::Init()
 	physics_system.Init(cMaxBodies, cNumBodyMutexes, cMaxBodyPairs, cMaxContactConstraints,
 		broad_phase_layer_interface, object_vs_broadphase_layer_filter, object_vs_object_layer_filter);
 
+	static MyBodyActivationListener body_activation_listener;
+	physics_system.SetBodyActivationListener(&body_activation_listener);
+
 	// Setup collision actions
-	MyContactListener contact_listener;
+	static MyContactListener contact_listener;
 	physics_system.SetContactListener(&contact_listener);
 
 	return true;
@@ -155,6 +141,7 @@ bool PhySystem::Init()
 
 void PhySystem::Update(float deltaTime)
 {
+	CallEventsFromQueue();
 	physics_system.Update(deltaTime, 1, temp_allocator, job_system);
 }
 
@@ -180,6 +167,23 @@ auto PhySystem::Add(PhysicsEntity&& entity) -> PhysicsHandle
 	physics_system.OptimizeBroadPhase();  // Call when create new body. Not every frame!
 
 	return handle;
+}
+
+void PhySystem::CallEventsFromQueue()
+{
+	while (!event_queue.empty())
+	{
+		PhyEvent event = event_queue.front();
+		
+		uint32_t body1_ind = event.body1->body->GetID().GetIndex();
+		uint32_t body2_ind = event.body2->body->GetID().GetIndex();
+		std::string event_type = (event.type == PhyEvenType::OverlapStart) ? "OverlapStart" : "OverlapEnd";
+		LOG_INFO("Body1:{} and Body2:{} has PhyEvent:{}", body1_ind, body2_ind, event_type);
+
+		// call PhyEvents
+		
+		event_queue.pop();
+	}
 }
 
 bool InitPhysicsSystem()

@@ -13,7 +13,8 @@
 #include <iostream>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
 
-#include <physics/Physics.h>
+#include "physics/Physics.h"
+
 #include "logs/Logs.h"
 
 PlayerBall::PlayerBall(Game* game)
@@ -27,13 +28,13 @@ void PlayerBall::Initialize(Compositer* parent)
 	{
 		BodyInterface& body_interface = gPhySys->GetPhySystem()->GetBodyInterface();
 
-		BoxShapeSettings floor_shape_settings(Vec3(100.0f, 1.0f, 100.0f));
+		BoxShapeSettings floor_shape_settings(Vec3(10.0f, 10.0f, 10.0f));
 		floor_shape_settings.SetEmbedded();
 
 		ShapeSettings::ShapeResult floor_shape_result = floor_shape_settings.Create();
 		ShapeRefC floor_shape = floor_shape_result.Get();
 
-		BodyCreationSettings floor_settings(floor_shape, RVec3(0.0, -1.0, 0.0), Quat::sIdentity(), EMotionType::Static, Layers::MOVING);
+		BodyCreationSettings floor_settings(floor_shape, RVec3(0.0, 0.0, 0.0), Quat::sIdentity(), EMotionType::Dynamic, Layers::MOVING);
 
 		body = body_interface.CreateBody(floor_settings);
 		body_interface.AddBody(body->GetID(), EActivation::Activate);
