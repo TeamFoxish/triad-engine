@@ -8,8 +8,10 @@ class TestComponent : Component {
     int someInt = 1;
     [Editable]
     float someFloat = 30.0;
+    [Editable]
     string someString = "Same";
     Material material;
+    [Editable]
     TestClass testClass;
     TestComponent@ testComponent;
 

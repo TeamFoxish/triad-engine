@@ -30,6 +30,7 @@ public:
 	virtual Strid GetType() const { return Strid{}; }
 
 	void ApplyOverrides(const YAML::Node& tag) override;
+	YAML::Node Serialize() const override;
 
 protected:
 	ResTag tag;
@@ -52,6 +53,8 @@ public:
 
 	void ApplyOverrides(const YAML::Node& tag) override;
 
+	YAML::Node Serialize() const override;
+
 	void* Load() const;
 
 protected:
@@ -71,7 +74,7 @@ public:
 
 	void Set(const std::shared_ptr<Material>& material) { cached = material; }
 
-	void Resolve(std::shared_ptr<Material>& out) { out = cached = RenderResources::Instance().materials.Get(tag); }
+	void Resolve(std::shared_ptr<Material>& out) { out = cached = RenderResources::Instance().materials.GetRef(tag, cached); }
 
 private:
 	// cache ptr to identify the resource even if it was changed by engine
@@ -90,7 +93,7 @@ public:
 
 	void Set(const std::shared_ptr<Mesh>& mesh) { cached = mesh; }
 
-	void Resolve(std::shared_ptr<Mesh>& out) { out = cached = RenderResources::Instance().meshes.Get(tag); }
+	void Resolve(std::shared_ptr<Mesh>& out) { out = cached = RenderResources::Instance().meshes.GetRef(tag, cached); }
 
 private:
 	// cache ptr to identify the resource even if it was changed by engine
@@ -132,6 +135,8 @@ public:
 	}
 
 	void ApplyOverrides(const YAML::Node& overrides) override;
+
+	YAML::Node Serialize() const override;
 
 	Renderable& GetRenderObj() const { return RenderableStorage::Instance().Get(renderObj); }
 

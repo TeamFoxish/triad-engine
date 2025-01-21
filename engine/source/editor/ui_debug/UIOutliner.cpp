@@ -55,6 +55,9 @@ void Outliner::Update()
     if (selectedNode.id_ >= 0 && !gSceneTree->IsValidHandle(selectedNode)) {
         ClearSelectedNode();
     }
+    if (UIDebug::start_simulation) {
+        return; // ignore clicks during simulation
+    }
 
     static int clicksCount = 0;
     const int newClicksCount = ImGui::GetMouseClickedCount(ImGuiMouseButton_Left);

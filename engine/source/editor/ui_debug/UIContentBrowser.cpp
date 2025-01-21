@@ -10,6 +10,8 @@
 #include "backends/imgui_impl_dx11.h"
 #include "ImGuiFD.h"
 
+#include "editor/workflow/AssetManager.h"
+
 #include "render/RenderSystem.h"
 #include "render/Renderer.h"
 
@@ -25,17 +27,12 @@ static std::filesystem::path file_to_delete;
 
 static bool openFileNameWnd = false;
 
-const enum class assetsTypes
-{
-    None,
-    Component,
-    Script,
-    Material
-};
-static assetsTypes a_type = assetsTypes::None;
+using AssetType = AssetManager::AssetType;
+static AssetType a_type = AssetType::None;
 
-void ContentBrowser::Init()
+void ContentBrowser::Init(AssetManager* _assetManager)
 {
+    assetManager = _assetManager;
     curr_dir = assets_dir;
 
     std::string icon_path = "icons\\directory.png";
@@ -147,18 +144,20 @@ void ContentBrowser::CreateNewFile(const std::string& dirTo, const std::string& 
 
 void ContentBrowser::CreateComponent(const std::string& fileName)
 {
-    if (
+    
+
+   /* if (
         std::filesystem::exists(std::filesystem::path(components_dir.string() + "\\" + fileName + ".component"))
         || std::filesystem::exists(std::filesystem::path(components_dir.string() + "\\" + fileName + ".as"))
         || std::filesystem::exists(std::filesystem::path(components_dir.string() + "\\" + fileName + ".script"))
         )
     {
         return;
-    }
+    }*/
 
-    CreateNewFile(components_dir.string(), fileName, ".component");
+    /*CreateNewFile(components_dir.string(), fileName, ".component");
     CreateNewFile(scripts_dir.string(), fileName, ".as");
-    CreateNewFile(scripts_dir.string(), fileName, ".script");
+    CreateNewFile(scripts_dir.string(), fileName, ".script");*/
 }
 
 void ContentBrowser::CreateScript(const std::string& fileName)
@@ -229,6 +228,7 @@ void ContentBrowser::DrawPopups()
         ImGui::EndPopup();
     }
 
+    static bool isComposite = false; // TEMP
     // Content browser popup
     if (ImGui::BeginPopup("cont_brows_popup"))
     {
@@ -236,21 +236,29 @@ void ContentBrowser::DrawPopups()
         {
             if (ImGui::MenuItem("Create Component"))
             {
-                a_type = assetsTypes::Component;
+                a_type = AssetType::Component;
                 openFileNameWnd = true;
+                isComposite = false;
+            }
+
+            if (ImGui::MenuItem("Create Composite"))
+            {
+                a_type = AssetType::Component;
+                openFileNameWnd = true;
+                isComposite = true;
             }
 
             if (ImGui::MenuItem("Create Script"))
             {
-                a_type = assetsTypes::Script;
+                a_type = AssetType::Script;
                 openFileNameWnd = true;
             }
 
-            if (ImGui::MenuItem("Create Material"))
+            /*if (ImGui::MenuItem("Create Material"))
             {
-                a_type = assetsTypes::Material;
+                a_type = AssetType::Material;
                 openFileNameWnd = true;
-            }
+            }*/
 
             ImGui::EndMenu();
         }
@@ -278,29 +286,17 @@ void ContentBrowser::DrawPopups()
 
         if (ImGui::Button("Create", ImVec2(120, 0)))
         {
-            // ToDo: check if name is correct
-            switch (a_type)
-            {
-            case assetsTypes::Component:
-                CreateComponent(fileName);
-                break;
-
-            case assetsTypes::Script:
-                CreateScript(fileName);
-                break;
-
-            case assetsTypes::Material:
-                CreateMaterial(fileName);
-                break;
-
-            case assetsTypes::None:
-            default:
-                break;
-            }
+            assetManager->CreateAsset({
+                .type = a_type,
+                .dir = curr_dir,
+                .name = fileName,
+                .isComposite = isComposite // TEMP
+            });
 
             fileName = "asset";
             openFileNameWnd = false;
-            a_type = assetsTypes::None;
+            isComposite = false;
+            a_type = AssetType::None;
             ImGui::CloseCurrentPopup();
         }
 

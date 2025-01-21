@@ -5,6 +5,7 @@ class SingleSoundComponent : Component {
     [Show]
     protected bool isPlaying = false;
 
+    [Editable]
     protected string eventName;
 
     SingleSoundComponent(ICompositer@ parent = null) {

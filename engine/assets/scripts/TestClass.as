@@ -1,5 +1,6 @@
 class TestClass {
 
+    [Editable]
     string resourceExample = "undefined";
 
     void Print() {

@@ -30,10 +30,10 @@ void MeshRenderer::DrawGeometryOnly(RenderContext& ctx, const Renderable& obj)
 	auto cbPS = MeshRenderer::CBPSGeom{};
 	auto material = obj.material ? obj.material : RenderResources::Instance().materials.Get(ToStrid("res://materials/default_mesh.material")); // TEMP
 	cbPS.ambientColor = Math::Color{ 0.2f, 0.2f, 0.2f };
-	cbPS.isTextureSet = obj.material->HasBindedTextures() ? 1 : 0;
+	cbPS.isTextureSet = material->HasBindedTextures() ? 1 : 0;
 	cbPS.entityId = obj.entityId;
 	shader->SetCBPS(ctx.context, 0, &cbPS);
-	obj.material->Use(ctx);
+	material->Use(ctx);
 	for (const Mesh::MeshNode& node : obj.mesh->GetNodes()) {
 		// TODO: multiply component world matrix by node local transform (if not identity)
 		cbVS.worldTransform = SharedStorage::Instance().transforms.AccessRead(obj.transform).GetMatrix().Transpose();

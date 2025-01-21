@@ -1,4 +1,5 @@
 class MeshComponent : CompositeComponent {
+    [Editable]
     protected Renderable renderObj;
     private bool isDynamic = false;
 

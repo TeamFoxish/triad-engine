@@ -23,6 +23,25 @@ public:
 	bool Create(const std::string& title, int width, int height) override;
 	void Destroy() override;
 
+	// deprecated
+	void SetWindowDimensions(int _width, int _height) 
+	{ 
+		width = _width; 
+		height = _height;
+	}
+
+	void SetWindowClientDimension(int _width, int _height) 
+	{
+		clientWidth = _width;
+		clientHeight = _height;
+	}
+
+	void SetWindowBorderedDimension(int _width, int _height)
+	{
+		borderedWidth = _width;
+		borderedHeight = _height;
+	}
+
 	HWND hWnd;
 };
 
@@ -69,7 +88,25 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT umessage, WPARAM wparam, LPARAM lparam)
 		if (!gRenderSys || gRenderSys->GetRenderer() == nullptr) {
 			return true;
 		}
-		gRenderSys->GetRenderer()->GetWindow()->windowResized.Broadcast((int)width, (int)height);
+		wndWindow* window = static_cast<wndWindow*>(gRenderSys->GetRenderer()->GetWindow());
+		window->SetWindowDimensions((int)width, (int)height);
+
+		RECT wndRect;
+		if (GetWindowRect(window->hWnd, &wndRect)) {
+			const int borderedWidth = wndRect.right - wndRect.left;
+			const int borderedHeight = wndRect.bottom - wndRect.top;
+			window->SetWindowBorderedDimension(borderedWidth, borderedHeight);
+		}
+
+		RECT clientRect;
+		if (GetClientRect(window->hWnd, &clientRect)) {
+			const int clientWidth = clientRect.right;
+			const int clientHeight = clientRect.bottom;
+			window->SetWindowClientDimension(clientWidth, clientHeight);
+		}
+
+		window->windowResized.Broadcast((int)width, (int)height);
+
 		return true;
 	}
 	case WM_INPUT:
@@ -162,7 +199,7 @@ bool wndWindow::Create(const std::string& title, int _width, int _height)
 	RECT windowRect = { 0, 0, static_cast<LONG>(width), static_cast<LONG>(height) };
 	AdjustWindowRect(&windowRect, WS_OVERLAPPEDWINDOW, FALSE);
 
-	auto dwStyle = WS_SYSMENU | WS_CAPTION | WS_MINIMIZEBOX | WS_THICKFRAME;
+	auto dwStyle = WS_SYSMENU | WS_CAPTION | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_THICKFRAME;
 
 	auto posX = (GetSystemMetrics(SM_CXSCREEN) - width) / 2;
 	auto posY = (GetSystemMetrics(SM_CYSCREEN) - height) / 2;
@@ -181,6 +218,18 @@ bool wndWindow::Create(const std::string& title, int _width, int _height)
 	SetForegroundWindow(hWnd);
 	SetFocus(hWnd);
 	ShowCursor(true);
+
+	RECT wndRect;
+	if (GetWindowRect(hWnd, &wndRect)) {
+		borderedWidth = wndRect.right - wndRect.left;
+		borderedHeight = wndRect.bottom - wndRect.top;
+	}
+
+	RECT clientRect;
+	if (GetClientRect(hWnd, &clientRect)) {
+		clientWidth = clientRect.right;
+		clientHeight = clientRect.bottom;
+	}
 
 	return true;
 }

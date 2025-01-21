@@ -46,7 +46,7 @@ public:
 
     LightT& GetLight() const { return StorageT::Instance().Get(handle); }
 
-    static Math::Vector3 GetColor(ChildT* self) { return self->GetLight().GetColor().ToVector3(); }
+    static Math::Vector3 GetColor(const ChildT* self) { return self->GetLight().GetColor().ToVector3(); }
     static void SetColor(ChildT* self, const Math::Vector3& color) { self->GetLight().SetColor(Math::Color(color)); }
 
     static void CreateDefault(ChildT* self) { new(self) ChildT(); }
@@ -77,17 +77,38 @@ public:
     }
 
     void ApplyOverrides(const YAML::Node& overrides) override;
+
+    YAML::Node Serialize() const override;
 };
+
+static float ParseFloat(const YAML::Node& node) 
+{
+    if (!node.IsScalar() || node.Scalar().empty()) {
+        return 0.0f;
+    }
+    return node.as<float>();
+}
 
 void CDirectionalLight::ApplyOverrides(const YAML::Node& overrides)
 {
     if (const YAML::Node& col = overrides["color"]) {
         Math::Vector3 colVal = GetColor(this);
-        colVal.x = col["b"] ? col["b"].as<float>() : colVal.x;
-        colVal.y = col["g"] ? col["g"].as<float>() : colVal.y;
-        colVal.z = col["r"] ? col["r"].as<float>() : colVal.z;
+        colVal.x = col["b"] ? ParseFloat(col["b"]): colVal.x;
+        colVal.y = col["g"] ? ParseFloat(col["g"]): colVal.y;
+        colVal.z = col["r"] ? ParseFloat(col["r"]): colVal.z;
         SetColor(this, colVal);
     }
+}
+
+YAML::Node CDirectionalLight::Serialize() const
+{
+    YAML::Node res;
+    YAML::Node& col = res["color"] = YAML::Node();
+    const Math::Vector3 colVal = GetColor(this);
+    col["r"] = colVal.z;
+    col["g"] = colVal.y;
+    col["b"] = colVal.x;
+    return res;
 }
 
 class CPointLight : public CNativeObject, public CLightSource<CPointLight, PointLight> {
@@ -115,23 +136,40 @@ public:
     void SetRadius(float radius) { return GetLight().SetRadius(radius); }
 
     void ApplyOverrides(const YAML::Node& overrides) override;
+
+    YAML::Node Serialize() const override;
 };
 
 void CPointLight::ApplyOverrides(const YAML::Node& overrides)
 {
+    PointLight& light = GetLight();
     if (const YAML::Node& col = overrides["color"]) {
         Math::Vector3 colVal = GetColor(this);
-        colVal.x = col["b"] ? col["b"].as<float>() : colVal.x;
-        colVal.y = col["g"] ? col["g"].as<float>() : colVal.y;
-        colVal.z = col["r"] ? col["r"].as<float>() : colVal.z;
-        SetColor(this, colVal);
+        colVal.x = col["b"] ? ParseFloat(col["b"]) : colVal.x;
+        colVal.y = col["g"] ? ParseFloat(col["g"]) : colVal.y;
+        colVal.z = col["r"] ? ParseFloat(col["r"]) : colVal.z;
+        light.SetColor(Math::Color(colVal));
     }
     if (const YAML::Node& intense = overrides["intensity"]) {
-        SetIntensity(intense.as<float>());
+        light.SetIntensity(ParseFloat(intense));
     }
     if (const YAML::Node& radius = overrides["radius"]) {
-        SetIntensity(radius.as<float>());
+        light.SetRadius(ParseFloat(radius));
     }
+}
+
+YAML::Node CPointLight::Serialize() const
+{
+    YAML::Node res;
+    const PointLight& light = GetLight();
+    YAML::Node& col = res["color"] = YAML::Node();
+    const Math::Color colVal = light.GetColor();
+    col["r"] = colVal.z;
+    col["g"] = colVal.y;
+    col["b"] = colVal.x;
+    res["intensity"] = light.GetIntensity();
+    res["radius"] = light.GetRadius();
+    return res;
 }
 
 void RegisterLightsBindings()

@@ -89,7 +89,7 @@ void UIDebug::Init(Window* window)
 
 #ifdef EDITOR
     outliner.Init();
-    contentBrowser.Init();
+    contentBrowser.Init(&static_cast<EditorRuntime*>(gEngineRuntime)->assetManager);
 #endif // EDITOR
 }
 
@@ -112,13 +112,17 @@ void UIDebug::TestDraw()
     {
         // Docking space
         {
-            ImVec2 wSize{
-                (float)gRenderSys->GetRenderer()->GetWindow()->GetWidth(),
-                (float)gRenderSys->GetRenderer()->GetWindow()->GetHeigth()
+            const ImVec2 wSize{
+                (float)gRenderSys->GetRenderer()->GetWindow()->GetBorderedWidth(),
+                (float)gRenderSys->GetRenderer()->GetWindow()->GetBorderedHeight()
+            };
+            const ImVec2 wWorkSize{
+                (float)gRenderSys->GetRenderer()->GetWindow()->GetClientWidth(),
+                (float)gRenderSys->GetRenderer()->GetWindow()->GetClientHeight() - 20
             };
             ImGuiViewport* imViewPort = ImGui::GetMainViewport();
             imViewPort->Size = wSize;
-            imViewPort->WorkSize = wSize;
+            imViewPort->WorkSize = wWorkSize;
             ImGui::DockSpaceOverViewport(0, imViewPort);
         }
 
@@ -337,6 +341,7 @@ void UIDebug::Destroy()
 
 #ifdef EDITOR
     viewportInpContext.reset();
+    inspector.reset();
 #endif
 
     ImGui_ImplDX11_Shutdown();
@@ -491,13 +496,6 @@ void UIDebug::DrawGizmo()
                 }
                 ImGui::SameLine();
 
-                if (ImGui::Button("Stop"))
-                {
-                    outliner.gizmo_focused = false;
-                }
-
-                ImGui::SameLine();
-
                 ImGui::RadioButton("World", &gizmoSpace, (int)GizmoSpace::World);
                 ImGui::SameLine();
                 ImGui::RadioButton("Local", &gizmoSpace, (int)GizmoSpace::Local);
@@ -549,6 +547,10 @@ void UIDebug::DrawGizmo()
                 }
 
                 ImGui::End();
+            }
+
+            if (start_simulation) {
+                return;
             }
 
             ImGuizmo::SetOrthographic(false);

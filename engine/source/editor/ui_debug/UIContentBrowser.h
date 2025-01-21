@@ -5,10 +5,12 @@
 
 struct ID3D11ShaderResourceView;
 
+class AssetManager;
+
 class ContentBrowser
 {
 public:
-    void Init();
+    void Init(AssetManager* assetManager);
     void Draw();
 
     ~ContentBrowser();
@@ -29,4 +31,5 @@ private:
     ID3D11ShaderResourceView* directoryTexture = nullptr;
     ID3D11ShaderResourceView* fileTexture = nullptr;
 
+    AssetManager* assetManager = nullptr;
 };
