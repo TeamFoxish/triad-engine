@@ -1,0 +1,4 @@
+content:
+  class: {{ component.name }}
+  module: {{ script.module }}
+type: component

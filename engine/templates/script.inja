@@ -1,0 +1,4 @@
+content:
+  source_file: {{ script.path }}
+  module: {{ script.module }}
+type: script

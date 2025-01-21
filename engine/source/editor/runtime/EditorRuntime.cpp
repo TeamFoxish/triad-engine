@@ -35,6 +35,8 @@ bool EditorRuntime::Init(const InitParams& params)
 	UIDebug::onSimulationStart.AddRaw(this, &EditorRuntime::HandleSimulationStart);
 	UIDebug::onSimulationEnd.AddRaw(this, &EditorRuntime::HandleSimulationEnd);
 
+	assetManager.Init();
+
 	return engRuntime->Init(engParams);
 }
 

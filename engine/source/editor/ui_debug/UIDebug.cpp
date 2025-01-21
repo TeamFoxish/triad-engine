@@ -89,7 +89,7 @@ void UIDebug::Init(Window* window)
 
 #ifdef EDITOR
     outliner.Init();
-    contentBrowser.Init();
+    contentBrowser.Init(&static_cast<EditorRuntime*>(gEngineRuntime)->assetManager);
 #endif // EDITOR
 }
 

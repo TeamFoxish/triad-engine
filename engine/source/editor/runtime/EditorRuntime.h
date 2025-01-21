@@ -4,6 +4,7 @@
 
 #include "runtime/RuntimeIface.h"
 
+#include "editor/workflow/AssetManager.h"
 #include "EditorController.h"
 
 #include <memory>
@@ -31,6 +32,9 @@ public:
 private:
 	void HandleSimulationStart();
 	void HandleSimulationEnd();
+
+public:
+	AssetManager assetManager;
 
 private:
 	EditorController controller;

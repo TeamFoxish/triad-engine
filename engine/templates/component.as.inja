@@ -1,0 +1,23 @@
+class {{ component.name }} : {% if component.isComposite %}CompositeComponent{% else %}Component{% endif %} {
+    {{ component.name }}(ICompositer@ parent = null) {
+        super(@parent);
+        
+        // avoid reading member properties values here
+    }
+    
+    void Init() {
+        {% if component.isComposite %}CompositeComponent{% else %}Component{% endif %}::Init();
+    
+        // the best place to initialize component state
+    }
+
+    void Update(float deltaTime) {
+        {% if component.isComposite %}CompositeComponent{% else %}Component{% endif %}::Update(deltaTime);
+    
+        // called each frame
+    }
+    
+    void OnDestroy() {
+        // called on component destruction with Destroy() call
+    }
+};
