@@ -40,8 +40,14 @@ content:
               renderObj:
                 material: res://materials/cheese.material
                 mesh: res://meshes/cheese.mesh
-    cheese1: 
+    cheese1:
       prefab: res://prefabs/cheese.prefab
+      overrides:
+        transform:
+          position:
+            x: -4.14861536
+            y: 0
+            z: 1.06075692
     player:
       prefab: res://prefabs/player.prefab
 type: scene

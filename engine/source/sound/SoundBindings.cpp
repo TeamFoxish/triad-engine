@@ -167,7 +167,7 @@ private:
 private:
     SoundSystem::EventHandle handle;
 
-#ifndef NDEBUG
+#ifdef LOG_ENABLED
 	Strid name;
 #endif
 };

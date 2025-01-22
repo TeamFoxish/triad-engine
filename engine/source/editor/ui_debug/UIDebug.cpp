@@ -314,7 +314,7 @@ void UIDebug::TestDraw()
         }
 
         //ImGui::SetNextWindowSize(ImGui::GetWindowSize());
-        bool show_demo_window = true;
+        bool show_demo_window = false;
         if (show_demo_window)
             ImGui::ShowDemoWindow(&show_demo_window);
     }

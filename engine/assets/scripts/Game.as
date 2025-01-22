@@ -9,6 +9,7 @@ namespace Game {
             Private::scenes[i].Init();
         }
 
+        /*
         Math::Transform@ trs = Math::Transform();
         trs.SetLocalPosition(Math::Vector3(3.0f, 3.0f, 3.0f));
         Game::SpawnPrefab(prefabRef.Load(), trs);
@@ -19,6 +20,7 @@ namespace Game {
         }
 
         Game::SpawnComposite(meshCompRef.Load());
+        */
 
         println("LOAD");
         //TransitToScene(sceneRef.Load());

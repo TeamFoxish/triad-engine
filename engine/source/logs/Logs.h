@@ -19,7 +19,7 @@ private:
 #define __FILENAME__ (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__)
 #define __CALL_FROM__ std::format("[{}; {}:{}]", __FILENAME__, __FUNCTION__, __LINE__)
 
-#ifdef NDEBUG
+#if defined(NDEBUG) && !defined(EDITOR)
 
 #define LOG_INFO(...)
 #define LOG_DEBUG(...)
@@ -28,6 +28,8 @@ private:
 #define LOG_CRIT(...)
 
 #else
+
+#define LOG_ENABLED
 
 #define LOG_INFO(...)   ::TriadLogs::Logger().info(__VA_ARGS__)
 #define LOG_DEBUG(...)  ::TriadLogs::Logger().debug(__VA_ARGS__)

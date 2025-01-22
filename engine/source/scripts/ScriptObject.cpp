@@ -781,7 +781,7 @@ void ScriptObject::OverrideArray(const std::string& fieldName, const YAML::Node&
                 continue;
             }
         } else {
-             const int fieldTypeId = _object->GetPropertyTypeId(_fields[fieldName]);
+            const int fieldTypeId = _object->GetPropertyTypeId(_fields[fieldName]);
             if ((fieldTypeId & asTYPEID_APPOBJECT) == asTYPEID_APPOBJECT) {
                 // Native (App/cpp) object
                 if ((fieldTypeId & asTYPEID_OBJHANDLE) == asTYPEID_OBJHANDLE) {
