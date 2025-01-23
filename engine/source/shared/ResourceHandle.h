@@ -3,6 +3,7 @@
 #include "Shared.h"
 #include "render/Renderable.h"
 #include "render/RenderResources.h"
+#include "resource/ResourceSystem.h"
 #include "MathScriptBindings.h"
 
 class asITypeInfo;
@@ -74,7 +75,14 @@ public:
 
 	void Set(const std::shared_ptr<Material>& material) { cached = material; }
 
-	void Resolve(std::shared_ptr<Material>& out) { out = cached = RenderResources::Instance().materials.GetRef(tag, cached); }
+	void Resolve(std::shared_ptr<Material>& out) {
+#ifdef EDITOR
+		if (!gResourceSys->IsResourceLoaded(tag)) {
+			gResourceSys->LoadResource(tag);
+		}
+#endif // EDITOR
+		out = cached = RenderResources::Instance().materials.GetRef(tag, cached); 
+	}
 
 private:
 	// cache ptr to identify the resource even if it was changed by engine
@@ -93,7 +101,14 @@ public:
 
 	void Set(const std::shared_ptr<Mesh>& mesh) { cached = mesh; }
 
-	void Resolve(std::shared_ptr<Mesh>& out) { out = cached = RenderResources::Instance().meshes.GetRef(tag, cached); }
+	void Resolve(std::shared_ptr<Mesh>& out) {
+#ifdef EDITOR
+		if (!gResourceSys->IsResourceLoaded(tag)) {
+			gResourceSys->LoadResource(tag);
+		}
+#endif // EDITOR
+		out = cached = RenderResources::Instance().meshes.GetRef(tag, cached); 
+	}
 
 private:
 	// cache ptr to identify the resource even if it was changed by engine
