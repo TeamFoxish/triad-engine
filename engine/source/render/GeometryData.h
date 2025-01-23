@@ -26,9 +26,7 @@ struct GeometryData {
 	int idxNum;
 
 #ifdef EDITOR
-	const void* vertices;
-	int verticesSize; 
-	const uint32_t* indices;
-	int indicesSize;
+	std::vector<float> vertices; // vec3
+	std::vector<uint32_t> indices;
 #endif //EDITOR
 };

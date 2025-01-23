@@ -155,6 +155,8 @@ public:
 
 	Renderable& GetRenderObj() const { return RenderableStorage::Instance().Get(renderObj); }
 
+	void SetIsStatic(bool isStatic) { GetRenderObj().params.isStatic = isStatic; }
+
 	CRenderable& operator=(CRenderable& other) 
 	{
 		if (renderObj.id_ >= 0) {

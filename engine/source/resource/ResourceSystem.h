@@ -17,6 +17,7 @@ public:
 	bool Init(RuntimeIface* runtime) { return true; }
 	void Term() {}
 
+	bool IsResourceLoaded(ResTag tag) const { return resources.find(tag) != resources.end(); }
 	void LoadResource(ResTag tag);
 	void UnloadResource(ResTag tag);
 

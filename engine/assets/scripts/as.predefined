@@ -391,6 +391,8 @@ class Renderable{
 	Renderable(uint64 entityId, const Math::Transform@ transform);
 	Renderable(const Renderable &in) delete;
 
+	void SetIsStatic(bool isStatic);
+
 	Mesh mesh;
 	Material material;
 }

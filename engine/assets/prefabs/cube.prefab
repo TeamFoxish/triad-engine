@@ -1,0 +1,9 @@
+content:
+  class: flopa
+  components:
+    Mesh:
+      component: res://components/MeshComponent.component
+      overrides:
+        renderObj:
+          mesh: res://meshes/cube.mesh
+type: prefab

@@ -293,12 +293,12 @@ void UIDebug::TestDraw()
         // Nav Mesh Generation
         {
             NavMeshAgent agent;
-            BuildConfig* config = gNavigation->GetBuilder()->GetCurrentConfig();
+            BuildConfig& config = gNavigation->GetBuilder().GetCurrentConfig();
 
             ImGui::Begin("Navigation", nullptr, ImGuiWindowFlags_NoFocusOnAppearing);
             ImGui::Text("Rasterization");
-            ImGui::SliderFloat("Cell Size", &config->rasterization.cellSize, 0.1f, 1.0f);
-            ImGui::SliderFloat("Cell Height", &config->rasterization.cellHeigth, 0.1f, 1.0f);
+            ImGui::SliderFloat("Cell Size", &config.rasterization.cellSize, 0.1f, 1.0f);
+            ImGui::SliderFloat("Cell Height", &config.rasterization.cellHeigth, 0.1f, 1.0f);
 
             ImGui::Separator();
             ImGui::Text("Agent");
@@ -309,8 +309,8 @@ void UIDebug::TestDraw()
 
             ImGui::Separator();
             ImGui::Text("Region");
-            ImGui::SliderFloat("Min Region Size", &config->region.minRegionSize, 0.0f, 150.0f);
-            ImGui::SliderFloat("Merged Region Size", &config->region.mergedRegionSize, 0.0f, 150.0f);
+            ImGui::SliderFloat("Min Region Size", &config.region.minRegionSize, 0.0f, 150.0f);
+            ImGui::SliderFloat("Merged Region Size", &config.region.mergedRegionSize, 0.0f, 150.0f);
 
             // ImGui::Separator();
             // ImGui::Text("Partitioning", nullptr);
@@ -323,25 +323,25 @@ void UIDebug::TestDraw()
 
             ImGui::Separator();
             ImGui::Text("Filtering");
-            ImGui::Checkbox("Low Hanging Obstacles", &config->filterLowHangingObstacles);
-            ImGui::Checkbox("Ledge Spans", &config->filterLedgeSpans);
-            ImGui::Checkbox("Walkable Low Height Spans", &config->filterWalkableLowHeightSpans);
+            ImGui::Checkbox("Low Hanging Obstacles", &config.filterLowHangingObstacles);
+            ImGui::Checkbox("Ledge Spans", &config.filterLedgeSpans);
+            ImGui::Checkbox("Walkable Low Height Spans", &config.filterWalkableLowHeightSpans);
 
             ImGui::Separator();
             ImGui::Text("Polygonization");
-            ImGui::SliderFloat("Max Edge Length", &config->polygonization.maxEdgeLength, 0.0f, 50.0f);
-            ImGui::SliderFloat("Max Edge Error", &config->polygonization.maxEdgeError, 0.1f, 3.0f);
-            ImGui::SliderFloat("Verts Per Poly", &config->polygonization.vertsPerPoly, 3.0f, 12.0f);		
+            ImGui::SliderFloat("Max Edge Length", &config.polygonization.maxEdgeLength, 0.0f, 50.0f);
+            ImGui::SliderFloat("Max Edge Error", &config.polygonization.maxEdgeError, 0.1f, 3.0f);
+            ImGui::SliderFloat("Verts Per Poly", &config.polygonization.vertsPerPoly, 3.0f, 12.0f);		
 
             ImGui::Separator();
             ImGui::Text("Detail Mesh");
-            ImGui::SliderFloat("Sample Distance", &config->detail.sampleDistance, 0.0f, 16.0f);
-            ImGui::SliderFloat("Max Sample Error", &config->detail.maxSampleError, 0.0f, 16.0f);
+            ImGui::SliderFloat("Sample Distance", &config.detail.sampleDistance, 0.0f, 16.0f);
+            ImGui::SliderFloat("Max Sample Error", &config.detail.maxSampleError, 0.0f, 16.0f);
 	
 	        ImGui::Separator();
             if(ImGui::Button("Build"))
             {
-
+                gNavigation->Build(config, &agent);
             }
             ImGui::End();
         }

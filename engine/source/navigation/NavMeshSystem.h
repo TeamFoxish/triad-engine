@@ -15,18 +15,19 @@ class NavMeshSystem {
         ~NavMeshSystem() {};
         bool Init(RuntimeIface* runtime);
         void Term();
-        std::vector<GeometryData> collectStaticGeometry();
-        NavMeshBuilder* GetBuilder() { return _builder; }
+        std::vector<const Renderable*> CollectStaticObjects();
+        const NavMeshBuilder& GetBuilder() const { return *_builder; }
+        NavMeshBuilder& GetBuilder() { return *_builder; }
         void Build(BuildConfig config, NavMeshAgent* agent);
-        std::unordered_map<std::string, NavMeshAgent*> GetAgents() { return _agents; }
+        const std::unordered_map<std::string, NavMeshAgent*>& GetAgents() { return _agents; }
         NavMeshAgent* GetAgent(const std::string& name) { return _agents[name]; }
         void AddAgent(const std::string& name, NavMeshAgent* agent) { _agents[name] = agent; }
-        NavMesh* GetNavMesh(NavMeshAgent* agent) { return _navMeshes[agent]; }
+        NavMesh& GetNavMesh(NavMeshAgent* agent) { return *_navMeshes[agent]; }
         std::vector<float> FindPath(NavMeshAgent* agent, float* startPos, float* endPos);
     private:
-        NavMeshBuilder* _builder;
+        std::unique_ptr<NavMeshBuilder> _builder;
         std::unordered_map<std::string, NavMeshAgent*> _agents;
-        std::unordered_map<NavMeshAgent*, NavMesh*> _navMeshes;
+        std::unordered_map<NavMeshAgent*, std::unique_ptr<NavMesh>> _navMeshes;
 };
 
 bool InitNavigation(RuntimeIface* runtime);

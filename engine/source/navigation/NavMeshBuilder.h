@@ -65,8 +65,8 @@ struct OffMeshConnection {
 };
 
 struct BuildConfig {
-    float bMin[3] = {-10000, -10000, -10000};
-    float bMax[3] = {10000, 10000, 10000};
+    float bMin[3] = {-1000, -1000, -1000};
+    float bMax[3] = {1000, 1000, 1000};
     bool filterLowHangingObstacles = true;
     bool filterLedgeSpans = true;
     bool filterWalkableLowHeightSpans = true;
@@ -93,9 +93,9 @@ class NavMeshBuilder {
     public:
 		NavMeshBuilder();
 		~NavMeshBuilder();
-       	bool buildNavMesh(std::vector<Renderable> meshes, NavMeshAgent* agent, BuildConfig bconfig, std::vector<ConvexVolume> convexVolumes, NavMesh* nav);
+       	bool buildNavMesh(std::vector<const Renderable*> meshes, NavMeshAgent* agent, BuildConfig bconfig, std::vector<ConvexVolume> convexVolumes, std::unique_ptr<NavMesh>& navOut);
 		// Not thread-safe
-		BuildConfig* GetCurrentConfig() { return currentConfig; }
+		BuildConfig& GetCurrentConfig() { return currentConfig; }
     private:
-		BuildConfig* currentConfig = nullptr;
+		BuildConfig currentConfig;
 };

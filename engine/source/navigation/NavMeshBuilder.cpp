@@ -7,7 +7,6 @@
 #include "DetourNavMesh.h"
 #include "DetourNavMeshBuilder.h"
 #include "DetourDebugDraw.h"
-#include "SimpleMath.h"
 #include "render/Renderable.h"
 #include "shared/TransformStorage.h"
 #include "shared/SharedStorage.h"
@@ -16,20 +15,18 @@
 
 NavMeshBuilder::NavMeshBuilder()
 {
-	currentConfig = new BuildConfig();
 }
 
 NavMeshBuilder::~NavMeshBuilder()
 {
-	delete currentConfig;
 }
 
 bool NavMeshBuilder::buildNavMesh(
-    std::vector<Renderable> meshes,
+    std::vector<const Renderable*> meshes,
     NavMeshAgent *agent,
     BuildConfig config,
     std::vector<ConvexVolume> convexVolumes,
-    NavMesh *nav)
+	std::unique_ptr<NavMesh>& navOut)
 {
     if (meshes.empty())
 	{
@@ -42,38 +39,37 @@ bool NavMeshBuilder::buildNavMesh(
 
 	// TODO cull verts outside building volume
 	// We need to combine all static meshes to unite scene mesh
-    for (const Renderable& data : meshes) {
+    for (const Renderable* data : meshes) {
 		
-		const Math::Transform& meshTransform = SharedStorage::Instance().transforms.AccessRead(data.transform);
-        for (const auto& node : data.mesh->GetNodes()) {
+		const Math::Transform& meshTransform = SharedStorage::Instance().transforms.AccessRead(data->transform);
+        for (const auto& node : data->mesh->GetNodes()) {
 			for (const auto& geometry : node.geoms) {
 
 				// Transforming vertices according to mesh transform and node transform inside mesh
-				float* vertices = static_cast<float*>(const_cast<void*>(geometry->vertices));
-				for (int i = 0; i < geometry->verticesSize; i+=3) {
-					DirectX::SimpleMath::Vector3 vertex =  {vertices[i], vertices[i + 1], vertices[i + 2]};
-					DirectX::SimpleMath::Vector3 transformedVertex = DirectX::SimpleMath::Vector3::Transform(
-						DirectX::SimpleMath::Vector3::Transform(
-							vertex,
-							meshTransform.GetMatrix()),
-							node.localMatr);
-					sceneVerts.emplace_back(transformedVertex.x);
-					sceneVerts.emplace_back(transformedVertex.y);
-					sceneVerts.emplace_back(transformedVertex.z);
+				const std::vector<float>& vertSrc = geometry->vertices;
+				for (int i = 0; i < vertSrc.size(); i+=3) {
+					const Math::Vector3 vertex = {vertSrc[i], vertSrc[i + 1], vertSrc[i + 2]};
+					// TODO: apply mesh node transform
+					Math::Vector3 worldV = 
+						Math::Vector3::Transform(vertex, meshTransform.GetMatrix());
+					sceneVerts.push_back(worldV.x);
+					sceneVerts.push_back(worldV.y);
+					sceneVerts.push_back(worldV.z);
 				}
 
-				uint32_t* indices = const_cast<uint32_t*>(geometry->indices);
-				for (int i = 0; i < geometry->indicesSize; i++) {
-					sceneIndices.emplace_back(indices[i]);
-				}
+				const std::vector<uint32_t>& idxSrc = geometry->indices;
+				sceneIndices.insert(sceneIndices.end(), idxSrc.begin(), idxSrc.end());
 			}
 		}
     }
 	
 	const float* verts = sceneVerts.data();
-	const int nverts = sceneVerts.size();
+	const int nverts = (int)sceneVerts.size();
+	// reverese indicies since we use left-handed cs, while recast uses right-handed
+	std::reverse(sceneIndices.begin(), sceneIndices.end());
 	const int* tris = sceneIndices.data();
-	const int ntris = sceneIndices.size();
+	assert(sceneIndices.size() % 3 == 0);
+	const int ntris = (int)sceneIndices.size() / 3;
 	
 	//
 	// Step 1. Initialize build config.
@@ -105,7 +101,28 @@ bool NavMeshBuilder::buildNavMesh(
 	rcVcopy(cfg.bmax, config.bMax);
 	rcCalcGridSize(cfg.bmin, cfg.bmax, cfg.cs, &cfg.width, &cfg.height);
 
-    rcContext* ctx = new rcContext();
+	class rcContextCustom : public rcContext {
+	protected:
+		/// Logs a message.
+		/// @param[in]		category	The category of the message.
+		/// @param[in]		msg			The formatted message.
+		/// @param[in]		len			The length of the formatted message.
+		virtual void doLog(const rcLogCategory category, const char* msg, const int len) override { 
+			switch (category) {
+				case RC_LOG_PROGRESS:
+					LOG_INFO(std::string_view(msg, len));
+					break;
+				case RC_LOG_WARNING:
+					LOG_WARN(std::string_view(msg, len));
+					break;
+				case RC_LOG_ERROR:
+					LOG_WARN(std::string_view(msg, len));
+					break;
+			}
+		}
+	} ctxInst;
+	rcContext* ctx = &ctxInst;
+
 	// Reset build times gathering.
 	ctx->resetTimers();
 
@@ -155,7 +172,7 @@ bool NavMeshBuilder::buildNavMesh(
 	}
 
 	delete [] triareas;
-	triareas = 0;
+	triareas = nullptr;
 	
 	//
 	// Step 3. Filter walkable surfaces.
@@ -418,14 +435,23 @@ bool NavMeshBuilder::buildNavMesh(
 			return false;
 		}
 		
-        dtNavMeshQuery* navQuery = new dtNavMeshQuery();
+        dtNavMeshQuery* navQuery = dtAllocNavMeshQuery();
+		if (!navQuery)
+		{
+			dtFree(navQuery);
+			ctx->log(RC_LOG_ERROR, "Could not create Detour query");
+			return false;
+		}
+
 		status = navQuery->init(navMesh, 2048);
 		if (dtStatusFailed(status))
 		{
 			ctx->log(RC_LOG_ERROR, "Could not init Detour navmesh query");
 			return false;
 		}
-		nav = new NavMesh(navMesh, navQuery);
+		navOut = std::make_unique<NavMesh>(navMesh, navQuery);
+	} else {
+		navOut.reset();
 	}
 	
 	ctx->stopTimer(RC_TIMER_TOTAL);

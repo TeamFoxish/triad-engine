@@ -1,14 +1,17 @@
 namespace Game {
+    /*
     SoftRef<ResourceHandle> prefabRef("resd://prefabs/cheese.prefab");
     SoftRef<ResourceHandle> compRef("resd://components/SingleSoundComponent.component");
     SoftRef<ResourceHandle> meshCompRef("resd://components/MeshComponent.component");
     SoftRef<ResourceHandle> sceneRef("resd://scenes/first_scene.scene");
+    */
 
     void Init() {
         for (uint i = 0; i < Private::scenes.length(); ++i) {
             Private::scenes[i].Init();
         }
 
+        /*
         Math::Transform@ trs = Math::Transform();
         trs.SetLocalPosition(Math::Vector3(3.0f, 3.0f, 3.0f));
         Game::SpawnPrefab(prefabRef.Load(), trs);
@@ -19,6 +22,7 @@ namespace Game {
         }
 
         Game::SpawnComposite(meshCompRef.Load());
+        */
 
         println("LOAD");
         //TransitToScene(sceneRef.Load());
