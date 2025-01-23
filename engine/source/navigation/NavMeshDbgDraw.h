@@ -21,6 +21,7 @@ public:
 private:
     ID3D11Device* m_device;
     ID3D11DeviceContext* m_context;
+    ID3D11BlendState* blendState;
     std::shared_ptr<Shader> shader;
 
     struct Vertex {
