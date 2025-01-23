@@ -9,6 +9,10 @@
 #include <unordered_map>
 #include <string>
 
+#ifdef EDITOR
+#include "NavMeshDbgDraw.h"
+#endif
+
 class NavMeshSystem {
     public:
         NavMeshSystem() {};
@@ -24,10 +28,21 @@ class NavMeshSystem {
         void AddAgent(const std::string& name, NavMeshAgent* agent) { _agents[name] = agent; }
         NavMesh& GetNavMesh(NavMeshAgent* agent) { return *_navMeshes[agent]; }
         std::vector<float> FindPath(NavMeshAgent* agent, float* startPos, float* endPos);
+
+#ifdef EDITOR
+        bool IsDebugDrawEnabled() const { return dbgDrawEnabled; }
+        void DebugDraw();
+#endif // EDITOR
+
     private:
         std::unique_ptr<NavMeshBuilder> _builder;
         std::unordered_map<std::string, NavMeshAgent*> _agents;
         std::unordered_map<NavMeshAgent*, std::unique_ptr<NavMesh>> _navMeshes;
+        
+#ifdef EDITOR
+        std::unique_ptr<NavMeshDbgDraw> dbgDraw;
+        bool dbgDrawEnabled = true;
+#endif // EDITOR
 };
 
 bool InitNavigation(RuntimeIface* runtime);

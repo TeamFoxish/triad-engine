@@ -26,6 +26,7 @@
 
 #ifdef EDITOR
 #include "editor/ui_debug/UIDebug.h"
+#include "passes/DbgDrawPass.h"
 #endif
 
 #ifdef _WIN32
@@ -225,6 +226,9 @@ void Renderer::TestFrameGraph()
     FrameGraphBlackboard bboard;
 
 	deferredRenderer->Draw(context, fg, bboard);
+#ifdef EDITOR
+	DbgDrawPass::AddDbgDrawPass(context, fg, bboard);
+#endif
 
 	struct CompositionPassData {
 		FrameGraphResource target;
@@ -240,7 +244,7 @@ void Renderer::TestFrameGraph()
             builder.read(sceneColor.sceneColor);
             data.target = builder.write(backBuff);
         },
-        [=, this](const CompositionPassData& data, FrameGraphPassResources& resources, void*) {
+        [=, this](const CompositionPassData& data, FrameGraphPassResources& resources, void*) {			
 			context.ClearState();
 			context.activeDepthBuffuer = nullptr;
 

@@ -1,5 +1,5 @@
 #include "NavMeshSystem.h"
-#include "scripts/ScriptSystem.h"
+#include "DetourDebugDraw.h"
 #include "logs/Logs.h"
 #include <vector>
 
@@ -7,6 +7,10 @@ std::unique_ptr<NavMeshSystem> gNavigation;
 
 bool NavMeshSystem::Init(RuntimeIface *runtime)
 {
+#ifdef EDITOR
+    dbgDraw = std::make_unique<NavMeshDbgDraw>();
+#endif // EDITOR
+
     this->_builder = std::make_unique<NavMeshBuilder>();
     return true;
 }
@@ -14,6 +18,7 @@ bool NavMeshSystem::Init(RuntimeIface *runtime)
 void NavMeshSystem::Term()
 {
     _builder.reset();
+    dbgDraw.reset();
 }
 
 std::vector<const Renderable*> NavMeshSystem::CollectStaticObjects()
@@ -72,6 +77,18 @@ std::vector<float> NavMeshSystem::FindPath(NavMeshAgent *agent, float *startPos,
 
     return std::vector<float>(straightPath, straightPath + (sizeof(straightPath) / sizeof(straightPath[0])));
 }
+
+#ifdef EDITOR
+void NavMeshSystem::DebugDraw()
+{
+    if (!dbgDraw) {
+        return;
+    }
+    for (const auto& [_, navMesh] : _navMeshes) {
+        duDebugDrawNavMesh(dbgDraw.get(), *navMesh->GetNavMesh(), DrawNavMeshFlags{});
+    }
+}
+#endif // EDITOR
 
 bool InitNavigation(RuntimeIface *runtime)
 {

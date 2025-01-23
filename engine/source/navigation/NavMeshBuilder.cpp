@@ -65,7 +65,7 @@ bool NavMeshBuilder::buildNavMesh(
 	
 	const float* verts = sceneVerts.data();
 	const int nverts = (int)sceneVerts.size();
-	// reverese indicies since we use left-handed cs, while recast uses right-handed
+	// reverese indicies (invert triangles winding order) since we use left-handed cs, while recast uses right-handed
 	std::reverse(sceneIndices.begin(), sceneIndices.end());
 	const int* tris = sceneIndices.data();
 	assert(sceneIndices.size() % 3 == 0);
