@@ -1,0 +1,4 @@
+content:
+  source_file: ./assets/scripts/Domain.as
+  module: Engine
+type: script

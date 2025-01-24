@@ -1,0 +1,4 @@
+
+class WorldState {
+    dictionary state;
+}

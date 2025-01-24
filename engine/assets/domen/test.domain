@@ -1,0 +1,44 @@
+content:
+  implClass: TestDomain
+  root:
+    StealFromRich:
+      precondition:
+        isTrained: eq(True)
+        isRested: eq(true)
+      subtasks: DoSmth, StealFromSomeone
+    Train:
+      name: Train
+      preconditions:
+        isRested: eq(True)
+    method:
+      name: Train
+  compounds:
+    StealFromSomeone:
+      Find:
+        precondition:
+          isRested: eq(True)
+        subtasks:
+          FindRich
+      StealFromRich:
+        precondition:
+          isRested: eq(True)
+          isTrained: eq(true)
+          isKnowLocation: eq(True)
+
+  primitives:
+    FindRich:
+      precondition:
+        isRested: eq(True)
+      operator: "void FindRich()"
+      effect:
+        isTrained: true
+        
+
+
+    effect:
+
+  blackboard:
+    isRested: boolean
+    isTrained: boolean
+    isKnowLocation: boolean
+type: domain
