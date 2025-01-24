@@ -104,6 +104,8 @@ void UIDebug::StartNewFrame()
 
 // TODO: move somewhere
 static std::string bName = "Start";
+static float pos1[3] = {0, 0, 0};
+static float pos2[3] = {0, 0, 0};
 static ImGuizmo::OPERATION operation = ImGuizmo::OPERATION::TRANSLATE;
 
 void UIDebug::TestDraw()
@@ -342,6 +344,14 @@ void UIDebug::TestDraw()
             if(ImGui::Button("Build"))
             {
                 gNavigation->Build(config, &agent);
+            }
+            
+            ImGui::Separator();
+            ImGui::InputFloat3("Start Position", pos1);
+            ImGui::InputFloat3("End Position", pos2);
+            if(ImGui::Button("Test Path"))
+            {
+                gNavigation->GenerateTestPath(&agent, pos1, pos2);
             }
             ImGui::End();
         }

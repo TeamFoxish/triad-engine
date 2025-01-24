@@ -65,8 +65,8 @@ struct OffMeshConnection {
 };
 
 struct BuildConfig {
-    float bMin[3] = {-1000, -1000, -1000};
-    float bMax[3] = {1000, 1000, 1000};
+    float bMin[3] = {-100, -1000, -100};
+    float bMax[3] = {100, 1000, 100};
     bool filterLowHangingObstacles = true;
     bool filterLedgeSpans = true;
     bool filterWalkableLowHeightSpans = true;

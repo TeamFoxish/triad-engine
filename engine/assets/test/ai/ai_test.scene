@@ -11,6 +11,23 @@ content:
             z: -45.0
     player:
       prefab: res://prefabs/player.prefab
+    cube_2:
+      prefab: res://prefabs/cube.prefab
+      overrides:
+        transform:
+          position:
+            x: 0
+            y: 0
+            z: 0
+          scale:
+            x: 5
+            y: 5
+            z: 5
+        children:
+          $Mesh:
+            component: res://components/MeshComponent.component
+            overrides:
+              isStatic: true
     cube_3:
       prefab: res://prefabs/cube.prefab
       overrides:

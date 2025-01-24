@@ -39,6 +39,7 @@ bool NavMeshBuilder::buildNavMesh(
 
 	// TODO cull verts outside building volume
 	// We need to combine all static meshes to unite scene mesh
+	uint32_t maxIndex = 0;
     for (const Renderable* data : meshes) {
 		
 		const Math::Transform& meshTransform = SharedStorage::Instance().transforms.AccessRead(data->transform);
@@ -58,7 +59,13 @@ bool NavMeshBuilder::buildNavMesh(
 				}
 
 				const std::vector<uint32_t>& idxSrc = geometry->indices;
-				sceneIndices.insert(sceneIndices.end(), idxSrc.begin(), idxSrc.end());
+
+				// we need to adjust indexes for each new mesh, so indexes for each pf them will be unique
+				uint32_t maxLocalIndex = *std::max_element(idxSrc.begin(), idxSrc.end());
+				for (uint32_t index : idxSrc) {
+					sceneIndices.emplace_back(maxIndex + index);
+				}
+				maxIndex += maxLocalIndex + 1;
 			}
 		}
     }

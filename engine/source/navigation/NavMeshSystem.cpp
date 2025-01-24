@@ -75,10 +75,16 @@ std::vector<float> NavMeshSystem::FindPath(NavMeshAgent *agent, float *startPos,
         return {};
     }
 
-    return std::vector<float>(straightPath, straightPath + (sizeof(straightPath) / sizeof(straightPath[0])));
+    return std::vector<float>(straightPath, straightPath + (straightPathCount * 3));
 }
 
 #ifdef EDITOR
+void NavMeshSystem::GenerateTestPath(NavMeshAgent *agent, float *startPos, float *endPos)
+{
+    _testPath.clear();
+    _testPath = FindPath(agent, startPos, endPos);
+}
+
 void NavMeshSystem::DebugDraw()
 {
     if (!dbgDraw) {
@@ -86,6 +92,13 @@ void NavMeshSystem::DebugDraw()
     }
     for (const auto& [_, navMesh] : _navMeshes) {
         duDebugDrawNavMesh(dbgDraw.get(), *navMesh->GetNavMesh(), DrawNavMeshFlags{});
+    }
+    if (!_testPath.empty()) {
+        for (int i = 0; i < _testPath.size() - 3; i += 3) {
+            duDebugDrawArrow(dbgDraw.get(),
+             _testPath[i], _testPath[i + 1], _testPath[i + 2],
+            _testPath[i + 3], _testPath[i +  4], _testPath[i + 5], 0, 1, 200000000, 5);
+        }
     }
 }
 #endif // EDITOR

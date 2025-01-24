@@ -31,6 +31,7 @@ class NavMeshSystem {
 
 #ifdef EDITOR
         bool IsDebugDrawEnabled() const { return dbgDrawEnabled; }
+        void GenerateTestPath(NavMeshAgent* agent, float* startPos, float* endPos);
         void DebugDraw();
 #endif // EDITOR
 
@@ -41,6 +42,7 @@ class NavMeshSystem {
         
 #ifdef EDITOR
         std::unique_ptr<NavMeshDbgDraw> dbgDraw;
+        std::vector<float> _testPath;
         bool dbgDrawEnabled = true;
 #endif // EDITOR
 };
