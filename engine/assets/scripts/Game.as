@@ -22,9 +22,9 @@ namespace Game {
         Game::SpawnComposite(meshCompRef.Load());
         */
 
-        println("LOAD");
+        //println("LOAD");
         //TransitToScene(sceneRef.Load());
-        println("FINISH");
+        //println("FINISH");
     }
 
     void Update(float deltaTime) {
@@ -50,19 +50,19 @@ namespace Game {
             if (!Private::scenes[i].IsAlive()) {
                 continue;
             }
+            log_info("begin scene " + Private::scenes[i].GetName() + " destruction");
             Private::scenes[i].Destroy();
         }
         Private::scenes.resize(0);
     }
 
     void TransitToScene(const ResourceHandle &in sceneRef) {
-        println("SHUTDOWN");
         Shutdown(); // clear all scenes
-        println("CREATE SCENE");
         CreateScene(sceneRef);
     }
 
     CompositeComponent@ CreateScene(const ResourceHandle &in sceneRef) {
+        log_info("begin scene creation"); // TODO: place scene tag in log msg
         ref@ scene = Impl::CreateScene(sceneRef);
         if (scene is null) {
             return null;
