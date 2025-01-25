@@ -1,5 +1,7 @@
 #include "TransformStorage.h"
 
+#include "logs/Logs.h"
+
 const Math::Transform& TransformStorage::AccessRead(Handle handle)
 {
 	TransformEntry& entry = storage[handle];
@@ -54,6 +56,12 @@ void TransformStorage::Remove(Handle handle)
 			parent->children.erase(iter);
 			entry.parent = Handle{};
 		}
+	}
+	// it would be perfect if transforms died from children to parents, but this in not our case
+	for (Handle childH : entry.children) {
+		TransformEntry& child = storage[childH];
+		child.parent = Handle{};
+		LOG_WARN("removed transform (id: {})'s parent (id: {}) and left its subtree isolated which is highly undesirable. usually it happens a lot during scene destruction", childH.id_, handle.id_);
 	}
 	storage.Remove(handle);
 }
