@@ -165,11 +165,13 @@ void UIDebug::TestDraw()
                                     ResTag tag = ResTag(ToStrid("res://" + filePath));
                                     gResourceSys->LoadResource(tag);
 
-                                    SceneTree::Entity& rootEntity = gSceneTree->Get(gSceneTree->GetRoot());
-                                    std::optional<YAML::Node> sceneDesc = SceneLoader::FindSpawnedComponent(rootEntity.obj);
+                                    SceneTree::Handle parent = outliner.GetSelectedNode() != SceneTree::Handle{} ? outliner.GetSelectedNode() : gSceneTree->GetRoot();
+                                    const bool spawnAtSceneRoot = (parent == gSceneTree->GetRoot());
+                                    SceneTree::Entity& parentEnt = gSceneTree->Get(parent);
+                                    std::optional<YAML::Node> sceneDesc = SceneLoader::FindSpawnedComponent(parentEnt.obj);
                                     if (sceneDesc) {
                                         // TODO: delete obj ptr
-                                        ScriptObject* obj = ComponentLoader::CreateComponent(tag, &rootEntity.obj);
+                                        ScriptObject* obj = ComponentLoader::CreateComponent(tag, &parentEnt.obj);
                                         const SceneTree::Handle entHandle = GetEntityHandleFromScriptObject(obj->GetRaw());
                                         if (entHandle != SceneTree::Handle{}) {
                                             asQWORD entId = GetEntityIdFromHandle(entHandle);
@@ -179,9 +181,18 @@ void UIDebug::TestDraw()
                                                 entName = std::format("{}_{}", fName, ++entId); // TEMP
                                             }
                                             ComponentLoader::SetComponentName(*obj, entName);
-                                            YAML::Node& compNode = (*sceneDesc)["objects"][entName] = YAML::Node();
+                                            YAML::Node compNode;
+                                            if (spawnAtSceneRoot) {
+                                                compNode = (*sceneDesc)["objects"][entName] = YAML::Node();
+                                            } else {
+                                                compNode = (*sceneDesc)["overrides"]["children"][std::format("${}", entName)] = YAML::Node();
+                                            }
                                             ComponentLoader::PopulateEmptySceneYaml(compNode, tag);
                                             SceneLoader::AddSpawnedComponent(*obj, compNode);
+                                            SceneTree::Handle spawnedEnt = GetEntityHandleFromScriptObject(obj->GetRaw());
+                                            if (gSceneTree->IsValidHandle(spawnedEnt)) {
+                                                outliner.SetSelectedNode(spawnedEnt);
+                                            }
                                         }
                                     }
                                 }
@@ -207,11 +218,13 @@ void UIDebug::TestDraw()
                                     ResTag tag = ResTag(ToStrid("res://" + filePath));
                                     gResourceSys->LoadResource(tag);
 
-                                    SceneTree::Entity& rootEntity = gSceneTree->Get(gSceneTree->GetRoot());
-                                    std::optional<YAML::Node> sceneDesc = SceneLoader::FindSpawnedComponent(rootEntity.obj);
+                                    SceneTree::Handle parent = outliner.GetSelectedNode() != SceneTree::Handle{} ? outliner.GetSelectedNode() : gSceneTree->GetRoot();
+                                    const bool spawnAtSceneRoot = (parent == gSceneTree->GetRoot());
+                                    SceneTree::Entity& parentEnt = gSceneTree->Get(parent);
+                                    std::optional<YAML::Node> sceneDesc = SceneLoader::FindSpawnedComponent(parentEnt.obj);
                                     if (sceneDesc) {
                                         // TODO: delete obj ptr
-                                        ScriptObject* obj = PrefabLoader::Create(tag, &rootEntity.obj);
+                                        ScriptObject* obj = PrefabLoader::Create(tag, &parentEnt.obj);
                                         const SceneTree::Handle entHandle = GetEntityHandleFromScriptObject(obj->GetRaw());
                                         if (entHandle != SceneTree::Handle{}) {
                                             asQWORD entId = GetEntityIdFromHandle(entHandle);
@@ -220,9 +233,18 @@ void UIDebug::TestDraw()
                                             while ((*sceneDesc)["objects"][entName]) {
                                                 entName = std::format("{}_{}", fName, ++entId); // TEMP
                                             }
-                                            YAML::Node& compNode = (*sceneDesc)["objects"][entName] = YAML::Node();
+                                            YAML::Node compNode;
+                                            if (spawnAtSceneRoot) {
+                                                compNode = (*sceneDesc)["objects"][entName] = YAML::Node();
+                                            } else {
+                                                compNode = (*sceneDesc)["overrides"]["children"][std::format("${}", entName)] = YAML::Node();
+                                            }
                                             PrefabLoader::PopulateEmptySceneYaml(compNode, tag);
                                             SceneLoader::AddSpawnedComponent(*obj, compNode);
+                                            SceneTree::Handle spawnedEnt = GetEntityHandleFromScriptObject(obj->GetRaw());
+                                            if (gSceneTree->IsValidHandle(spawnedEnt)) {
+                                                outliner.SetSelectedNode(spawnedEnt);
+                                            }
                                         }
                                     }
                                 }

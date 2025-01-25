@@ -155,6 +155,14 @@ void Outliner::DestroySelectedNode()
     }
 }
 
+void Outliner::SetSelectedNode(SceneTree::Handle node)
+{
+    ClearSelectedNode();
+    selectedNode = node;
+    SceneTree::Entity& entity = gSceneTree->Get(selectedNode);
+    entity.isSelected = true;
+}
+
 void Outliner::ClearSelectedNode()
 {
     if (selectedNode.id_ < 0) {

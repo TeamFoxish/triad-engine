@@ -33,9 +33,9 @@ auto TransformStorage::Add(Handle parent) -> Handle
 {
 	const Handle handle = Add();
 	TransformEntry& entry = storage[handle];
-	entry.transform = Math::Transform(Math::Matrix::Identity, Math::Matrix::Identity);
 	entry.parent = parent;
 	TransformEntry& parentEntry = storage[parent];
+	entry.transform = Math::Transform(parentEntry.transform.GetMatrix(), Math::Matrix::Identity);
 	entry.isDirty = parentEntry.isDirty;
 	parentEntry.children.push_back(handle);
 	return handle;
