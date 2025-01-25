@@ -90,7 +90,7 @@ bool NavMeshBuilder::buildNavMesh(
 	cfg.cs = config.rasterization.cellSize;
 	cfg.ch = config.rasterization.cellHeigth;
 	cfg.walkableSlopeAngle = agent->maxSlope;
-	cfg.walkableHeight = (int)ceilf(agent->heigth / cfg.ch);
+	cfg.walkableHeight = (int)ceilf(agent->height / cfg.ch);
 	cfg.walkableClimb = (int)floorf(agent->maxClimb / cfg.ch);
 	cfg.walkableRadius = (int)ceilf(agent->radius / cfg.cs);
 	cfg.maxEdgeLen = (int)(config.polygonization.maxEdgeLength / config.rasterization.cellSize);
@@ -411,7 +411,7 @@ bool NavMeshBuilder::buildNavMesh(
 		// params.offMeshConFlags = m_geom->getOffMeshConnectionFlags();
 		// params.offMeshConUserID = m_geom->getOffMeshConnectionId();
 		// params.offMeshConCount = m_geom->getOffMeshConnectionCount();
-		params.walkableHeight = agent->heigth;
+		params.walkableHeight = agent->height;
 		params.walkableRadius = agent->radius;
 		params.walkableClimb = agent->maxClimb;
 		rcVcopy(params.bmin, polyMesh->bmin);

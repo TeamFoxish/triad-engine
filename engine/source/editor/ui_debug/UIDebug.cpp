@@ -35,6 +35,7 @@
 #include "input/InputDevice.h"
 #include "resource/ResourceSystem.h"
 #include "navigation/NavMeshSystem.h"
+#include "navigation/NavMeshResources.h"
 
 #include "logs/Logs.h"
 #include "shared/Shared.h"
@@ -294,7 +295,6 @@ void UIDebug::TestDraw()
 
         // Nav Mesh Generation
         {
-            NavMeshAgent agent;
             BuildConfig& config = gNavigation->GetBuilder().GetCurrentConfig();
 
             ImGui::Begin("Navigation", nullptr, ImGuiWindowFlags_NoFocusOnAppearing);
@@ -303,11 +303,30 @@ void UIDebug::TestDraw()
             ImGui::SliderFloat("Cell Height", &config.rasterization.cellHeigth, 0.1f, 1.0f);
 
             ImGui::Separator();
+
+            static bool isAgentLoaded = false;
+            static NavMeshAgent agent;
             ImGui::Text("Agent");
-            ImGui::SliderFloat("Height", &agent.heigth, 0.1f, 5.0f);
-            ImGui::SliderFloat("Radius", &agent.radius, 0.0f, 5.0f);
-            ImGui::SliderFloat("Max Climb", &agent.maxClimb, 0.1f, 5.0f);
-            ImGui::SliderFloat("Max Slope", &agent.maxSlope, 0.0f, 90.0f);
+
+            static std::string resInp = "res://navmeshagent/Base.agent";
+            ImGui::InputText("Agent Resource", &resInp);
+            if (!resInp.empty()) {
+                ResTag agentTag = ToStrid(resInp);
+                if (!gResourceSys->IsResourceLoaded(agentTag)) {
+                    gResourceSys->LoadResource(agentTag);
+                }
+                const auto iter = NavMeshResources::Instance().agents.find(agentTag);
+                if (iter != NavMeshResources::Instance().agents.end()) {
+                    if (!isAgentLoaded) {
+                        agent = iter->second;
+                        isAgentLoaded = true;
+                    }
+                    ImGui::SliderFloat("Height", &agent.height, 0.1f, 5.0f);
+                    ImGui::SliderFloat("Radius", &agent.radius, 0.0f, 5.0f);
+                    ImGui::SliderFloat("Max Climb", &agent.maxClimb, 0.1f, 5.0f);
+                    ImGui::SliderFloat("Max Slope", &agent.maxSlope, 0.0f, 90.0f);
+                }
+            }
 
             ImGui::Separator();
             ImGui::Text("Region");

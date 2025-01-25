@@ -32,6 +32,6 @@ class NavMesh {
 		void save(std::string path);
 		dtNavMesh* GetNavMesh() { return _navMesh; }
 		void SetNavMesh(dtNavMesh* navMesh) { _navMesh = navMesh; }
-		dtNavMeshQuery* GetNavMeshQuery() { return _query; }
+		dtNavMeshQuery* GetNavMeshQuery() const { return _query; }
 		void SetNavMeshQuery(dtNavMeshQuery* query) { _query = query; }
 };
