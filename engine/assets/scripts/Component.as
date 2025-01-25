@@ -1,14 +1,14 @@
 abstract class Component {
-    private ICompositer@ parent; // TODO: hold parent as id
+    private Scene::EntityId parentId = Scene::EntityInvalidId;
     private string name;
     private string entityKey;
     private Scene::EntityId id;
     private bool isDead = false;
 
     Component(ICompositer@ _parent = null) {
-        @parent = @_parent;
-        if (parent !is null) {
-            parent.AddChild(this);
+        if (_parent !is null) {
+            parentId = _parent.GetId();
+            _parent.AddChild(this);
         }
         id = Scene::Tree::AddEntity(CreateEntity());
         entityKey = formatUInt(id);
@@ -17,8 +17,10 @@ abstract class Component {
     Component(Component@) delete;
 
     Component@ opAssign(const Component@) delete;
+    Component@ opAssign(Component@) delete;
 
     ~Component() {
+        println("DESTORY " + name);
         Destroy();
     }
 
@@ -33,9 +35,9 @@ abstract class Component {
         OnDestroy();
         isDead = true;
         Scene::Tree::RemoveEntity(id);
-        if (parent !is null) {
-            parent.RemoveChild(this);
-            @parent = null;
+        if (Scene::IsValidEntity(parentId)) {
+            GetParent().RemoveChild(this);
+            parentId = Scene::EntityInvalidId;
         }
     }
 
@@ -51,8 +53,15 @@ abstract class Component {
 
     bool IsAlive() const { return !isDead; }
 
-    ICompositer@ GetParent() {
-        return parent;
+    ICompositer@ GetParent() const {
+        if (!HasValidParent()) {
+            return null;
+        }
+        return cast<ICompositer@>(Scene::Tree::GetComponentById(parentId));
+    }
+
+    bool HasValidParent() const {
+        return parentId != Scene::EntityInvalidId && Scene::IsValidEntity(parentId);
     }
 
     Scene::EntityId GetId() const { return id; }
@@ -60,8 +69,8 @@ abstract class Component {
     protected Scene::Entity CreateEntity() {
         Scene::Entity entity;
         @entity.entity = @this;
-        if (parent !is null) {
-            entity.parent = parent.GetId();
+        if (Scene::IsValidEntity(parentId)) {
+            entity.parent = parentId;
         }
         entity.name = name;
         entity.isComposite = false;

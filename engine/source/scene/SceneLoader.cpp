@@ -33,6 +33,7 @@ std::unique_ptr<ScriptObject> SceneLoader::CreateScene(ResTag tag)
 	const YAML::Node& sceneDesc = _scenes[tag];
 	ScriptObject::ArgsT args = {{asTYPEID_MASK_OBJECT, nullptr}};
 	std::unique_ptr<ScriptObject> root = std::make_unique<ScriptObject>("Engine", "CompositeComponent", std::move(args)); // currently scene has no parent
+	root->GetRaw()->AddRef();
 	ComponentLoader::AddComponentTag(*root, tag); // remove?
 
 	YAML::Node editableSceneDesc = YAML::Clone(sceneDesc);
@@ -72,6 +73,7 @@ std::unique_ptr<ScriptObject> SceneLoader::CreateScene(ResTag tag)
 	ComponentLoader::SetComponentName(*root, sceneDesc["name"].Scalar());
 	LinkPass(root);
 	cachedSceneTags[root->GetRaw()] = tag;
+	root->GetRaw()->Release();
 
 	return root;
 }

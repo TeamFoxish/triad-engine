@@ -1,5 +1,5 @@
 content:
-  name: TestScene
+  name: Pong
   objects:
     dir_light:
       prefab: res://prefabs/dir_light.prefab

@@ -18,7 +18,7 @@ namespace Game {
             soundComp.SetEvent("event:/Bubbles/Bubble3D");
             soundComp.Play();
         }
-
+        
         Game::SpawnComposite(meshCompRef.Load());
         */
 
@@ -81,7 +81,7 @@ namespace Game {
             }
             @parent = @Private::scenes[0];
         }
-        ref@ prefab = Impl::SpawnPrefab(prefabRef, parent);
+        ref@ prefab = Impl::SpawnPrefab(prefabRef, @parent);
         if (prefab is null) {
             return null;
         }
@@ -94,7 +94,7 @@ namespace Game {
     }
 
     Component@ SpawnComponent(const ResourceHandle &in componentRef, ICompositer@ parent = null) {
-        Component@ comp = Private::SpawnComponent(componentRef, parent);
+        Component@ comp = Private::SpawnComponent(componentRef, @parent);
         if (comp is null) {
             return null;
         }
@@ -104,7 +104,7 @@ namespace Game {
 
     CompositeComponent@ SpawnComposite(const ResourceHandle &in componentRef, const Math::Transform@ transform = null, ICompositer@ parent = null) {
         // TODO: set name for spawned component
-        Component@ compInst = Private::SpawnComponent(componentRef, parent);
+        Component@ compInst = Private::SpawnComponent(componentRef, @parent);
         CompositeComponent@ composite = cast<CompositeComponent@>(compInst);
         if (composite is null) {
             log_error("failed to spawn CompositeComponent. invalid component type");
@@ -126,15 +126,14 @@ namespace Game {
         dictionary gPendingDeadComponents = {};
 
         Component@ SpawnComponent(const ResourceHandle &in componentRef, ICompositer@ parent = null) {
-            // TODO: add component to existing scene root if parent is null
-            if (parent is null) {
+            if (@parent is null) {
                 if (scenes.isEmpty()) {
                     log_error("failed to spawn component. no active scene found");
                     return null;
                 }
                 @parent = @scenes[0];
             }
-            ref@ compInst = Impl::SpawnComponent(componentRef, parent);
+            ref@ compInst = Impl::SpawnComponent(componentRef, @parent);
             return compInst !is null ? cast<Component@>(compInst) : null;
         }
 

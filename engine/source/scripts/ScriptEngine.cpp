@@ -35,7 +35,7 @@ ScriptEngine::ScriptEngine()
         std::cout << "Unrecoverable error while setting message callback." << std::endl;
     }
 
-    r = _engine->SetContextCallbacks(CallbackContextRequest, CallbackContextReturn, nullptr);
+    //r = _engine->SetContextCallbacks(CallbackContextRequest, CallbackContextReturn, nullptr);
     if ( r < 0) {
         LOG_ERROR("Failed to bind context callbacks");
     }

@@ -86,7 +86,7 @@ CScriptHandle SpawnComponent(const CResourceHandle& compRef, CScriptHandle paren
     } else {
         compInst = ComponentLoader::CreateComponent(compRef.GetTag());
     }
-    if (compInst) {
+    if (compInst && compInst->GetRaw() && compInst->GetTypeInfo()) {
         ref.Set(compInst->GetRaw(), compInst->GetTypeInfo());
         delete compInst;
     }

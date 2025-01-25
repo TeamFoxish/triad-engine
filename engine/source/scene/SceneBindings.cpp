@@ -25,7 +25,7 @@ int32_t GetEntityInt32(asQWORD id)
 
 static bool IsValidEntity(EntityId id) 
 {
-    return id.id != EntityId{}.id;
+    return id.id != EntityId{}.id && gSceneTree->IsValidHandle(id.handle);
 }
 
 SceneTree::Handle GetEntityHandleFromScriptObject(const asIScriptObject* obj)
@@ -90,6 +90,22 @@ static void RemoveEntityFromSceneTree(EntityId id)
     gSceneTree->Remove(id.handle);
 }
 
+CScriptHandle GetEntityById(EntityId id)
+{
+    CScriptHandle ref;
+    if (!IsValidEntity(id)) {
+        LOG_ERROR("failed to GetEntityById. no entity with id {} was found", id.id);
+        return ref;
+    }
+    const SceneTree::Entity& ent = gSceneTree->Get(id.handle);
+    if (!ent.obj.GetRaw() || !ent.obj.GetTypeInfo()) {
+        LOG_ERROR("failed to GetEntityById {}. corresponding script object was invalid", id.id);
+        return ref;
+    }
+    ref.Set(ent.obj.GetRaw(), ent.obj.GetTypeInfo());
+    return ref;
+}
+
 void RegisterSceneBindings()
 {
     auto engine = gScriptSys->GetRawEngine();
@@ -120,6 +136,7 @@ void RegisterSceneBindings()
     engine->RegisterGlobalFunction("EntityId AddEntity(Entity &in entity)", asFUNCTION(AddEntityToSceneTree), asCALL_CDECL);
     engine->RegisterGlobalFunction("void AddEntityTransform(EntityId id, const Math::Transform@+ transform)", asFUNCTION(AddEntityTransformToSceneTree), asCALL_CDECL);
     engine->RegisterGlobalFunction("void RemoveEntity(EntityId id)", asFUNCTION(RemoveEntityFromSceneTree), asCALL_CDECL);
+    engine->RegisterGlobalFunction("ref@ GetEntityById(EntityId id)", asFUNCTION(GetEntityById), asCALL_CDECL);
 
     engine->SetDefaultNamespace("");
 }
