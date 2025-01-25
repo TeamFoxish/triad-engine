@@ -1,0 +1,14 @@
+content:
+  class: AiAgent
+  components:
+    MoveComp:
+      component: res://components/AiMovementComponent.component
+      overrides:
+        agentProfile: res://navmeshagent/Base.agent
+    Mesh:
+      component: res://components/MeshComponent.component
+      overrides:
+        renderObj:
+          mesh: res://meshes/cube.mesh
+          material: res://materials/green.material
+type: prefab
