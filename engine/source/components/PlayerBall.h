@@ -19,7 +19,7 @@ public:
 	std::vector<CompositeComponent*> sceneObjects;
 
 	class MeshComponent* meshComp = nullptr;
-	class Body* body = nullptr;
+	JPH::Body* body = nullptr;
 
 protected:
 	class ThirdPersonCamera* camera = nullptr;

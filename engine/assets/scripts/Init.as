@@ -19,7 +19,7 @@ void SetScene(CompositeComponent@ scene) {
     }
     log_info("Loaded scene: " + scene.GetName());
     Game::Private::scenes.insertLast(scene);
-    scene.Init();
+    //scene.Init();
 }
 
 void init()

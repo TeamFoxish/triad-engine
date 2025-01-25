@@ -1,6 +1,8 @@
 #pragma once
 
 #include "render/camera/CameraStorage.h"
+#include "physics/PhySystem.h"
+
 
 class InputDevice;
 class Game;
@@ -27,8 +29,13 @@ public:
 
 	CameraStorage::Handle GetCameraHandle() const { return handle; }
 
+	static void StartOverlap(PhySystem::PhysicsEntity& other);
+	static void EndOverlap(PhySystem::PhysicsEntity& other);
+
 private:
 	Game* _game;
+public:
+	JPH::Body* body = nullptr;
 
 private:
 	// Rotation/sec speed of pitch

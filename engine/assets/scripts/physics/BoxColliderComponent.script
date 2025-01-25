@@ -1,0 +1,4 @@
+content:
+  source_file: ./assets/scripts/physics/BoxColliderComponent.as
+  module: Engine
+type: script

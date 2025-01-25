@@ -249,6 +249,9 @@ bool ScriptRegistry::RegisterStdLibrary(asIScriptEngine *engine)
     extern void RegisterSoundBindings();
     RegisterSoundBindings();
 
+    extern void RegisterPhysicsBindings();
+    RegisterPhysicsBindings();
+
     extern void RegisterGameBindings();
     RegisterGameBindings();
 

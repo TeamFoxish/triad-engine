@@ -1,25 +1,16 @@
 #include "PhySystem.h"
 
 #include "Physics.h"
+#include "shared/SharedStorage.h"
 #include "logs/Logs.h"
 
-#include "Jolt/Core/Factory.h"
+#include "scripts/ScriptSystem.h" // TEMP
+#include <scripthandle.h> // TEMP
+
+
+static JPH::Color COLLISION_COLLOR(0, 255, 0, 225); // Silver Sand
 
 std::unique_ptr<class PhySystem> gPhySys;
-
-// Callback for traces, connect this to your own trace function if you have one
-static void TraceImpl(const char* inFMT, ...)
-{
-	// Format the message
-	va_list list;
-	va_start(list, inFMT);
-	char buffer[1024];
-	vsnprintf(buffer, sizeof(buffer), inFMT, list);
-	va_end(list);
-
-	// Print to the TTY
-	//cout << buffer << endl;
-}
 
 // An example contact listener
 // Interface with functions to call onOverlap Begin, Continue and End
@@ -37,94 +28,50 @@ public:
 
 	virtual void OnContactAdded(const Body& inBody1, const Body& inBody2, const ContactManifold& inManifold, ContactSettings& ioSettings) override
 	{
-		LOG_INFO("A contact was added");
-
-		auto entity1 = gPhySys->GetEntityByBodyID(inBody1.GetID());
-		auto entity2 = gPhySys->GetEntityByBodyID(inBody2.GetID());
-		if (!entity1 || !entity2) {
-			// log error
+		auto entity1 = gPhySys->GetHandleByBodyID(inBody1.GetID());
+		auto entity2 = gPhySys->GetHandleByBodyID(inBody2.GetID());
+		if (entity1 == PhySystem::PhysicsHandle{} || !gPhySys->IsValidHandle(entity1) ||
+			entity2 == PhySystem::PhysicsHandle{} || !gPhySys->IsValidHandle(entity2)) {
+			LOG_ERROR("PhysicsEntity was not found");
 			return;
 		}
 
-		entity1->beginOverlap(*entity2);
-		entity2->beginOverlap(*entity1);
+		PhySystem::PhyEvent event;
+		event.type = PhySystem::PhyEvenType::OverlapStart;
+		event.body1 = entity1;
+		event.body2 = entity2;
+
+		gPhySys->AddEventToQueue(event);
 	}
 
 	virtual void OnContactPersisted(const Body& inBody1, const Body& inBody2, const ContactManifold& inManifold, ContactSettings& ioSettings) override
 	{
-		LOG_INFO("A contact was persisted");
 	}
 
 	virtual void OnContactRemoved(const SubShapeIDPair& inSubShapePair) override
 	{
-		LOG_INFO("A contact was removed");
-
-		auto entity1 = gPhySys->GetEntityByBodyID(inSubShapePair.GetBody1ID());
-		auto entity2 = gPhySys->GetEntityByBodyID(inSubShapePair.GetBody2ID());
-		if (!entity1 || !entity2) {
-			// log error
+		auto entity1 = gPhySys->GetHandleByBodyID(inSubShapePair.GetBody1ID());
+		auto entity2 = gPhySys->GetHandleByBodyID(inSubShapePair.GetBody2ID());
+		if (entity1 == PhySystem::PhysicsHandle{} || !gPhySys->IsValidHandle(entity1) ||
+			entity2 == PhySystem::PhysicsHandle{} || !gPhySys->IsValidHandle(entity2)) {
+			LOG_ERROR("PhysicsEntity was not found");
 			return;
 		}
 
-		entity1->endOverlap(*entity2);
-		entity2->endOverlap(*entity1);
+		PhySystem::PhyEvent event;
+		event.type = PhySystem::PhyEvenType::OverlapEnd;
+		event.body1 = entity1;
+		event.body2 = entity2;
+		gPhySys->AddEventToQueue(event);
 	}
 };
 
-// An example activation listener
-class MyBodyActivationListener : public BodyActivationListener
-{
-public:
-	virtual void OnBodyActivated(const BodyID& inBodyID, uint64 inBodyUserData) override
-	{
-		//cout << "A body got activated" << endl;
-	}
-
-	virtual void OnBodyDeactivated(const BodyID& inBodyID, uint64 inBodyUserData) override
-	{
-		//cout << "A body went to sleep" << endl;
-	}
-};
-
-// Callback for asserts, connect this to your own assert handler if you have one
-static bool AssertFailedImpl(const char* inExpression, const char* inMessage, const char* inFile, uint inLine)
-{
-	// Print to the TTY
-	//cout << inFile << ":" << inLine << ": (" << inExpression << ") " << (inMessage != nullptr ? inMessage : "") << endl;
-
-	// Breakpoint
-	return true;
-};
 
 bool PhySystem::Init()
 {
 	RegisterDefaultAllocator();
-	//JPH::Trace = TraceImpl;
 
 	JPH::Factory::sInstance = new JPH::Factory();
-	
-	{
-		//if (!VerifyJoltVersionIDInternal(JPH_VERSION_ID))
-		//{
-		//	Trace("Version mismatch, make sure you compile the client code with the same Jolt version and compiler definitions!");
-		//	uint64 mismatch = JPH_VERSION_ID ^ JPH_VERSION_ID;
-		//	auto check_bit = [mismatch](int inBit, const char* inLabel) { if (mismatch & (uint64(1) << (inBit + 23))) Trace("Mismatching define %s.", inLabel); };
-		//	check_bit(1, "JPH_DOUBLE_PRECISION");
-		//	check_bit(2, "JPH_CROSS_PLATFORM_DETERMINISTIC");
-		//	check_bit(3, "JPH_FLOATING_POINT_EXCEPTIONS_ENABLED");
-		//	check_bit(4, "JPH_PROFILE_ENABLED");
-		//	check_bit(5, "JPH_EXTERNAL_PROFILE");
-		//	check_bit(6, "JPH_DEBUG_RENDERER");
-		//	check_bit(7, "JPH_DISABLE_TEMP_ALLOCATOR");
-		//	check_bit(8, "JPH_DISABLE_CUSTOM_ALLOCATOR");
-		//	check_bit(9, "JPH_OBJECT_LAYER_BITS");
-		//	check_bit(10, "JPH_ENABLE_ASSERTS");
-		//	check_bit(11, "JPH_OBJECT_STREAM");
-		//	std::abort();
-		//}
-	}
-
-	//JPH_IF_ENABLE_ASSERTS(JPH::AssertFailed = AssertFailedImpl;)
 
 	RegisterTypes();
 
@@ -147,15 +94,57 @@ bool PhySystem::Init()
 		broad_phase_layer_interface, object_vs_broadphase_layer_filter, object_vs_object_layer_filter);
 
 	// Setup collision actions
-	MyContactListener contact_listener;
+	static MyContactListener contact_listener;
 	physics_system.SetContactListener(&contact_listener);
+
+	physics_system.SetGravity(Vec3::sZero());
+
+	mdd = std::make_unique<MyDebugDraw>();
 
 	return true;
 }
 
 void PhySystem::Update(float deltaTime)
 {
+	pendingEvents.clear();
+	UpdateBodyTransforms();
 	physics_system.Update(deltaTime, 1, temp_allocator, job_system);
+}
+
+void PhySystem::ProceedPendingEvents()
+{
+	if (pendingEvents.empty()) {
+		return;
+	}
+	for (const PhySystem::PhyEvent& event : pendingEvents) {
+		const PhysicsEntity& physBodyA = phy_storage[event.body1];
+		const SceneTree::Entity& entityA = gSceneTree->Get(physBodyA.entity);
+
+		const PhysicsEntity& physBodyB = phy_storage[event.body2];
+		const SceneTree::Entity& entityB = gSceneTree->Get(physBodyB.entity);
+
+		if (event.type == PhyEvenType::OverlapStart) {
+			gScriptSys->CallFunction("Engine", "void Physics::Impl::CallOnOverlapBegin(ref@, ref@)", [&entityA, &entityB](asIScriptContext* context) {
+				CScriptHandle compHandleA;
+				compHandleA.Set(entityA.obj.GetRaw(), entityA.obj.GetTypeInfo());
+				context->SetArgObject(0, &compHandleA);
+				CScriptHandle compHandleB;
+				compHandleB.Set(entityB.obj.GetRaw(), entityB.obj.GetTypeInfo());
+				context->SetArgObject(1, &compHandleB);
+			});
+		} else if (event.type == PhyEvenType::OverlapEnd) {
+			gScriptSys->CallFunction("Engine", "void Physics::Impl::CallOnOverlapEnd(ref@, ref@)", [&entityA, &entityB](asIScriptContext* context) {
+				CScriptHandle compHandleA;
+				compHandleA.Set(entityA.obj.GetRaw(), entityA.obj.GetTypeInfo());
+				context->SetArgObject(0, &compHandleA);
+				CScriptHandle compHandleB;
+				compHandleB.Set(entityB.obj.GetRaw(), entityB.obj.GetTypeInfo());
+				context->SetArgObject(1, &compHandleB);
+			});
+		}
+		
+	}
+	pendingEvents.clear();
 }
 
 void PhySystem::Term()
@@ -167,19 +156,167 @@ void PhySystem::Term()
 		body_interface.RemoveBody(entity.body->GetID());
 		body_interface.DestroyBody(entity.body->GetID());
 	}
+	bodyIdToHandle.clear();
 
 	UnregisterTypes();
 	delete JPH::Factory::sInstance;
 	JPH::Factory::sInstance = nullptr;
 }
 
+auto PhySystem::GetHandleByBodyID(const JPH::BodyID& id) -> PhysicsHandle
+{
+	const auto iter = bodyIdToHandle.find(id);
+	return iter != bodyIdToHandle.end() ? iter->second : PhysicsHandle{};
+}
+
 auto PhySystem::Add(PhysicsEntity&& entity) -> PhysicsHandle
 {
 	PhysicsHandle handle = phy_storage.Add(std::move(entity));
+	const PhysicsEntity& physBody = phy_storage[handle];
+	bodyIdToHandle[physBody.body->GetID()] = handle;
 
-	physics_system.OptimizeBroadPhase();  // Call when create new body. Not every frame!
+	physics_system.OptimizeBroadPhase();  // TODO: Call when create new body. Not every frame!
 
 	return handle;
+}
+
+auto PhySystem::AddBody(SceneTree::Handle entityHandle, const JPH::BodyCreationSettings& bodySettings, PhySystem::PhysicsEntity** outEntity) -> PhysicsHandle
+{
+	BodyInterface& body_interface = physics_system.GetBodyInterface();
+	JPH::Body* body = body_interface.CreateBody(bodySettings);
+	if (!body) {
+		// log error
+		return PhysicsHandle{};
+	}
+	body_interface.AddBody(body->GetID(), EActivation::Activate);
+
+	const PhysicsHandle handle = phy_storage.Add(PhySystem::PhysicsEntity{});
+	PhySystem::PhysicsEntity& entity = phy_storage[handle];
+	entity.entity = entityHandle;
+	entity.body = body;
+	if (outEntity) {
+		*outEntity = &entity;
+	}
+
+	bodyIdToHandle[body->GetID()] = handle;
+
+	physics_system.OptimizeBroadPhase();  // TODO: Call when create new body. Not every frame!
+
+	return handle;
+}
+
+void PhySystem::RemoveBody(PhysicsHandle handle)
+{
+	const PhysicsEntity& physBody = phy_storage[handle];
+	const JPH::BodyID& bodyId = physBody.body->GetID();
+	bodyIdToHandle.erase(bodyId);
+	physics_system.GetBodyInterface().RemoveBody(bodyId);
+	phy_storage.Remove(handle);
+	// TODO: call overlap end events?
+}
+
+void PhySystem::CallEventsFromQueue()
+{
+	while (!pendingEvents.empty())
+	{
+		const PhyEvent event = pendingEvents.back();
+		pendingEvents.pop_back();
+		
+		/*phy_storage.Get();
+		uint32_t body1_ind = event.body1->body->GetID().GetIndex();
+		uint32_t body2_ind = event.body2->body->GetID().GetIndex();
+		std::string event_type = (event.type == PhyEvenType::OverlapStart) ? "OverlapStart" : "OverlapEnd";
+		LOG_INFO("Body1:{} and Body2:{} has PhyEvent:{}", body1_ind, body2_ind, event_type);*/
+	}
+}
+
+void PhySystem::UpdateBodyTransforms()
+{
+	BodyInterface& body_interface = physics_system.GetBodyInterface();
+	for (const PhysicsEntity& physBody : phy_storage) {
+		if (physBody.body->IsStatic() || physBody.entity.id_ < 0 || !gSceneTree->IsValidHandle(physBody.entity)) {
+			continue;
+		}
+		const SceneTree::Entity& entity = gSceneTree->Get(physBody.entity);
+		const Math::Transform& trs = SharedStorage::Instance().transforms.AccessRead(entity.transform);
+		const Math::Vector3 pos = trs.GetPosition();
+		const Math::Quaternion rot = trs.GetRotation();
+		// TODO: update transform only when changed??
+		body_interface.SetPositionAndRotation(physBody.body->GetID(), JPH::Vec3(pos.x, pos.y, pos.z), JPH::Quat(rot.x, rot.y, rot.z, rot.w), JPH::EActivation::Activate);
+	}
+}
+
+void PhySystem::DebugDraw()
+{
+	for (auto& entity : phy_storage)
+	{
+		auto& body = entity.body;
+
+		switch (body->GetShape()->GetSubType())
+		{
+		case JPH::EShapeSubType::Box:
+		{
+			JPH::BoxShape* box = static_cast<JPH::BoxShape*>(const_cast<JPH::Shape*>(body->GetShape()));
+			mdd->DrawWireBox(body->GetWorldTransform(), box->GetLocalBounds(), COLLISION_COLLOR);
+			break;
+		}
+
+		case JPH::EShapeSubType::Sphere:
+		{
+			JPH::SphereShape* sphere = static_cast<JPH::SphereShape*>(const_cast<JPH::Shape*>(body->GetShape()));
+			mdd->DrawWireSphere(body->GetCenterOfMassPosition(), sphere->GetRadius(), COLLISION_COLLOR, 2/*inLevel*/);
+			break;
+		}
+
+		case JPH::EShapeSubType::Capsule:
+		{
+			JPH::CapsuleShape* capsule = static_cast<JPH::CapsuleShape*>(const_cast<JPH::Shape*>(body->GetShape()));
+			mdd->DrawCapsule(
+				body->GetWorldTransform(),
+				capsule->GetHalfHeightOfCylinder(),
+				capsule->GetRadius(),
+				COLLISION_COLLOR,
+				JPH::DebugRenderer::ECastShadow::Off,
+				JPH::DebugRenderer::EDrawMode::Wireframe
+			);
+			break;
+		}
+
+		case JPH::EShapeSubType::Cylinder:
+		{
+			JPH::CylinderShape* cylinder = static_cast<JPH::CylinderShape*>(const_cast<JPH::Shape*>(body->GetShape()));
+			mdd->DrawCylinder(
+				body->GetWorldTransform(),
+				cylinder->GetHalfHeight(),
+				cylinder->GetRadius(),
+				COLLISION_COLLOR,
+				JPH::DebugRenderer::ECastShadow::Off,
+				JPH::DebugRenderer::EDrawMode::Wireframe
+			);
+			break;
+		}
+
+		case JPH::EShapeSubType::TaperedCylinder: // Could be used as Perception
+		{
+			JPH::TaperedCylinderShape* taperedCylinder = static_cast<JPH::TaperedCylinderShape*>(const_cast<JPH::Shape*>(body->GetShape()));
+			mdd->DrawTaperedCylinder(
+				body->GetWorldTransform(),
+				body->GetPosition().GetY() + taperedCylinder->GetHalfHeight(),
+				body->GetPosition().GetY() - taperedCylinder->GetHalfHeight(),
+				taperedCylinder->GetTopRadius(),
+				taperedCylinder->GetBottomRadius(),
+				COLLISION_COLLOR,
+				JPH::DebugRenderer::ECastShadow::Off,
+				JPH::DebugRenderer::EDrawMode::Wireframe
+			);
+			break;
+		}
+
+		default:
+			break;
+		}
+	}
+	mdd->Draw();
 }
 
 bool InitPhysicsSystem()
