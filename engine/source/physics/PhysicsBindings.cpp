@@ -40,6 +40,46 @@ struct CShapeSphere : public CNativeObject, public CShape<CShapeSphere, JPH::Sph
     }
 };
 
+struct CShapeBox : public CNativeObject, public CShape<CShapeBox, JPH::BoxShapeSettings> {
+    static JPH::BoxShapeSettings* CreateParams()
+    {
+        return new JPH::BoxShapeSettings(JPH::Vec3(1.0f, 1.0f, 1.0f));
+    }
+
+    void ApplyOverrides(const YAML::Node& overrides) override
+    {
+        if (overrides["halfExtent"]) {
+            params->mHalfExtent.SetX(overrides["halfExtent"] ? overrides["halfExtent"]["x"].as<float>() : params->mHalfExtent.GetX());
+            params->mHalfExtent.SetY(overrides["halfExtent"] ? overrides["halfExtent"]["y"].as<float>() : params->mHalfExtent.GetY());
+            params->mHalfExtent.SetY(overrides["halfExtent"] ? overrides["halfExtent"]["z"].as<float>() : params->mHalfExtent.GetZ());
+        }
+    }
+
+    YAML::Node Serialize() const override
+    {
+        YAML::Node node;
+        YAML::Node& extent = node["halfExtent"] = YAML::Node();
+        extent["x"] = params->mHalfExtent.GetX();
+        extent["y"] = params->mHalfExtent.GetY();
+        extent["z"] = params->mHalfExtent.GetZ();
+        return node;
+    }
+
+    Math::Vector3 GetHalfExtent() const
+    {
+        Math::Vector3 res;
+        res.x = params->mHalfExtent.GetX();
+        res.y = params->mHalfExtent.GetY();
+        res.z = params->mHalfExtent.GetZ();
+        return res;
+    }
+
+    void SetHalfExtent(const Math::Vector3& halfExtent)
+    {
+        params->mHalfExtent.Set(halfExtent.x, halfExtent.y, halfExtent.z);
+    }
+};
+
 class CPhysBody {
 public:
     CPhysBody() = default;
@@ -100,11 +140,21 @@ void RegisterPhysicsBindings()
     r = engine->RegisterObjectMethod("ShapeSphere", "ShapeSphere &opAssign(const ShapeSphere &in)", asMETHODPR(CShapeSphere, operator=, (const CShapeSphere&), CShapeSphere&), asCALL_THISCALL); assert(r >= 0);
     r = engine->RegisterObjectProperty("ShapeSphere", "float radius", asOFFSET(JPH::SphereShapeSettings, mRadius), asOFFSET(CShapeSphere, params), true); assert(r >= 0);
 
+    r = engine->RegisterObjectType("ShapeBox", sizeof(CShapeBox), asOBJ_VALUE | asGetTypeTraits<CShapeBox>()); assert(r >= 0);
+    CNativeObject::RecognizeNativeType(engine->GetTypeInfoById(r));
+    r = engine->RegisterObjectBehaviour("ShapeBox", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(CShapeBox::CreateDefault), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+    r = engine->RegisterObjectBehaviour("ShapeBox", asBEHAVE_CONSTRUCT, "void f(const ShapeBox &in)", asFUNCTION(CShapeBox::CreateCopy), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+    r = engine->RegisterObjectBehaviour("ShapeBox", asBEHAVE_DESTRUCT, "void f()", asFUNCTION(CShapeBox::Destroy), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+    r = engine->RegisterObjectMethod("ShapeBox", "ShapeBox &opAssign(const ShapeBox &in)", asMETHODPR(CShapeBox, operator=, (const CShapeBox&), CShapeBox&), asCALL_THISCALL); assert(r >= 0);
+    r = engine->RegisterObjectMethod("ShapeBox", "Math::Vector3 GetHalfExtent() const", asMETHOD(CShapeBox, GetHalfExtent), asCALL_THISCALL); assert(r >= 0);
+    r = engine->RegisterObjectMethod("ShapeBox", "void SetHalfExtent(const Math::Vector3 &in)", asMETHOD(CShapeBox, SetHalfExtent), asCALL_THISCALL); assert(r >= 0);
+
     r = engine->RegisterObjectType("PhysBody", sizeof(CPhysBody), asOBJ_VALUE | asGetTypeTraits<CPhysBody>()); assert(r >= 0);
     r = engine->RegisterObjectBehaviour("PhysBody", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(CPhysBody::CreateDefault), asCALL_CDECL_OBJFIRST); assert(r >= 0);
     r = engine->RegisterObjectBehaviour("PhysBody", asBEHAVE_DESTRUCT, "void f()", asFUNCTION(CPhysBody::Destroy), asCALL_CDECL_OBJFIRST); assert(r >= 0);
     r = engine->RegisterObjectMethod("PhysBody", "PhysBody &opAssign(const PhysBody &in)", asMETHODPR(CPhysBody, operator=, (CPhysBody&&), CPhysBody&), asCALL_THISCALL); assert(r >= 0);
     r = engine->RegisterObjectMethod("PhysBody", "void InitFromShape(Scene::EntityId id, const ShapeSphere &in)", asFUNCTION(CPhysBody::InitFromShape<CShapeSphere>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+    r = engine->RegisterObjectMethod("PhysBody", "void InitFromShape(Scene::EntityId id, const ShapeBox &in)", asFUNCTION(CPhysBody::InitFromShape<CShapeBox>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 
     r = engine->SetDefaultNamespace(""); assert(r >= 0);
 }

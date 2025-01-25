@@ -1,11 +1,13 @@
 content:
   class: cheese
   components:
-    Collider:
-      component: res://components/physics/SphereColliderComponent.component
-      overrides:
-        shape:
-          radius: 2.0
+    #Collider:
+    #  component: res://components/physics/SphereColliderComponent.component
+    #  overrides:
+    #    shape:
+    #      radius: 2.0
+    #ColliderBox:
+    #  component: res://components/physics/BoxColliderComponent.component
     Orbiter:
       component: res://components/OrbiterComponent.component
       overrides:

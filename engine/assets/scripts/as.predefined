@@ -460,9 +460,15 @@ namespace Physics{
 		float radius;
 	}
 
+	class ShapeBox{
+		Math::Vector3 GetHalfExtent() const;
+		void SetHalfExtent(const Math::Vector3 &in);
+	}
+
 	class PhysBody{
 		PhysBody &opAssign(const PhysBody &in);
 		void InitFromShape(Scene::EntityId id, const ShapeSphere &in);
+		void InitFromShape(Scene::EntityId id, const ShapeBox &in);
 	}
 }
 
