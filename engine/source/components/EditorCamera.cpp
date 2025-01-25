@@ -33,7 +33,7 @@ void EditorCamera::Initialize()
     auto dh = globalInputDevice->MouseMove.AddRaw(this, &EditorCamera::ProceedMouseInput);
 
 	{
-		BodyInterface& body_interface = gPhySys->GetPhySystem()->GetBodyInterface();
+		/*BodyInterface& body_interface = gPhySys->GetPhySystem()->GetBodyInterface();
 
 		BoxShapeSettings floor_shape_settings(Vec3(10.0f, 10.0f, 10.0f));
 		floor_shape_settings.SetEmbedded();
@@ -49,10 +49,8 @@ void EditorCamera::Initialize()
 		PhySystem::PhysicsEntity entity;
 
 		entity.body = body;
-		entity.beginOverlap = StartOverlap;
-		entity.endOverlap = EndOverlap;
 
-		gPhySys->Add(std::move(entity));
+		gPhySys->Add(std::move(entity));*/
 	}
 }
 
@@ -66,7 +64,6 @@ void EditorCamera::ProceedInput(InputDevice* inpDevice)
 		return;
 	}
 
-	JPH::Vec3 bodyPos = body->GetPosition();
 
 	Math::Transform& camTrs = SharedStorage::Instance().transforms.AccessWrite(transform);
 	Math::Vector3 camPos = camTrs.GetPosition();
@@ -74,32 +71,17 @@ void EditorCamera::ProceedInput(InputDevice* inpDevice)
 	const Math::Vector3 right = Math::Vector3::Transform(Math::Vector3::Right, camTrs.GetRotation());
 	if (inpDevice->IsKeyHold(Keys::D)) {
 		camPos = camPos + right * 0.1f;
-
-		bodyPos = bodyPos + JPH::Vec3(right) * 0.1f;
-		//body->AddPositionStep(JPH::Vec3(right) * 0.1f);
 	}
 	if (inpDevice->IsKeyHold(Keys::A)) {
 		camPos = camPos - right * 0.1f;
-
-		bodyPos = bodyPos - JPH::Vec3(right) * 0.1f;
-		//body->AddPositionStep(- JPH::Vec3(right) * 0.1f);
 	}
 	if (inpDevice->IsKeyHold(Keys::W)) {
 		camPos = camPos + forward * 0.1f;
-
-		bodyPos = bodyPos + JPH::Vec3(forward) * 0.1f;
-		//body->AddPositionStep(JPH::Vec3(forward) * 0.1f);
 	}
 	if (inpDevice->IsKeyHold(Keys::S)) {
 		camPos = camPos - forward * 0.1f;
-
-		bodyPos = bodyPos - JPH::Vec3(forward) * 0.1f;
-		//body->AddPositionStep(- JPH::Vec3(forward) * 0.1f);
 	}
 	camTrs.SetPosition(camPos);
-
-	BodyInterface& body_interface = gPhySys->GetPhySystem()->GetBodyInterface();
-	body_interface.SetPosition(body->GetID(), bodyPos, JPH::EActivation::Activate);
 }
 
 void EditorCamera::ProceedMouseInput(const MouseMoveEventArgs& event)

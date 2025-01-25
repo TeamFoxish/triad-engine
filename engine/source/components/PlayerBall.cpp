@@ -26,7 +26,7 @@ PlayerBall::PlayerBall(Game* game)
 void PlayerBall::Initialize(Compositer* parent)
 {
 	{
-		BodyInterface& body_interface = gPhySys->GetPhySystem()->GetBodyInterface();
+		/*BodyInterface& body_interface = gPhySys->GetPhySystem()->GetBodyInterface();
 
 		BoxShapeSettings floor_shape_settings(Vec3(10.0f, 10.0f, 10.0f));
 		floor_shape_settings.SetEmbedded();
@@ -42,10 +42,8 @@ void PlayerBall::Initialize(Compositer* parent)
 		PhySystem::PhysicsEntity entity;
 
 		entity.body = body;
-		entity.beginOverlap = StartOverlap;
-		entity.endOverlap = EndOverlap;
 
-		gPhySys->Add(std::move(entity));
+		gPhySys->Add(std::move(entity));*/
 	}
 
 	CompositeComponent* camHolder = new CompositeComponent(GetGame(), this);

@@ -1,6 +1,11 @@
 content:
   class: cheese
   components:
+    Collider:
+      component: res://components/physics/SphereColliderComponent.component
+      overrides:
+        shape:
+          radius: 2.0
     Orbiter:
       component: res://components/OrbiterComponent.component
       overrides:

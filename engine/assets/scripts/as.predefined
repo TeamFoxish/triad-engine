@@ -455,6 +455,17 @@ namespace System{
 }
 }
 
+namespace Physics{
+	class ShapeSphere{
+		float radius;
+	}
+
+	class PhysBody{
+		PhysBody &opAssign(const PhysBody &in);
+		void InitFromShape(Scene::EntityId id, const ShapeSphere &in);
+	}
+}
+
 // typedefs for complex types are unsupported
 // typedef ResourceHandle Scene;
 namespace Game{

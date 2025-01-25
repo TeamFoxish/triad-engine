@@ -1,7 +1,11 @@
 #include "PhySystem.h"
 
 #include "Physics.h"
+#include "shared/SharedStorage.h"
 #include "logs/Logs.h"
+
+#include "scripts/ScriptSystem.h" // TEMP
+#include <scripthandle.h> // TEMP
 
 
 std::unique_ptr<class PhySystem> gPhySys;
@@ -51,12 +55,10 @@ public:
 
 	virtual void OnContactAdded(const Body& inBody1, const Body& inBody2, const ContactManifold& inManifold, ContactSettings& ioSettings) override
 	{
-		LOG_INFO("A contact was added");
-
-		auto entity1 = gPhySys->GetEntityByBodyID(inBody1.GetID());
-		auto entity2 = gPhySys->GetEntityByBodyID(inBody2.GetID());
-		if (!entity1 || !entity2) {
-			// log error
+		auto entity1 = gPhySys->GetHandleByBodyID(inBody1.GetID());
+		auto entity2 = gPhySys->GetHandleByBodyID(inBody2.GetID());
+		if (entity1 == PhySystem::PhysicsHandle{} || !gPhySys->IsValidHandle(entity1) ||
+			entity2 == PhySystem::PhysicsHandle{} || !gPhySys->IsValidHandle(entity2)) {
 			LOG_ERROR("PhysicsEntity was not found");
 			return;
 		}
@@ -67,24 +69,18 @@ public:
 		event.body2 = entity2;
 
 		gPhySys->AddEventToQueue(event);
-
-		entity1->beginOverlap(*entity2);
-		entity2->beginOverlap(*entity1);
 	}
 
 	virtual void OnContactPersisted(const Body& inBody1, const Body& inBody2, const ContactManifold& inManifold, ContactSettings& ioSettings) override
 	{
-		LOG_INFO("A contact was persisted");
 	}
 
 	virtual void OnContactRemoved(const SubShapeIDPair& inSubShapePair) override
 	{
-		LOG_INFO("A contact was removed");
-
-		auto entity1 = gPhySys->GetEntityByBodyID(inSubShapePair.GetBody1ID());
-		auto entity2 = gPhySys->GetEntityByBodyID(inSubShapePair.GetBody2ID());
-		if (!entity1 || !entity2) {
-			// log error
+		auto entity1 = gPhySys->GetHandleByBodyID(inSubShapePair.GetBody1ID());
+		auto entity2 = gPhySys->GetHandleByBodyID(inSubShapePair.GetBody2ID());
+		if (entity1 == PhySystem::PhysicsHandle{} || !gPhySys->IsValidHandle(entity1) ||
+			entity2 == PhySystem::PhysicsHandle{} || !gPhySys->IsValidHandle(entity2)) {
 			LOG_ERROR("PhysicsEntity was not found");
 			return;
 		}
@@ -93,11 +89,7 @@ public:
 		event.type = PhySystem::PhyEvenType::OverlapEnd;
 		event.body1 = entity1;
 		event.body2 = entity2;
-
 		gPhySys->AddEventToQueue(event);
-
-		entity1->endOverlap(*entity2);
-		entity2->endOverlap(*entity1);
 	}
 };
 
@@ -141,8 +133,45 @@ bool PhySystem::Init()
 
 void PhySystem::Update(float deltaTime)
 {
-	CallEventsFromQueue();
+	pendingEvents.clear();
+	UpdateBodyTransforms();
 	physics_system.Update(deltaTime, 1, temp_allocator, job_system);
+}
+
+void PhySystem::ProceedPendingEvents()
+{
+	if (pendingEvents.empty()) {
+		return;
+	}
+	for (const PhySystem::PhyEvent& event : pendingEvents) {
+		const PhysicsEntity& physBodyA = phy_storage[event.body1];
+		const SceneTree::Entity& entityA = gSceneTree->Get(physBodyA.entity);
+
+		const PhysicsEntity& physBodyB = phy_storage[event.body2];
+		const SceneTree::Entity& entityB = gSceneTree->Get(physBodyB.entity);
+
+		if (event.type == PhyEvenType::OverlapStart) {
+			gScriptSys->CallFunction("Engine", "void Physics::Impl::CallOnOverlapBegin(ref@, ref@)", [&entityA, &entityB](asIScriptContext* context) {
+				CScriptHandle compHandleA;
+				compHandleA.Set(entityA.obj.GetRaw(), entityA.obj.GetTypeInfo());
+				context->SetArgObject(0, &compHandleA);
+				CScriptHandle compHandleB;
+				compHandleB.Set(entityB.obj.GetRaw(), entityB.obj.GetTypeInfo());
+				context->SetArgObject(1, &compHandleB);
+			});
+		} else if (event.type == PhyEvenType::OverlapEnd) {
+			gScriptSys->CallFunction("Engine", "void Physics::Impl::CallOnOverlapEnd(ref@, ref@)", [&entityA, &entityB](asIScriptContext* context) {
+				CScriptHandle compHandleA;
+				compHandleA.Set(entityA.obj.GetRaw(), entityA.obj.GetTypeInfo());
+				context->SetArgObject(0, &compHandleA);
+				CScriptHandle compHandleB;
+				compHandleB.Set(entityB.obj.GetRaw(), entityB.obj.GetTypeInfo());
+				context->SetArgObject(1, &compHandleB);
+			});
+		}
+		
+	}
+	pendingEvents.clear();
 }
 
 void PhySystem::Term()
@@ -154,35 +183,93 @@ void PhySystem::Term()
 		body_interface.RemoveBody(entity.body->GetID());
 		body_interface.DestroyBody(entity.body->GetID());
 	}
+	bodyIdToHandle.clear();
 
 	UnregisterTypes();
 	delete JPH::Factory::sInstance;
 	JPH::Factory::sInstance = nullptr;
 }
 
+auto PhySystem::GetHandleByBodyID(const JPH::BodyID& id) -> PhysicsHandle
+{
+	const auto iter = bodyIdToHandle.find(id);
+	return iter != bodyIdToHandle.end() ? iter->second : PhysicsHandle{};
+}
+
 auto PhySystem::Add(PhysicsEntity&& entity) -> PhysicsHandle
 {
 	PhysicsHandle handle = phy_storage.Add(std::move(entity));
+	const PhysicsEntity& physBody = phy_storage[handle];
+	bodyIdToHandle[physBody.body->GetID()] = handle;
 
-	physics_system.OptimizeBroadPhase();  // Call when create new body. Not every frame!
+	physics_system.OptimizeBroadPhase();  // TODO: Call when create new body. Not every frame!
 
 	return handle;
 }
 
+auto PhySystem::AddBody(SceneTree::Handle entityHandle, const JPH::BodyCreationSettings& bodySettings, PhySystem::PhysicsEntity** outEntity) -> PhysicsHandle
+{
+	BodyInterface& body_interface = physics_system.GetBodyInterface();
+	JPH::Body* body = body_interface.CreateBody(bodySettings);
+	if (!body) {
+		// log error
+		return PhysicsHandle{};
+	}
+	body_interface.AddBody(body->GetID(), EActivation::Activate);
+
+	const PhysicsHandle handle = phy_storage.Add(PhySystem::PhysicsEntity{});
+	PhySystem::PhysicsEntity& entity = phy_storage[handle];
+	entity.entity = entityHandle;
+	entity.body = body;
+	if (outEntity) {
+		*outEntity = &entity;
+	}
+
+	bodyIdToHandle[body->GetID()] = handle;
+
+	physics_system.OptimizeBroadPhase();  // TODO: Call when create new body. Not every frame!
+
+	return handle;
+}
+
+void PhySystem::RemoveBody(PhysicsHandle handle)
+{
+	const PhysicsEntity& physBody = phy_storage[handle];
+	const JPH::BodyID& bodyId = physBody.body->GetID();
+	bodyIdToHandle.erase(bodyId);
+	physics_system.GetBodyInterface().RemoveBody(bodyId);
+	phy_storage.Remove(handle);
+	// TODO: call overlap end events?
+}
+
 void PhySystem::CallEventsFromQueue()
 {
-	while (!event_queue.empty())
+	while (!pendingEvents.empty())
 	{
-		PhyEvent event = event_queue.front();
+		const PhyEvent event = pendingEvents.back();
+		pendingEvents.pop_back();
 		
+		/*phy_storage.Get();
 		uint32_t body1_ind = event.body1->body->GetID().GetIndex();
 		uint32_t body2_ind = event.body2->body->GetID().GetIndex();
 		std::string event_type = (event.type == PhyEvenType::OverlapStart) ? "OverlapStart" : "OverlapEnd";
-		LOG_INFO("Body1:{} and Body2:{} has PhyEvent:{}", body1_ind, body2_ind, event_type);
+		LOG_INFO("Body1:{} and Body2:{} has PhyEvent:{}", body1_ind, body2_ind, event_type);*/
+	}
+}
 
-		// call PhyEvents
-		
-		event_queue.pop();
+void PhySystem::UpdateBodyTransforms()
+{
+	BodyInterface& body_interface = physics_system.GetBodyInterface();
+	for (const PhysicsEntity& physBody : phy_storage) {
+		if (physBody.body->IsStatic() || physBody.entity.id_ < 0 || !gSceneTree->IsValidHandle(physBody.entity)) {
+			continue;
+		}
+		const SceneTree::Entity& entity = gSceneTree->Get(physBody.entity);
+		const Math::Transform& trs = SharedStorage::Instance().transforms.AccessRead(entity.transform);
+		const Math::Vector3 pos = trs.GetPosition();
+		const Math::Quaternion rot = trs.GetRotation();
+		// TODO: update transform only when changed??
+		body_interface.SetPositionAndRotation(physBody.body->GetID(), JPH::Vec3(pos.x, pos.y, pos.z), JPH::Quat(rot.x, rot.y, rot.z, rot.w), JPH::EActivation::Activate);
 	}
 }
 
