@@ -465,10 +465,17 @@ namespace Physics{
 		void SetHalfExtent(const Math::Vector3 &in);
 	}
 
+	class ShapeTaperedCylinder{
+		float halfHeight;
+		float topRadius; 
+		float bottomRadius;
+	}
+
 	class PhysBody{
 		PhysBody &opAssign(const PhysBody &in);
 		void InitFromShape(Scene::EntityId id, const ShapeSphere &in);
 		void InitFromShape(Scene::EntityId id, const ShapeBox &in);
+		void InitFromShape(Scene::EntityId id, const ShapeTaperedCylinder &in);
 	}
 }
 

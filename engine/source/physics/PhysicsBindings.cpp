@@ -8,6 +8,8 @@
 #include "shared/Shared.h"
 
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>
+#include <Jolt/Physics/Collision/Shape/BoxShape.h>
+#include <Jolt/Physics/Collision/Shape/TaperedCylinderShape.h>
 
 template<typename ChildT, typename ParamsT>
 struct CShape {
@@ -80,6 +82,35 @@ struct CShapeBox : public CNativeObject, public CShape<CShapeBox, JPH::BoxShapeS
     }
 };
 
+struct CShapeTaperedCylinder : public CNativeObject, public CShape<CShapeTaperedCylinder, JPH::TaperedCylinderShapeSettings> {
+    static JPH::TaperedCylinderShapeSettings* CreateParams()
+    {
+        return new JPH::TaperedCylinderShapeSettings(1.0f, 0.5f, 0.5f);
+    }
+
+    void ApplyOverrides(const YAML::Node& overrides) override
+    {
+        if (overrides["halfHeight"]) {
+            params->mHalfHeight = overrides["halfExtent"].as<float>();
+        }
+        if (overrides["topRadius"]) {
+            params->mTopRadius = overrides["topRadius"].as<float>();
+        }
+        if (overrides["bottomRadius"]) {
+            params->mBottomRadius = overrides["bottomRadius"].as<float>();
+        }
+    }
+
+    YAML::Node Serialize() const override
+    {
+        YAML::Node node;
+        node["halfHeight"] = params->mHalfHeight;
+        node["topRadius"] = params->mTopRadius;
+        node["bottomRadius"] = params->mBottomRadius;
+        return node;
+    }
+};
+
 class CPhysBody {
 public:
     CPhysBody() = default;
@@ -149,12 +180,23 @@ void RegisterPhysicsBindings()
     r = engine->RegisterObjectMethod("ShapeBox", "Math::Vector3 GetHalfExtent() const", asMETHOD(CShapeBox, GetHalfExtent), asCALL_THISCALL); assert(r >= 0);
     r = engine->RegisterObjectMethod("ShapeBox", "void SetHalfExtent(const Math::Vector3 &in)", asMETHOD(CShapeBox, SetHalfExtent), asCALL_THISCALL); assert(r >= 0);
 
+    r = engine->RegisterObjectType("ShapeTaperedCylinder", sizeof(CShapeTaperedCylinder), asOBJ_VALUE | asGetTypeTraits<CShapeTaperedCylinder>()); assert(r >= 0);
+    CNativeObject::RecognizeNativeType(engine->GetTypeInfoById(r));
+    r = engine->RegisterObjectBehaviour("ShapeTaperedCylinder", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(CShapeTaperedCylinder::CreateDefault), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+    r = engine->RegisterObjectBehaviour("ShapeTaperedCylinder", asBEHAVE_CONSTRUCT, "void f(const ShapeTaperedCylinder &in)", asFUNCTION(CShapeTaperedCylinder::CreateCopy), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+    r = engine->RegisterObjectBehaviour("ShapeTaperedCylinder", asBEHAVE_DESTRUCT, "void f()", asFUNCTION(CShapeTaperedCylinder::Destroy), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+    r = engine->RegisterObjectMethod("ShapeTaperedCylinder", "ShapeTaperedCylinder &opAssign(const ShapeTaperedCylinder &in)", asMETHODPR(CShapeTaperedCylinder, operator=, (const CShapeTaperedCylinder&), CShapeTaperedCylinder&), asCALL_THISCALL); assert(r >= 0);
+    r = engine->RegisterObjectProperty("ShapeTaperedCylinder", "float halfHeight", asOFFSET(JPH::TaperedCylinderShapeSettings, mHalfHeight), asOFFSET(CShapeTaperedCylinder, params), true); assert(r >= 0);
+    r = engine->RegisterObjectProperty("ShapeTaperedCylinder", "float topRadius", asOFFSET(JPH::TaperedCylinderShapeSettings, mTopRadius), asOFFSET(CShapeTaperedCylinder, params), true); assert(r >= 0);
+    r = engine->RegisterObjectProperty("ShapeTaperedCylinder", "float bottomRadius", asOFFSET(JPH::TaperedCylinderShapeSettings, mBottomRadius), asOFFSET(CShapeTaperedCylinder, params), true); assert(r >= 0);
+
     r = engine->RegisterObjectType("PhysBody", sizeof(CPhysBody), asOBJ_VALUE | asGetTypeTraits<CPhysBody>()); assert(r >= 0);
     r = engine->RegisterObjectBehaviour("PhysBody", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(CPhysBody::CreateDefault), asCALL_CDECL_OBJFIRST); assert(r >= 0);
     r = engine->RegisterObjectBehaviour("PhysBody", asBEHAVE_DESTRUCT, "void f()", asFUNCTION(CPhysBody::Destroy), asCALL_CDECL_OBJFIRST); assert(r >= 0);
     r = engine->RegisterObjectMethod("PhysBody", "PhysBody &opAssign(const PhysBody &in)", asMETHODPR(CPhysBody, operator=, (CPhysBody&&), CPhysBody&), asCALL_THISCALL); assert(r >= 0);
     r = engine->RegisterObjectMethod("PhysBody", "void InitFromShape(Scene::EntityId id, const ShapeSphere &in)", asFUNCTION(CPhysBody::InitFromShape<CShapeSphere>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
     r = engine->RegisterObjectMethod("PhysBody", "void InitFromShape(Scene::EntityId id, const ShapeBox &in)", asFUNCTION(CPhysBody::InitFromShape<CShapeBox>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+    r = engine->RegisterObjectMethod("PhysBody", "void InitFromShape(Scene::EntityId id, const ShapeTaperedCylinder &in)", asFUNCTION(CPhysBody::InitFromShape<CShapeTaperedCylinder>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 
     r = engine->SetDefaultNamespace(""); assert(r >= 0);
 }
