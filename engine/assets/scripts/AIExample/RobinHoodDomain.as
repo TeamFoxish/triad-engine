@@ -15,9 +15,7 @@ namespace RobinHood {
 class RobinHoodDomain : Domain {
 
     void Init() override {
-        log_info("DOMAIN CREATION STARTED");
-        DomainBuilder builder = DomainBuilder(this);
-        log_info("BUILDER CREATED");
+        DomainBuilder@ builder = DomainBuilder(this);
         
         builder
 
@@ -34,7 +32,7 @@ class RobinHoodDomain : Domain {
                 .end()
 
             .primitiveTask("Rest")
-                .precondition(function(state) { return state.GetBool('isRested'); })
+                .precondition(function(state) { return !state.GetBool('isRested'); })
                 .operator(RobinHood::rest)
                 .effect(function(state) { state.SetBool('isRested', true); })
                 .end()

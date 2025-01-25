@@ -5,12 +5,8 @@ class DomainBuilder {
     private dictionary@ tasksRegistry = @dictionary();
     private Domain@ domain;
 
-    DomainBuilder() {}
-
     DomainBuilder(Domain@ domain) {
-        log_info("NOT EMPTY BUILDER");
         @this.domain = @domain;
-        @this.tasksRegistry = @dictionary();
     }
 
 
@@ -30,14 +26,18 @@ class DomainBuilder {
     }
 
     void end() {
-        log_info("FINAL ROOT TASK: " + hierarchyRoot.GetName() + ". REGISTRY SIZE: " + tasksRegistry.getSize());
         domain.SetRoot(hierarchyRoot);
         domain.SetTaskRegistry(tasksRegistry);
     }
 
-    void AddTask(Task@ task) {
+    void AddPrimitiveTask(PrimitiveTask@ task) {
         log_info("Adding task " + task.GetName() + " to domain");
-        @tasksRegistry[task.GetName()] = @task;
+        tasksRegistry.set(task.GetName(), @task);
+    }
+
+    void AddCompoundTask(CompoundTask@ task) {
+        log_info("Adding task " + task.GetName() + " to domain");
+        tasksRegistry.set(task.GetName(), @task);
     }
 
     Task@ GetTaskFromRegistry(const string &in name) {
@@ -53,19 +53,17 @@ class DomainBuilder {
 interface MethodStorage {
     MethodBuilder method();
     void AddMethod(Method@ method);
-    DomainBuilder& end();
+    DomainBuilder@ end();
 };
 
 class CompoundTaskBuilder : MethodStorage {
     protected string name;
-    protected DomainBuilder domain;
+    protected DomainBuilder@ domain;
     protected array<Method@> methods;
 
-    CompoundTaskBuilder() {}
-
-    CompoundTaskBuilder(const string &in _name, DomainBuilder &inout _domain) {
+    CompoundTaskBuilder(const string &in _name, DomainBuilder@ _domain) {
         this.name = _name;
-        this.domain = _domain;
+        @this.domain = @_domain;
     }
 
     MethodBuilder method() {
@@ -73,10 +71,10 @@ class CompoundTaskBuilder : MethodStorage {
         return MethodBuilder(domain, this);
     }
 
-    DomainBuilder& end() {
+    DomainBuilder@ end() {
         log_info("Creating method done");
         if (domain !is null) {
-            cast<DomainBuilder@>(domain).AddTask(CompoundTask(name, methods));
+            cast<DomainBuilder@>(domain).AddCompoundTask(CompoundTask(name, methods));
         }
         return domain;
     }
@@ -89,14 +87,12 @@ class CompoundTaskBuilder : MethodStorage {
 
 class HierarchyBuilder : MethodStorage {
     protected string name;
-    protected DomainBuilder domain;
+    protected DomainBuilder@ domain;
     protected array<Method@> methods;
 
-    HierarchyBuilder() {}
-
-    HierarchyBuilder(const string &in domainName, DomainBuilder &inout _domain) {
+    HierarchyBuilder(const string &in domainName, DomainBuilder@ _domain) {
         this.name = domainName;
-        this.domain = _domain;
+        @this.domain = @_domain;
     }
 
     MethodBuilder method() {
@@ -104,11 +100,11 @@ class HierarchyBuilder : MethodStorage {
         return MethodBuilder(domain, this);
     }
 
-    DomainBuilder& end() {
+    DomainBuilder@ end() {
         log_info("Done creating hierarchy");
         if (domain !is null) {
             CompoundTask@ rootTask = CompoundTask(name, methods);
-            domain.AddTask(rootTask);
+            domain.AddCompoundTask(rootTask);
             domain.SetHierarchy(rootTask);
         }
         return domain;
@@ -122,15 +118,14 @@ class HierarchyBuilder : MethodStorage {
 
 class MethodBuilder {
 
-    private DomainBuilder domain;
+    private DomainBuilder@ domain;
     private MethodStorage@ parent;
-    private HierarchyBuilder hierarchyParent;
     private array<CHECK_PRECONDITION@> preconditions;
     private array<Task@> subtasks;
 
-    MethodBuilder(const DomainBuilder &in domainBuilder, MethodStorage &inout parentBuilder) {
-        @this.parent = parentBuilder;
-        this.domain = domain;
+    MethodBuilder(DomainBuilder@ domainBuilder, MethodStorage@ parentBuilder) {
+        @this.parent = @parentBuilder;
+        @this.domain = @domainBuilder;
     }
 
     MethodBuilder& precondition(CHECK_PRECONDITION@ preconditionFunc) {
@@ -141,6 +136,10 @@ class MethodBuilder {
 
     MethodBuilder& subtask(const string &in name) {
         log_info("Adding subtask " + name);
+        Task@ task = domain.GetTaskFromRegistry(name);
+        if (task is null) {
+            log_error("Task not found !");
+        }
         subtasks.insertLast(domain.GetTaskFromRegistry(name));
         return this;
     }
@@ -155,15 +154,15 @@ class MethodBuilder {
 };
 
 class PrimitiveTaskBuilder {
-    private DomainBuilder domain;
+    private DomainBuilder@ domain;
     private string name;
     private array<CHECK_PRECONDITION@> preconditions;
     private EXECUTE_SUBTASK@ operatorImpl;
     private array<APPLY_EFFECT@> effects;
 
-    PrimitiveTaskBuilder(const string &in _name, DomainBuilder &inout _domain) {
+    PrimitiveTaskBuilder(const string &in _name, DomainBuilder@ _domain) {
         this.name = _name;
-        this.domain = _domain;
+        @this.domain = @_domain;
     }
 
     PrimitiveTaskBuilder& precondition(CHECK_PRECONDITION@ precondition) {
@@ -184,9 +183,9 @@ class PrimitiveTaskBuilder {
         return this;
     }
 
-    DomainBuilder& end() {
+    DomainBuilder@ end() {
         log_info("Done creating primitive");
-        domain.AddTask(PrimitiveTask(name, preconditions, operatorImpl, effects));
+        domain.AddPrimitiveTask(PrimitiveTask(name, preconditions, operatorImpl, effects));
         return domain;
     }
 };

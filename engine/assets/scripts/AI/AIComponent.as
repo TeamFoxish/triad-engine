@@ -11,8 +11,6 @@ class AIComponent : Component {
     }
 
     void Init() {
-        log_info("INIT in AI COMPONENT");
         controller.Init();
-        log_info("INIT in AI COMPONENT DONE");
     }
 }

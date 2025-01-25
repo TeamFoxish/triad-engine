@@ -36,8 +36,6 @@ class Domain : IDomain {
     }
 
     void SetTaskRegistry(dictionary@ _taskRegistry) override {
-        log_info("REG SIZE: " + _taskRegistry.getSize());
         @this.taskRegistry = @_taskRegistry;
-        log_info("NEW REG SIZE: " + this.taskRegistry.getSize());
     }
 };

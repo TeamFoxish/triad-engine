@@ -16,13 +16,12 @@ class AiController {
     }
 
     void Init() {
-        log_info("INIT in AI CONTROLLER");
         IDomain@ domainHolder = Domain();
-        log_info("CREATING DOMAIN");
         CreateObject("Engine", domainName).retrieve(@domainHolder);
-        log_info("INIT DOMEN");
         domainHolder.Init();
-        log_info("INIT in AI CONTROLLER DONE");
         domain = cast<Domain>(domainHolder);
+
+        state.SetBool("IsRested", false);
+        state.SetBool("IsTrained", false);
     }
 }

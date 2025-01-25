@@ -1,10 +1,14 @@
 
 class WorldState {
-    private dictionary state;
+    private dictionary@ state = @dictionary();
     private bool isDirty;
     
     bool GetBool(const string &in name) const {
-        return bool(state[name]);
+        if (state.exists(name)) {
+            return bool(state[name]);
+        } else {
+            return false;
+        }
     }
 
     void SetBool(const string &in name, bool value) {
