@@ -10,6 +10,9 @@ content:
     #  component: res://components/physics/BoxColliderComponent.component
     TaperedCylinder:
       component: res://components/physics/TaperedCylinderColliderComponent.component
+      overrides:
+        shape:
+          topRadius: 1.0
     Orbiter:
       component: res://components/OrbiterComponent.component
       overrides:

@@ -8,7 +8,7 @@
 #include <scripthandle.h> // TEMP
 
 
-static JPH::Color COLLISION_COLLOR(189, 195, 199, 225); // Silver Sand
+static JPH::Color COLLISION_COLLOR(0, 255, 0, 225); // Silver Sand
 
 std::unique_ptr<class PhySystem> gPhySys;
 
@@ -96,6 +96,8 @@ bool PhySystem::Init()
 	// Setup collision actions
 	static MyContactListener contact_listener;
 	physics_system.SetContactListener(&contact_listener);
+
+	physics_system.SetGravity(Vec3::sZero());
 
 	mdd = std::make_unique<MyDebugDraw>();
 
@@ -255,7 +257,7 @@ void PhySystem::DebugDraw()
 		case JPH::EShapeSubType::Box:
 		{
 			JPH::BoxShape* box = static_cast<JPH::BoxShape*>(const_cast<JPH::Shape*>(body->GetShape()));
-			mdd->DrawWireBox(box->GetLocalBounds(), COLLISION_COLLOR);
+			mdd->DrawWireBox(body->GetWorldTransform(), box->GetLocalBounds(), COLLISION_COLLOR);
 			break;
 		}
 
@@ -302,7 +304,7 @@ void PhySystem::DebugDraw()
 				body->GetPosition().GetY() + taperedCylinder->GetHalfHeight(),
 				body->GetPosition().GetY() - taperedCylinder->GetHalfHeight(),
 				taperedCylinder->GetTopRadius(),
-				taperedCylinder->GetTopRadius(),
+				taperedCylinder->GetBottomRadius(),
 				COLLISION_COLLOR,
 				JPH::DebugRenderer::ECastShadow::Off,
 				JPH::DebugRenderer::EDrawMode::Wireframe
@@ -314,6 +316,7 @@ void PhySystem::DebugDraw()
 			break;
 		}
 	}
+	mdd->Draw();
 }
 
 bool InitPhysicsSystem()

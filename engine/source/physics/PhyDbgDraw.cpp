@@ -72,83 +72,57 @@ MyDebugDraw::~MyDebugDraw()
 {
 }
 
-void MyDebugDraw::depthMask(bool state)
-{
-    m_depthEnabled = true;
-
-    // Enable/disable depth testing in the DirectX pipeline
-    ID3D11DepthStencilState* depthStencilState = nullptr;
-
-    D3D11_DEPTH_STENCIL_DESC depthDesc = {};
-    depthDesc.DepthEnable = m_depthEnabled;
-    depthDesc.DepthWriteMask = m_depthEnabled ? D3D11_DEPTH_WRITE_MASK_ALL : D3D11_DEPTH_WRITE_MASK_ZERO;
-    depthDesc.DepthFunc = D3D11_COMPARISON_LESS;
-
-    m_device->CreateDepthStencilState(&depthDesc, &depthStencilState);
-    m_context->OMSetDepthStencilState(depthStencilState, 0);
-    if (depthStencilState)
-        depthStencilState->Release();
-}
-
-void MyDebugDraw::texture(bool state)
-{
-    // ignore
-}
-
-void MyDebugDraw::begin(duDebugDrawPrimitives prim, float size)
-{
-    m_currentPrim = prim;
-    m_pointSize = size;
-    m_vertices.clear();
-}
-
-void MyDebugDraw::vertex(const float* pos, unsigned int color)
-{
-    vertex(pos[0], pos[1], pos[2], color);
-}
-
-void MyDebugDraw::vertex(const float x, const float y, const float z, unsigned int color)
-{
-    DirectX::XMFLOAT4 colorFloat(
-        ((color >> 0) & 0xFF) / 255.0f,
-        ((color >> 8) & 0xFF) / 255.0f,
-        ((color >> 16) & 0xFF) / 255.0f,
-        ((color >> 24) & 0xFF) / 255.0f
-    );
-    m_vertices.push_back({ {x, y, z}, colorFloat });
-}
-
-void MyDebugDraw::vertex(const float* pos, unsigned int color, const float* uv)
-{
-    vertex(pos[0], pos[1], pos[2], color);
-}
-
-void MyDebugDraw::vertex(const float x, const float y, const float z, unsigned int color, const float u, const float v)
-{
-    vertex(x, y, z, color);
-}
-
-void MyDebugDraw::end()
-{
-    Draw();
-}
-
 void MyDebugDraw::DrawLine(JPH::RVec3Arg inFrom, JPH::RVec3Arg inTo, JPH::ColorArg inColor)
 {
-    duDebugDrawArrow(this,
-        inFrom.GetX(), inFrom.GetY(), inFrom.GetZ(),
-        inTo.GetX(), inTo.GetY(), inTo.GetZ(),
-        0.f, 0.f,
-        inColor.GetUInt32(),
-        m_lineWidth
-        );
+    {
+        MyVertex vert;
+        vert.position.x = inFrom.GetX();
+        vert.position.y = inFrom.GetY();
+        vert.position.z = inFrom.GetZ();
+        const JPH::Vec4 col4 = inColor.ToVec4();
+        memcpy(&vert.color, &col4, sizeof(col4));
+        m_lineVertices.push_back(vert);
+    }
+    {
+        MyVertex vert;
+        vert.position.x = inTo.GetX();
+        vert.position.y = inTo.GetY();
+        vert.position.z = inTo.GetZ();
+        const JPH::Vec4 col4 = inColor.ToVec4();
+        memcpy(&vert.color, &col4, sizeof(col4));
+        m_lineVertices.push_back(vert);
+    }
 }
 
 void MyDebugDraw::DrawTriangle(JPH::RVec3Arg inV1, JPH::RVec3Arg inV2, JPH::RVec3Arg inV3, JPH::ColorArg inColor, ECastShadow inCastShadow)
 {
-    DrawLine(inV1, inV2, inColor);
-    DrawLine(inV2, inV3, inColor);
-    DrawLine(inV3, inV1, inColor);
+    {
+        MyVertex vert;
+        vert.position.x = inV1.GetX();
+        vert.position.y = inV1.GetY();
+        vert.position.z = inV1.GetZ();
+        const JPH::Vec4 col4 = inColor.ToVec4();
+        memcpy(&vert.color, &col4, sizeof(col4));
+        m_triVertices.push_back(vert);
+    }
+    {
+        MyVertex vert;
+        vert.position.x = inV2.GetX();
+        vert.position.y = inV2.GetY();
+        vert.position.z = inV2.GetZ();
+        const JPH::Vec4 col4 = inColor.ToVec4();
+        memcpy(&vert.color, &col4, sizeof(col4));
+        m_triVertices.push_back(vert);
+    }
+    {
+        MyVertex vert;
+        vert.position.x = inV3.GetX();
+        vert.position.y = inV3.GetY();
+        vert.position.z = inV3.GetZ();
+        const JPH::Vec4 col4 = inColor.ToVec4();
+        memcpy(&vert.color, &col4, sizeof(col4));
+        m_triVertices.push_back(vert);
+    }
 }
 
 void MyDebugDraw::DrawText3D(JPH::RVec3Arg inPosition, const JPH::string_view& inString, JPH::ColorArg inColor, float inHeight)
@@ -157,7 +131,15 @@ void MyDebugDraw::DrawText3D(JPH::RVec3Arg inPosition, const JPH::string_view& i
 
 void MyDebugDraw::Draw()
 {
-    if (m_vertices.empty())
+    DrawImpl(m_lineVertices, D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+    DrawImpl(m_triVertices, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    m_lineVertices.clear();
+    m_triVertices.clear();
+}
+
+void MyDebugDraw::DrawImpl(const std::vector<MyVertex>& vertices, D3D11_PRIMITIVE_TOPOLOGY primitive)
+{
+    if (vertices.empty())
         return;
 
     MeshRenderer::CBVS cbvs;
@@ -165,30 +147,16 @@ void MyDebugDraw::Draw()
     shader->Activate(gRenderSys->GetContext(), shader);
     shader->SetCBVS(m_context, 0, &cbvs);
 
-    D3D11_PRIMITIVE_TOPOLOGY topology;
-    switch (m_currentPrim) {
-    case DU_DRAW_POINTS:
-        topology = D3D11_PRIMITIVE_TOPOLOGY_POINTLIST;
-        break;
-    case DU_DRAW_LINES:
-        topology = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
-        break;
-    case DU_DRAW_TRIS:
-        topology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-        break;
-    default:
-        return;
-    }
-    m_context->IASetPrimitiveTopology(topology);
+    m_context->IASetPrimitiveTopology(primitive);
 
     D3D11_BUFFER_DESC bufferDesc = {};
     bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-    bufferDesc.ByteWidth = static_cast<UINT>(sizeof(MyVertex) * m_vertices.size());
+    bufferDesc.ByteWidth = static_cast<UINT>(sizeof(MyVertex) * vertices.size());
     bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
     bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
     D3D11_SUBRESOURCE_DATA initData = {};
-    initData.pSysMem = m_vertices.data();
+    initData.pSysMem = vertices.data();
 
     ID3D11Buffer* vertexBuffer = nullptr;
     HRESULT hr = m_device->CreateBuffer(&bufferDesc, &initData, &vertexBuffer);
@@ -202,7 +170,7 @@ void MyDebugDraw::Draw()
     float blendFactor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
     m_context->OMSetBlendState(blendState, blendFactor, 0xffffffff);
 
-    m_context->Draw(static_cast<UINT>(m_vertices.size()), 0);
+    m_context->Draw(static_cast<UINT>(vertices.size()), 0);
 
     vertexBuffer->Release();
 }
