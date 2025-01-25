@@ -11,6 +11,6 @@ class AIComponent : Component {
     }
 
     void Init() {
-        controller.Init();
+        controller.Init(GetParent());
     }
 }

@@ -4,6 +4,7 @@ class AiController {
     string domainName;
     protected PlanRunner runner;
     protected HTNPlanner planner;
+    protected ICompositer@ parent;
 
     void Update(float deltaTime) {
         if (state.IsDirty()) {
@@ -15,13 +16,12 @@ class AiController {
         }
     }
 
-    void Init() {
+    void Init(ICompositer@ parent) {
         IDomain@ domainHolder = Domain();
         CreateObject("Engine", domainName).retrieve(@domainHolder);
-        domainHolder.Init();
+        domainHolder.Init(state, parent);
         domain = cast<Domain>(domainHolder);
 
-        state.SetBool("IsRested", false);
-        state.SetBool("IsTrained", false);
+        @this.parent = @parent;
     }
 }

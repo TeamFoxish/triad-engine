@@ -1,5 +1,5 @@
 interface IDomain {
-    void Init();
+    void Init(WorldState& statem, ICompositer@ parent);
     const Task@ GetTask(const string &in name) const;
     const CompoundTask@ GetRoot() const;
     void SetRoot(CompoundTask@ root);
@@ -19,7 +19,7 @@ class Domain : IDomain {
         this.taskRegistry = _taskRegistry;
     }
 
-    void Init() override {
+    void Init(WorldState& state, ICompositer@ parent) override {
         log_warn("Default empty domain was initialized");
     }
 

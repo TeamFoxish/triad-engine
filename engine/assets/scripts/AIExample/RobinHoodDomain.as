@@ -14,7 +14,13 @@ namespace RobinHood {
 
 class RobinHoodDomain : Domain {
 
-    void Init() override {
+    void Init(WorldState& state, ICompositer@ parent) override {
+
+        state.SetBool("isTrained", false);
+        state.SetBool("isRested", false);
+        state.SetVector("TrainCamp", Math::Vector3(15.0f, 1.1f, 15.0f));
+        state.SetVector("Bed", Math::Vector3(-15.0f, 1.1f, -15.0f));
+
         DomainBuilder@ builder = DomainBuilder(this);
         
         builder
