@@ -1,4 +1,4 @@
 content:
-  source_file: ./assets/scripts/PlanRunner.as
+  source_file: ./assets/scripts/AI/PlanRunner.as
   module: Engine
 type: script

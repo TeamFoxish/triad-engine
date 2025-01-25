@@ -61,6 +61,7 @@ class any{
 	bool retrieve(int64 &out value) const;
 	bool retrieve(double &out value) const;
 }
+any@ CreateObject(const string &in module, const string &in classDeclaration);
 class ref{
 	ref();
 	ref(const ref &in);

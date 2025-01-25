@@ -1,14 +1,16 @@
+interface Task {
+    const string& GetName() const;
+    bool isPrimitive() const;
+};
 
-abstract class Task {
-    private string name;
-
-    abstract bool checkPrecondition(WorldState state);
-    abstract ExecutionResult execute(float deltaTime);
-    abstract void applyEffect(WorldState &in state);
+namespace AI {
+    enum ExecutionResult {
+        FINISHED = 0,
+        CONTINUES = 1,
+        FAILED = 2
+    };
 }
 
-enum ExecutionResult {
-    FINISHED,
-    CONTINUES,
-    FAILED
-}
+funcdef bool CHECK_PRECONDITION(const WorldState &in state);
+funcdef AI::ExecutionResult EXECUTE_SUBTASK(WorldState& state, float deltaTime, dictionary@ executionState);
+funcdef void APPLY_EFFECT(WorldState& state);

@@ -1,0 +1,4 @@
+content:
+  source_file: ./assets/scripts/AIExample/RobinHoodDomain.as
+  module: Engine
+type: script

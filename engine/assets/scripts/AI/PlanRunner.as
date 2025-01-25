@@ -1,24 +1,35 @@
 
 class PlanRunner {
-    
-    array<Task@> currentPlan;
 
-    ExecutionResult run(WorldState &in state, float deltaTime) {
+    array<const PrimitiveTask@> currentPlan;
+    dictionary executionState;
+
+    AI::ExecutionResult run(WorldState &in state, float deltaTime) {
         if (!currentPlan.isEmpty()) {
-            Task@ currentTask = currentPlan[0];
-            ExecutionResult result = currentTask.execute(deltaTime);
+            const PrimitiveTask@ currentTask = currentPlan[0];
+            AI::ExecutionResult result = currentTask.execute(state, deltaTime, executionState);
             switch (result) {
-                case FINISHED:
+                case AI::ExecutionResult::FINISHED:
+                    executionState.deleteAll();
                     currentTask.applyEffect(state);
                     currentPlan.removeAt(0);
                     if (currentPlan.isEmpty()) {
-                        return result;
+                        return AI::ExecutionResult::FINISHED;
                     } else {
-                        return CONTINUES;
+                        return AI::ExecutionResult::CONTINUES;
                     }
+                case AI::ExecutionResult::FAILED:
+                    executionState.deleteAll();
+                    return AI::ExecutionResult::FAILED;
                 default:
                     return result;
             }
+        } else {
+            return AI::ExecutionResult::FINISHED;
         }
     }
-}
+
+    void SetPlan(array<const PrimitiveTask@> plan) {
+        currentPlan = plan;
+    }
+};

@@ -1,0 +1,4 @@
+content:
+  source_file: ./assets/scripts/AI/DomainBuilder.as
+  module: Engine
+type: script

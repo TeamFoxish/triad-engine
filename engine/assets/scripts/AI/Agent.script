@@ -1,4 +1,0 @@
-content:
-  source_file: ./assets/scripts/Agent.as
-  module: Engine
-type: script

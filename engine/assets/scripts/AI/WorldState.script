@@ -1,4 +1,4 @@
 content:
-  source_file: ./assets/scripts/WorldState.as
+  source_file: ./assets/scripts/AI/WorldState.as
   module: Engine
 type: script

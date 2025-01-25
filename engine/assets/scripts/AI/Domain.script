@@ -1,4 +1,4 @@
 content:
-  source_file: ./assets/scripts/Domain.as
+  source_file: ./assets/scripts/AI/Domain.as
   module: Engine
 type: script

@@ -32,4 +32,9 @@ content:
         renderObj:
           material: res://materials/cheese.material
           mesh: res://meshes/cheese.mesh
+    Agent:
+      component: res://components/AIComponent.component
+      overrides:
+        controller:
+          domainName: RobinHoodDomain
 type: prefab

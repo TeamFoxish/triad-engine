@@ -1,4 +1,4 @@
 content:
-  source_file: ./assets/scripts/Task.as
+  source_file: ./assets/scripts/AI/Task.as
   module: Engine
 type: script

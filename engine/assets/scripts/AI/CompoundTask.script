@@ -1,4 +1,4 @@
 content:
-  source_file: ./assets/scripts/CompoundTask.as
+  source_file: ./assets/scripts/AI/CompoundTask.as
   module: Engine
 type: script
