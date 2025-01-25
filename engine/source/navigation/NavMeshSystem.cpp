@@ -11,12 +11,18 @@ bool NavMeshSystem::Init(RuntimeIface *runtime)
     dbgDraw = std::make_unique<NavMeshDbgDraw>();
 #endif // EDITOR
 
+    extern void NavMeshResourcesInit();
+    NavMeshResourcesInit();
+
     this->_builder = std::make_unique<NavMeshBuilder>();
     return true;
 }
 
 void NavMeshSystem::Term()
 {
+    extern void NavMeshResourcesTerm();
+    NavMeshResourcesTerm();
+
     _builder.reset();
 #ifdef EDITOR
     dbgDraw.reset();
@@ -49,29 +55,39 @@ void NavMeshSystem::Build(BuildConfig config, NavMeshAgent *agent)
     if (!nav) {
         return;
     }
-    NavMesh& navRef = *(_navMeshes[agent] = std::move(nav));
+    NavMesh& navRef = *(_navMeshes[*agent] = std::move(nav));
     navRef.save(agent->name + ".bin");
 }
 
-std::vector<float> NavMeshSystem::FindPath(NavMeshAgent *agent, float *startPos, float *endPos)
+const NavMesh* NavMeshSystem::GetNavMesh(const NavMeshAgent& agent) const
 {
-    NavMesh& nav = GetNavMesh(agent);
-    float extents[3] = {agent->radius, agent->radius, agent->heigth};
+    const auto iter = _navMeshes.find(agent);
+    return iter != _navMeshes.end() ? iter->second.get() : nullptr;
+}
+
+std::vector<float> NavMeshSystem::FindPath(const NavMeshAgent& agent, const float *startPos, const float *endPos)
+{
+    const NavMesh* nav = GetNavMesh(agent);
+    if (!nav) {
+        // log error
+        return std::vector<float>();
+    }
+    float extents[3] = {agent.radius, agent.radius, agent.height};
     dtQueryFilter filter;
     dtPolyRef startRef, endRef;
-    nav.GetNavMeshQuery()->findNearestPoly(startPos, extents, &filter, &startRef, nullptr);
-    nav.GetNavMeshQuery()->findNearestPoly(endPos, extents, &filter, &endRef, nullptr);
+    nav->GetNavMeshQuery()->findNearestPoly(startPos, extents, &filter, &startRef, nullptr);
+    nav->GetNavMeshQuery()->findNearestPoly(endPos, extents, &filter, &endRef, nullptr);
 
     dtPolyRef path[256];
     int pathCount;
-    nav.GetNavMeshQuery()->findPath(startRef, endRef, startPos, endPos, &filter, path, &pathCount, 256);
+    nav->GetNavMeshQuery()->findPath(startRef, endRef, startPos, endPos, &filter, path, &pathCount, 256);
     
     float straightPath[256 * 3]; // Array to hold the straight path (x, y, z for each point)
     unsigned char straightPathFlags[256]; // Flags for each point
     dtPolyRef straightPathPolys[256];     // Polygons associated with each point
     int straightPathCount;
 
-    dtStatus status = nav.GetNavMeshQuery()->findStraightPath(startPos, endPos, path, pathCount, straightPath, straightPathFlags, straightPathPolys, &straightPathCount, 256);
+    dtStatus status = nav->GetNavMeshQuery()->findStraightPath(startPos, endPos, path, pathCount, straightPath, straightPathFlags, straightPathPolys, &straightPathCount, 256);
     if (dtStatusFailed(status)) {
         LOG_WARN("Failed to find straight path.");
         return {};
@@ -84,7 +100,7 @@ std::vector<float> NavMeshSystem::FindPath(NavMeshAgent *agent, float *startPos,
 void NavMeshSystem::GenerateTestPath(NavMeshAgent *agent, float *startPos, float *endPos)
 {
     _testPath.clear();
-    _testPath = FindPath(agent, startPos, endPos);
+    _testPath = FindPath(*agent, startPos, endPos);
 }
 
 void NavMeshSystem::DebugDraw()

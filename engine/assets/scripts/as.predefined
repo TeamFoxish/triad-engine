@@ -482,6 +482,10 @@ namespace Physics{
 	}
 }
 
+namespace Navigation{
+	array<Math::Vector3>@ FindPath(const ResourceHandle &in agent, const Math::Vector3 &in from, const Math::Vector3 &in to);
+}
+
 // typedefs for complex types are unsupported
 // typedef ResourceHandle Scene;
 namespace Game{
