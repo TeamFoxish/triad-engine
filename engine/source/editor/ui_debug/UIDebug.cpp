@@ -126,6 +126,7 @@ void UIDebug::TestDraw()
             ImGui::DockSpaceOverViewport(0, imViewPort);
         }
 
+        bool componentsSetChanged = false;
         {
             if (ImGui::BeginMainMenuBar())
             {
@@ -155,7 +156,7 @@ void UIDebug::TestDraw()
 
                         Triad::FileIO::IterateDirectory(
                             componentPath,
-                            [assetsPath, componentPath] (YAML::Node scriptDesc, const Triad::FileIO::FPath path) {
+                            [assetsPath, componentPath, &componentsSetChanged] (YAML::Node scriptDesc, const Triad::FileIO::FPath path) {
                                 std::string fileName = std::filesystem::relative(path, componentPath).stem().string();
                                 std::string filePath = std::filesystem::relative(path, assetsPath).generic_string();
 
@@ -191,7 +192,13 @@ void UIDebug::TestDraw()
                                             SceneLoader::AddSpawnedComponent(*obj, compNode);
                                             SceneTree::Handle spawnedEnt = GetEntityHandleFromScriptObject(obj->GetRaw());
                                             if (gSceneTree->IsValidHandle(spawnedEnt)) {
-                                                outliner.SetSelectedNode(spawnedEnt);
+                                                const SceneTree::Entity& ent = gSceneTree->Get(spawnedEnt);
+                                                if (ent.isComposite) {
+                                                    outliner.SetSelectedNode(spawnedEnt);
+                                                } else {
+                                                    inspector.reset(); // recreate inspector to show changes
+                                                    componentsSetChanged = true;
+                                                }
                                             }
                                         }
                                     }
@@ -208,7 +215,7 @@ void UIDebug::TestDraw()
                         Triad::FileIO::FPath assetsPath = "./assets";
                         Triad::FileIO::IterateDirectory(
                             prefabPath,
-                            [assetsPath, prefabPath](YAML::Node scriptDesc, const Triad::FileIO::FPath path) {
+                            [assetsPath, prefabPath, &componentsSetChanged](YAML::Node scriptDesc, const Triad::FileIO::FPath path) {
                                 std::string fileName = std::filesystem::relative(path, prefabPath).stem().string();
                                 std::string filePath = std::filesystem::relative(path, assetsPath).generic_string();
                                 
@@ -243,7 +250,13 @@ void UIDebug::TestDraw()
                                             SceneLoader::AddSpawnedComponent(*obj, compNode);
                                             SceneTree::Handle spawnedEnt = GetEntityHandleFromScriptObject(obj->GetRaw());
                                             if (gSceneTree->IsValidHandle(spawnedEnt)) {
-                                                outliner.SetSelectedNode(spawnedEnt);
+                                                const SceneTree::Entity& ent = gSceneTree->Get(spawnedEnt);
+                                                if (ent.isComposite) {
+                                                    outliner.SetSelectedNode(spawnedEnt);
+                                                } else {
+                                                    inspector.reset(); // recreate inspector to show changes
+                                                    componentsSetChanged = true;
+                                                }
                                             }
                                         }
                                     }
@@ -270,7 +283,7 @@ void UIDebug::TestDraw()
             }
             outliner.Draw();
             const SceneTree::Handle selectedNode = outliner.GetSelectedNode();
-            if (selectedNode != prevSelected) {
+            if (selectedNode != prevSelected || componentsSetChanged) {
                 // change inspector view
                 if (selectedNode == SceneTree::Handle{}) {
                     inspector.reset();

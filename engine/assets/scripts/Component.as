@@ -20,7 +20,6 @@ abstract class Component {
     Component@ opAssign(Component@) delete;
 
     ~Component() {
-        println("DESTORY " + name);
         Destroy();
     }
 
