@@ -26,8 +26,8 @@ class PrimitiveTask : Task {
         return true;
     }
 
-    AI::ExecutionResult execute(WorldState state, float deltaTime, dictionary@ executionState) const {
-        return operator(state, deltaTime, executionState);
+    AI::ExecutionResult execute(AiController@ controller, WorldState state, float deltaTime, dictionary@ executionState) const {
+        return operator(controller, state, deltaTime, executionState);
     }
 
     void applyEffect(WorldState &in state) const {

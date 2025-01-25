@@ -33,9 +33,9 @@ namespace Game {
 
     void Update(float deltaTime) {
         const array<Math::Vector3>@ path = Navigation::FindPath(mainAgent.Load(), Math::Vector3(-15.0f, 1.1f, -15.0f), Math::Vector3(15.0f, 1.1f, 15.0f));
-        for (int i = 0; i < path.length(); ++i) {
-            log_info("path vec3: " + path[i].x + ", " + path[i].y + ", " + path[i].z);
-        }
+        // for (int i = 0; i < path.length(); ++i) {
+        //     log_info("path vec3: " + path[i].x + ", " + path[i].y + ", " + path[i].z);
+        // }
 
         array<uint> pendingDead;
         for (uint i = 0; i < Private::scenes.length(); ++i) {

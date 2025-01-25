@@ -1,3 +1,5 @@
+
+
 class AIMovementComponent : Component {
     [Editable]
     private ResourceHandle agentProfile;
@@ -6,10 +8,12 @@ class AIMovementComponent : Component {
 
     private array<Math::Vector3> currPath;
     private bool isMoving = false;
+    private bool isFinished = false;
     private Math::Vector3 curMoveDir;
 
     AIMovementComponent(ICompositer@ parent = null) {
         super(@parent);
+        @gMovementComp = @this;
     }
 
     void Update(float deltaTime) {
@@ -21,6 +25,7 @@ class AIMovementComponent : Component {
     protected void UpdatePos(float deltaTime) {
         if (currPath.isEmpty()) {
             isMoving = false;
+            isFinished = true;
             return;
         }
         const Math::Vector3 target = currPath[currPath.length() - 1];
@@ -41,8 +46,16 @@ class AIMovementComponent : Component {
 
     bool IsMoving() { return isMoving; }
 
+    bool IsFinished() { 
+        bool res = isFinished;
+        this.isFinished = false;
+        return res; 
+    }
+
     void MoveTo(Math::Vector3 target) {
         isMoving = false;
+        isFinished = false;
+        curMoveDir = Math::Vector3Zero;
         const Math::Transform@ parentTrs = GetParent().GetTransform();
         currPath = Navigation::FindPath(agentProfile, target, parentTrs.GetPosition());
         if (currPath.isEmpty()) {
@@ -63,3 +76,6 @@ class AIMovementComponent : Component {
         isMoving = true;
     }
 };
+
+AIMovementComponent@ gMovementComp = null;
+int counter;

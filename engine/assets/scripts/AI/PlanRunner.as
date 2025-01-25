@@ -4,10 +4,11 @@ class PlanRunner {
     array<const PrimitiveTask@> currentPlan;
     dictionary executionState;
 
-    AI::ExecutionResult run(WorldState &in state, float deltaTime) {
+    AI::ExecutionResult run(AiController@ controller, WorldState &in state, float deltaTime) {
         if (!currentPlan.isEmpty()) {
             const PrimitiveTask@ currentTask = currentPlan[0];
-            AI::ExecutionResult result = currentTask.execute(state, deltaTime, executionState);
+            log_critical("Plan size: " + currentPlan.length());
+            AI::ExecutionResult result = currentTask.execute(controller, state, deltaTime, executionState);
             switch (result) {
                 case AI::ExecutionResult::FINISHED:
                     executionState.deleteAll();

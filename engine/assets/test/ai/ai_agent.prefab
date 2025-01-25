@@ -11,4 +11,9 @@ content:
         renderObj:
           mesh: res://meshes/cube.mesh
           material: res://materials/green.material
+    Controller:
+      component: res://components/AIComponent.component
+      overrides:
+        controller:
+          domainName: RobinHoodDomain
 type: prefab

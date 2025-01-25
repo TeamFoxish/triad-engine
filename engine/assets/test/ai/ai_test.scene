@@ -57,4 +57,9 @@ content:
             x: -11.8999939
             y: 1.85097539
             z: -13.0251026
+        children:
+          $Controller:
+            overrides:
+              controller:
+                movement: "@agent2/MoveComp"
 type: scene

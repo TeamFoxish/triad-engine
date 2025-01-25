@@ -3,6 +3,7 @@ class HTNPlanner {
     // we need ony copy of state
     array<const PrimitiveTask@> GeneratePlan(WorldState workingState, const Domain &in domain) {
 
+        log_debug("=== NEW PLAN GENERATION ===");
         PlanGenerationContext context = PlanGenerationContext(workingState, domain.GetRoot());
 
         while(!context.unprocessedTasks.isEmpty()) {
@@ -29,6 +30,7 @@ class HTNPlanner {
                 }
             }
         }
+        log_info("Plan size " + context.finalPlan.length());
         return context.finalPlan;
     }
 };

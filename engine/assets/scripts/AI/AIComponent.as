@@ -1,4 +1,4 @@
-class AIComponent : Component {
+class AIComponent : CompositeComponent {
 
     AiController controller;
 
