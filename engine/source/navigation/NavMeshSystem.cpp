@@ -18,7 +18,9 @@ bool NavMeshSystem::Init(RuntimeIface *runtime)
 void NavMeshSystem::Term()
 {
     _builder.reset();
+#ifdef EDITOR
     dbgDraw.reset();
+#endif // EDITOR
 }
 
 std::vector<const Renderable*> NavMeshSystem::CollectStaticObjects()

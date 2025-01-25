@@ -9,6 +9,7 @@
 #include "fg/Blackboard.hpp"
 
 #include "navigation/NavMeshSystem.h"
+#include "physics/PhySystem.h"
 
 DbgDrawPass::DbgDrawPass(RenderContext& ctx)
 {
@@ -59,6 +60,7 @@ void DbgDrawPass::AddDbgDrawPass(RenderContext& ctx, FrameGraph& fg, FrameGraphB
 void DbgDrawPass::DebugDraw(RenderContext& ctx)
 {
 	gNavigation->DebugDraw();
+	gPhySys->DebugDraw();
 }
 
 #endif // EDITOR

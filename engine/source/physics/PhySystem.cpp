@@ -5,21 +5,9 @@
 
 #include "Jolt/Core/Factory.h"
 
+static JPH::Color COLLISION_COLLOR(189, 195, 199, 225); // Silver Sand
+
 std::unique_ptr<class PhySystem> gPhySys;
-
-// Callback for traces, connect this to your own trace function if you have one
-static void TraceImpl(const char* inFMT, ...)
-{
-	// Format the message
-	va_list list;
-	va_start(list, inFMT);
-	char buffer[1024];
-	vsnprintf(buffer, sizeof(buffer), inFMT, list);
-	va_end(list);
-
-	// Print to the TTY
-	//cout << buffer << endl;
-}
 
 // An example contact listener
 // Interface with functions to call onOverlap Begin, Continue and End
@@ -52,7 +40,7 @@ public:
 
 	virtual void OnContactPersisted(const Body& inBody1, const Body& inBody2, const ContactManifold& inManifold, ContactSettings& ioSettings) override
 	{
-		LOG_INFO("A contact was persisted");
+		//LOG_INFO("A contact was persisted");
 	}
 
 	virtual void OnContactRemoved(const SubShapeIDPair& inSubShapePair) override
@@ -71,60 +59,12 @@ public:
 	}
 };
 
-// An example activation listener
-class MyBodyActivationListener : public BodyActivationListener
-{
-public:
-	virtual void OnBodyActivated(const BodyID& inBodyID, uint64 inBodyUserData) override
-	{
-		//cout << "A body got activated" << endl;
-	}
-
-	virtual void OnBodyDeactivated(const BodyID& inBodyID, uint64 inBodyUserData) override
-	{
-		//cout << "A body went to sleep" << endl;
-	}
-};
-
-// Callback for asserts, connect this to your own assert handler if you have one
-static bool AssertFailedImpl(const char* inExpression, const char* inMessage, const char* inFile, uint inLine)
-{
-	// Print to the TTY
-	//cout << inFile << ":" << inLine << ": (" << inExpression << ") " << (inMessage != nullptr ? inMessage : "") << endl;
-
-	// Breakpoint
-	return true;
-};
 
 bool PhySystem::Init()
 {
 	RegisterDefaultAllocator();
-	//JPH::Trace = TraceImpl;
 
 	JPH::Factory::sInstance = new JPH::Factory();
-	
-	{
-		//if (!VerifyJoltVersionIDInternal(JPH_VERSION_ID))
-		//{
-		//	Trace("Version mismatch, make sure you compile the client code with the same Jolt version and compiler definitions!");
-		//	uint64 mismatch = JPH_VERSION_ID ^ JPH_VERSION_ID;
-		//	auto check_bit = [mismatch](int inBit, const char* inLabel) { if (mismatch & (uint64(1) << (inBit + 23))) Trace("Mismatching define %s.", inLabel); };
-		//	check_bit(1, "JPH_DOUBLE_PRECISION");
-		//	check_bit(2, "JPH_CROSS_PLATFORM_DETERMINISTIC");
-		//	check_bit(3, "JPH_FLOATING_POINT_EXCEPTIONS_ENABLED");
-		//	check_bit(4, "JPH_PROFILE_ENABLED");
-		//	check_bit(5, "JPH_EXTERNAL_PROFILE");
-		//	check_bit(6, "JPH_DEBUG_RENDERER");
-		//	check_bit(7, "JPH_DISABLE_TEMP_ALLOCATOR");
-		//	check_bit(8, "JPH_DISABLE_CUSTOM_ALLOCATOR");
-		//	check_bit(9, "JPH_OBJECT_LAYER_BITS");
-		//	check_bit(10, "JPH_ENABLE_ASSERTS");
-		//	check_bit(11, "JPH_OBJECT_STREAM");
-		//	std::abort();
-		//}
-	}
-
-	//JPH_IF_ENABLE_ASSERTS(JPH::AssertFailed = AssertFailedImpl;)
 
 	RegisterTypes();
 
@@ -147,8 +87,10 @@ bool PhySystem::Init()
 		broad_phase_layer_interface, object_vs_broadphase_layer_filter, object_vs_object_layer_filter);
 
 	// Setup collision actions
-	MyContactListener contact_listener;
+	static MyContactListener contact_listener;
 	physics_system.SetContactListener(&contact_listener);
+
+	mdd = std::make_unique<MyDebugDraw>();
 
 	return true;
 }
@@ -180,6 +122,78 @@ auto PhySystem::Add(PhysicsEntity&& entity) -> PhysicsHandle
 	physics_system.OptimizeBroadPhase();  // Call when create new body. Not every frame!
 
 	return handle;
+}
+
+void PhySystem::DebugDraw()
+{
+	for (auto& entity : phy_storage)
+	{
+		auto& body = entity.body;
+
+		switch (body->GetShape()->GetSubType())
+		{
+		case JPH::EShapeSubType::Box:
+		{
+			JPH::BoxShape* box = static_cast<JPH::BoxShape*>(const_cast<JPH::Shape*>(body->GetShape()));
+			mdd->DrawWireBox(box->GetLocalBounds(), COLLISION_COLLOR);
+			break;
+		}
+
+		case JPH::EShapeSubType::Sphere:
+		{
+			JPH::SphereShape* sphere = static_cast<JPH::SphereShape*>(const_cast<JPH::Shape*>(body->GetShape()));
+			mdd->DrawWireSphere(body->GetCenterOfMassPosition(), sphere->GetRadius(), COLLISION_COLLOR, 2/*inLevel*/);
+			break;
+		}
+
+		case JPH::EShapeSubType::Capsule:
+		{
+			JPH::CapsuleShape* capsule = static_cast<JPH::CapsuleShape*>(const_cast<JPH::Shape*>(body->GetShape()));
+			mdd->DrawCapsule(
+				body->GetWorldTransform(),
+				capsule->GetHalfHeightOfCylinder(),
+				capsule->GetRadius(),
+				COLLISION_COLLOR,
+				JPH::DebugRenderer::ECastShadow::Off,
+				JPH::DebugRenderer::EDrawMode::Wireframe
+			);
+			break;
+		}
+
+		case JPH::EShapeSubType::Cylinder:
+		{
+			JPH::CylinderShape* cylinder = static_cast<JPH::CylinderShape*>(const_cast<JPH::Shape*>(body->GetShape()));
+			mdd->DrawCylinder(
+				body->GetWorldTransform(),
+				cylinder->GetHalfHeight(),
+				cylinder->GetRadius(),
+				COLLISION_COLLOR,
+				JPH::DebugRenderer::ECastShadow::Off,
+				JPH::DebugRenderer::EDrawMode::Wireframe
+			);
+			break;
+		}
+
+		case JPH::EShapeSubType::TaperedCylinder: // Could be used as Perception
+		{
+			JPH::TaperedCylinderShape* taperedCylinder = static_cast<JPH::TaperedCylinderShape*>(const_cast<JPH::Shape*>(body->GetShape()));
+			mdd->DrawTaperedCylinder(
+				body->GetWorldTransform(),
+				body->GetPosition().GetY() + taperedCylinder->GetHalfHeight(),
+				body->GetPosition().GetY() - taperedCylinder->GetHalfHeight(),
+				taperedCylinder->GetTopRadius(),
+				taperedCylinder->GetTopRadius(),
+				COLLISION_COLLOR,
+				JPH::DebugRenderer::ECastShadow::Off,
+				JPH::DebugRenderer::EDrawMode::Wireframe
+			);
+			break;
+		}
+
+		default:
+			break;
+		}
+	}
 }
 
 bool InitPhysicsSystem()

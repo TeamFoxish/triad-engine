@@ -39,6 +39,7 @@ bool NavMeshBuilder::buildNavMesh(
 
 	// TODO cull verts outside building volume
 	// We need to combine all static meshes to unite scene mesh
+#ifdef EDITOR
 	uint32_t maxIndex = 0;
     for (const Renderable* data : meshes) {
 		
@@ -69,6 +70,7 @@ bool NavMeshBuilder::buildNavMesh(
 			}
 		}
     }
+#endif // EDITOR
 	
 	const float* verts = sceneVerts.data();
 	const int nverts = (int)sceneVerts.size();

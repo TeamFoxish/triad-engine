@@ -10,6 +10,9 @@
 #include "Jolt/Physics/Body/Body.h"
 #include "jolt/Core/JobSystemThreadPool.h"
 
+#include "PhyDbgDraw.h"
+
+
 // TODO: remove
 using namespace JPH;
 
@@ -49,6 +52,8 @@ public:
     PhysicsHandle Add(PhysicsEntity&& entity);
     JPH::PhysicsSystem* GetPhySystem() { return &physics_system; }
 
+    void DebugDraw();
+
 private:
     PhysicsStorage phy_storage;
 
@@ -56,6 +61,8 @@ private:
     JPH::PhysicsSystem physics_system;
     TempAllocatorImpl* temp_allocator;
     JobSystemThreadPool* job_system;
+
+    std::unique_ptr<MyDebugDraw> mdd;
 
     // add: PhyEvent_array;
 };
