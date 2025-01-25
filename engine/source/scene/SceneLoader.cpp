@@ -169,14 +169,18 @@ void SceneLoader::LinkPass(const std::unique_ptr<ScriptObject>& root)
 {
 	while (!_unlinkedComponentFiedls.empty()) {
 		LinkageRequest linkageRequest = _unlinkedComponentFiedls.front();
+		_unlinkedComponentFiedls.pop();
 		if (linkageRequest.isArrayField) {
 			// not implemented
 		} else {
 			std::unique_ptr<ScriptObject> linkedComponent = GetComponentByAbsolutePath(root, linkageRequest.ref);
+			if (!linkedComponent || !linkedComponent->GetRaw()) {
+				LOG_ERROR("failed to link field '{}'. unable to find component by absolute path '{}'", linkageRequest.fieldName, linkageRequest.ref);
+				continue;
+			}
 			linkageRequest.object.SetField(linkageRequest.fieldName, linkedComponent->GetRaw());
+			LOG_INFO("Linked field \"{}\" to component \"{}\"", linkageRequest.fieldName, linkageRequest.ref);
 		}
-		LOG_INFO("Linked field \"{}\" to component \"{}\"", linkageRequest.fieldName, linkageRequest.ref);
-		_unlinkedComponentFiedls.pop();
 	}
 	LOG_INFO("Scene linkage pass done");
 }
@@ -281,8 +285,15 @@ void SceneLoader::RemoveSpawnedComponent(SceneTree::Handle handle)
 		// log error
 		return;
 	}
-	YAML::Node parentNode = parentIter->second["overrides"]["children"];
-	const std::string name = !entity.name.starts_with('$') ? '$' + entity.name : entity.name;
+	YAML::Node parentNode;
+	std::string name;
+	if (entity.parent == gSceneTree->GetRoot()) {
+		parentNode = parentIter->second["objects"];
+		name = entity.name;
+	} else {
+		parentNode = parentIter->second["overrides"]["children"];
+		name = !entity.name.starts_with('$') ? '$' + entity.name : entity.name;
+	}
 	if (!parentNode || !parentNode[name]) {
 		// log error
 		return;

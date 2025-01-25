@@ -864,9 +864,8 @@ void ScriptObject::OverrideChildren(const YAML::Node& node) {
             YAML::Node childNode;
             const bool isValid = GetChildSceneRepr(arrayNode.first.Scalar(), childNode);
             ScriptObject* component = ComponentLoader::CreateComponent(componentTag, this, isValid ? &childNode : nullptr);
-            // TODO: add spawned component to SceneLoader map with overrides
             component->ApplyOverrides(parameters["overrides"]);
-            component->SetField("name", childComponentName);
+            ComponentLoader::SetComponentName(*component, childComponentName);
         }
     }
 }
