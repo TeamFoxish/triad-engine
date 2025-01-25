@@ -1,0 +1,4 @@
+content:
+  source_file: ./assets/scripts/physics/TaperedCylinderColliderComponent.as
+  module: Engine
+type: script

@@ -42,6 +42,17 @@ content:
                 mesh: res://meshes/cheese.mesh
     cheese1: 
       prefab: res://prefabs/cheese.prefab
+    cheese2: 
+      prefab: res://prefabs/cheese.prefab
+      overrides:
+        transform:
+          position:
+            z: -3.0
+        children:
+          $Orbiter:
+            overrides:
+              angle: 30.0
+              moveSpeed: 0.1
     player:
       prefab: res://prefabs/player.prefab
 type: scene

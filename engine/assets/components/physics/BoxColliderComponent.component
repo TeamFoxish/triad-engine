@@ -1,0 +1,4 @@
+content:
+  class: BoxColliderComponent
+  module: Engine
+type: component

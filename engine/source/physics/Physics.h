@@ -1,7 +1,5 @@
 #pragma once
 
-#include "PhySystem.h"
-
 #include "Jolt/Jolt.h"
 
 // Jolt includes

@@ -8,6 +8,10 @@
 #include "render/RenderStorage.h"
 #include "shared/SharedStorage.h"
 
+#include "physics/Physics.h"
+#include "logs/Logs.h"
+
+
 EditorCamera::EditorCamera(Game* game, const Camera::Params& params)
     : _game(game)
 	, mPitchSpeed(0.0f)
@@ -27,6 +31,27 @@ EditorCamera::~EditorCamera()
 void EditorCamera::Initialize()
 {
     auto dh = globalInputDevice->MouseMove.AddRaw(this, &EditorCamera::ProceedMouseInput);
+
+	{
+		/*BodyInterface& body_interface = gPhySys->GetPhySystem()->GetBodyInterface();
+
+		BoxShapeSettings floor_shape_settings(Vec3(10.0f, 10.0f, 10.0f));
+		floor_shape_settings.SetEmbedded();
+
+		ShapeSettings::ShapeResult floor_shape_result = floor_shape_settings.Create();
+		ShapeRefC floor_shape = floor_shape_result.Get();
+
+		BodyCreationSettings floor_settings(floor_shape, RVec3(0.0, 0.0, 0.0), Quat::sIdentity(), EMotionType::Dynamic, Layers::MOVING);
+
+		body = body_interface.CreateBody(floor_settings);
+		body_interface.AddBody(body->GetID(), EActivation::Activate);
+
+		PhySystem::PhysicsEntity entity;
+
+		entity.body = body;
+
+		gPhySys->Add(std::move(entity));*/
+	}
 }
 
 void EditorCamera::Update(float deltaTime)
@@ -38,6 +63,7 @@ void EditorCamera::ProceedInput(InputDevice* inpDevice)
 	if (!globalInputDevice->IsKeyHold(Keys::RightButton)) {
 		return;
 	}
+
 
 	Math::Transform& camTrs = SharedStorage::Instance().transforms.AccessWrite(transform);
 	Math::Vector3 camPos = camTrs.GetPosition();
@@ -95,4 +121,14 @@ const Math::Matrix& EditorCamera::GetViewMatrix() const
 const Math::Matrix& EditorCamera::GetProjectionMatrix() const
 {
 	return RenderStorage::Instance().cameras.Get(handle).camera.GetProjectionMatrix();
+}
+
+void EditorCamera::StartOverlap(PhySystem::PhysicsEntity& other)
+{
+	LOG_INFO("EditorCamera start overlap");
+}
+
+void EditorCamera::EndOverlap(PhySystem::PhysicsEntity& other)
+{
+	LOG_INFO("EditorCamera end overlap");
 }

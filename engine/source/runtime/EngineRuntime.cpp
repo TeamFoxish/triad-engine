@@ -117,6 +117,7 @@ void EngineRuntime::RunSingleFrame(FrameParams&& params)
 		gSoundSys->Update(gTempGame->GetDeltaTime());
 	}
 	gPhySys->Update(gTempGame->GetDeltaTime());
+	gPhySys->ProceedPendingEvents();
 	// TODO: replace with update input sys
 	gTempGame->UpdateFrame(); // TODO: move to simulation branch
 	isRunning = gTempGame->isRunning;

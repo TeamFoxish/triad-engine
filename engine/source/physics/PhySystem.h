@@ -1,9 +1,10 @@
 #pragma once
 
 #include "misc/Handles.h"
-#include "shared/TransformStorage.h" // TEMP
+#include "scene/SceneTree.h"
 
 #include <string>
+#include <queue>
 
 #include "Jolt/Jolt.h"
 #include "Jolt/Physics/PhysicsSystem.h"
@@ -12,59 +13,72 @@
 
 #include "PhyDbgDraw.h"
 
-
-// TODO: remove
-using namespace JPH;
-
 class PhySystem {
 public:
     struct PhysicsEntity {
-        Body* body = nullptr;
-        TransformStorage::Handle transform;
-
-        void (*beginOverlap)(PhysicsEntity&) = nullptr;
-        void (*endOverlap)(PhysicsEntity&) = nullptr;
+        JPH::Body* body = nullptr; // better hold by id?
+        SceneTree::Handle entity;
     };
     using PhysicsStorage = HandleStorage<PhysicsEntity>;
     using PhysicsHandle = PhysicsStorage::Handle;
 
+public:
+    enum class PhyEvenType
+    {
+        OverlapStart,
+        OverlapEnd
+    };
+
+    struct PhyEvent
+    {
+        PhyEvenType type;
+        PhysicsHandle body1;
+        PhysicsHandle body2;
+    };
+
+public:
     bool Init();
     void Update(float deltaTime);
+    void ProceedPendingEvents();
     void Term();
 
     PhysicsHandle GetHandleFromId(PhysicsStorage::Index id) const { return phy_storage.GetHandleFromId(id); }
     
+    bool IsValidHandle(PhysicsHandle handle) const { return phy_storage.Get(handle) != nullptr; }
     PhysicsEntity& Get(PhysicsHandle handle) { return phy_storage[handle]; }
     const PhysicsEntity& Get(PhysicsHandle handle) const { return phy_storage[handle]; }
     
-    PhysicsEntity* GetEntityByBodyID(const BodyID& id)
-    {
-        for (auto& entity : phy_storage)
-        {
-            if (entity.body->GetID() == id)
-            {
-                return &entity;
-            }
-        }
-        return nullptr;
-    }
+    PhysicsHandle GetHandleByBodyID(const JPH::BodyID& id);
    
+    // deprecated
     PhysicsHandle Add(PhysicsEntity&& entity);
+
+    PhysicsHandle AddBody(SceneTree::Handle entityHandle, const JPH::BodyCreationSettings& bodySettings, PhySystem::PhysicsEntity** outEntity = nullptr);
+    void RemoveBody(PhysicsHandle handle);
+
     JPH::PhysicsSystem* GetPhySystem() { return &physics_system; }
 
+    void AddEventToQueue(const PhyEvent& event) { pendingEvents.push_back(event); };
+    void CallEventsFromQueue();
+    
     void DebugDraw();
+
+private:
+    void UpdateBodyTransforms();
 
 private:
     PhysicsStorage phy_storage;
 
 private:
     JPH::PhysicsSystem physics_system;
-    TempAllocatorImpl* temp_allocator;
-    JobSystemThreadPool* job_system;
+    JPH::TempAllocatorImpl* temp_allocator;
+    JPH::JobSystemThreadPool* job_system;
 
     std::unique_ptr<MyDebugDraw> mdd;
+    
+    std::vector<PhyEvent> pendingEvents;
 
-    // add: PhyEvent_array;
+    std::unordered_map<JPH::BodyID, PhysicsHandle> bodyIdToHandle;
 };
 
 extern std::unique_ptr<class PhySystem> gPhySys;
