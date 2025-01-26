@@ -265,4 +265,5 @@ void RegisterResourceHandles()
 	r = engine->RegisterObjectMethod("Renderable", "void set_material(Material &in) property", asMETHOD(CRenderable, Set_material), asCALL_THISCALL); assert(r >= 0);
 	r = engine->RegisterObjectMethod("Renderable", "Mesh& get_mesh() property", asMETHOD(CRenderable, Get_mesh), asCALL_THISCALL); assert(r >= 0);
 	r = engine->RegisterObjectMethod("Renderable", "void set_mesh(Mesh &in) property", asMETHOD(CRenderable, Set_mesh), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Renderable", "void SetIsStatic(bool isStatic)", asMETHOD(CRenderable, SetIsStatic), asCALL_THISCALL); assert(r >= 0);
 }

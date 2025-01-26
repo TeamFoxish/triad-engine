@@ -8,36 +8,9 @@
 #include <scripthandle.h> // TEMP
 
 
+static JPH::Color COLLISION_COLLOR(0, 255, 0, 225); // Silver Sand
+
 std::unique_ptr<class PhySystem> gPhySys;
-
-// Callback for traces, connect this to your own trace function if you have one
-static void TraceImpl(const char* inFMT, ...)
-{
-	// Format the message
-	va_list list;
-	va_start(list, inFMT);
-	char buffer[1024];
-	vsnprintf(buffer, sizeof(buffer), inFMT, list);
-	va_end(list);
-
-	// Print to the TTY
-	LOG_INFO("Trace {}", buffer);
-}
-
-// An example activation listener
-class MyBodyActivationListener : public BodyActivationListener
-{
-public:
-	virtual void OnBodyActivated(const BodyID& inBodyID, uint64 inBodyUserData) override
-	{
-		//cout << "A body got activated" << endl;
-	}
-
-	virtual void OnBodyDeactivated(const BodyID& inBodyID, uint64 inBodyUserData) override
-	{
-		//cout << "A body went to sleep" << endl;
-	}
-};
 
 // An example contact listener
 // Interface with functions to call onOverlap Begin, Continue and End
@@ -98,7 +71,6 @@ bool PhySystem::Init()
 {
 	RegisterDefaultAllocator();
 
-	JPH::Trace = TraceImpl;
 	JPH::Factory::sInstance = new JPH::Factory();
 
 	RegisterTypes();
@@ -121,12 +93,13 @@ bool PhySystem::Init()
 	physics_system.Init(cMaxBodies, cNumBodyMutexes, cMaxBodyPairs, cMaxContactConstraints,
 		broad_phase_layer_interface, object_vs_broadphase_layer_filter, object_vs_object_layer_filter);
 
-	static MyBodyActivationListener body_activation_listener;
-	physics_system.SetBodyActivationListener(&body_activation_listener);
-
 	// Setup collision actions
 	static MyContactListener contact_listener;
 	physics_system.SetContactListener(&contact_listener);
+
+	physics_system.SetGravity(Vec3::sZero());
+
+	mdd = std::make_unique<MyDebugDraw>();
 
 	return true;
 }
@@ -271,6 +244,79 @@ void PhySystem::UpdateBodyTransforms()
 		// TODO: update transform only when changed??
 		body_interface.SetPositionAndRotation(physBody.body->GetID(), JPH::Vec3(pos.x, pos.y, pos.z), JPH::Quat(rot.x, rot.y, rot.z, rot.w), JPH::EActivation::Activate);
 	}
+}
+
+void PhySystem::DebugDraw()
+{
+	for (auto& entity : phy_storage)
+	{
+		auto& body = entity.body;
+
+		switch (body->GetShape()->GetSubType())
+		{
+		case JPH::EShapeSubType::Box:
+		{
+			JPH::BoxShape* box = static_cast<JPH::BoxShape*>(const_cast<JPH::Shape*>(body->GetShape()));
+			mdd->DrawWireBox(body->GetWorldTransform(), box->GetLocalBounds(), COLLISION_COLLOR);
+			break;
+		}
+
+		case JPH::EShapeSubType::Sphere:
+		{
+			JPH::SphereShape* sphere = static_cast<JPH::SphereShape*>(const_cast<JPH::Shape*>(body->GetShape()));
+			mdd->DrawWireSphere(body->GetCenterOfMassPosition(), sphere->GetRadius(), COLLISION_COLLOR, 2/*inLevel*/);
+			break;
+		}
+
+		case JPH::EShapeSubType::Capsule:
+		{
+			JPH::CapsuleShape* capsule = static_cast<JPH::CapsuleShape*>(const_cast<JPH::Shape*>(body->GetShape()));
+			mdd->DrawCapsule(
+				body->GetWorldTransform(),
+				capsule->GetHalfHeightOfCylinder(),
+				capsule->GetRadius(),
+				COLLISION_COLLOR,
+				JPH::DebugRenderer::ECastShadow::Off,
+				JPH::DebugRenderer::EDrawMode::Wireframe
+			);
+			break;
+		}
+
+		case JPH::EShapeSubType::Cylinder:
+		{
+			JPH::CylinderShape* cylinder = static_cast<JPH::CylinderShape*>(const_cast<JPH::Shape*>(body->GetShape()));
+			mdd->DrawCylinder(
+				body->GetWorldTransform(),
+				cylinder->GetHalfHeight(),
+				cylinder->GetRadius(),
+				COLLISION_COLLOR,
+				JPH::DebugRenderer::ECastShadow::Off,
+				JPH::DebugRenderer::EDrawMode::Wireframe
+			);
+			break;
+		}
+
+		case JPH::EShapeSubType::TaperedCylinder: // Could be used as Perception
+		{
+			JPH::TaperedCylinderShape* taperedCylinder = static_cast<JPH::TaperedCylinderShape*>(const_cast<JPH::Shape*>(body->GetShape()));
+			mdd->DrawTaperedCylinder(
+				body->GetWorldTransform(),
+				body->GetPosition().GetY() + taperedCylinder->GetHalfHeight(),
+				body->GetPosition().GetY() - taperedCylinder->GetHalfHeight(),
+				taperedCylinder->GetTopRadius(),
+				taperedCylinder->GetBottomRadius(),
+				COLLISION_COLLOR,
+				JPH::DebugRenderer::ECastShadow::Off,
+				JPH::DebugRenderer::EDrawMode::Wireframe
+			);
+			break;
+		}
+
+		default:
+			break;
+		}
+	}
+	mdd->Draw();
 }
 
 bool InitPhysicsSystem()

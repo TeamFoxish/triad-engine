@@ -61,6 +61,7 @@ class any{
 	bool retrieve(int64 &out value) const;
 	bool retrieve(double &out value) const;
 }
+any@ CreateObject(const string &in module, const string &in classDeclaration);
 class ref{
 	ref();
 	ref(const ref &in);
@@ -392,6 +393,8 @@ class Renderable{
 	Renderable(uint64 entityId, const Math::Transform@ transform);
 	Renderable(const Renderable &in) delete;
 
+	void SetIsStatic(bool isStatic);
+
 	Mesh mesh;
 	Material material;
 }
@@ -478,6 +481,10 @@ namespace Physics{
 		void InitFromShape(Scene::EntityId id, const ShapeBox &in);
 		void InitFromShape(Scene::EntityId id, const ShapeTaperedCylinder &in);
 	}
+}
+
+namespace Navigation{
+	array<Math::Vector3>@ FindPath(const ResourceHandle &in agent, const Math::Vector3 &in from, const Math::Vector3 &in to);
 }
 
 // typedefs for complex types are unsupported

@@ -49,6 +49,26 @@ GeometryData::GeometryData(
 
 	device->CreateBuffer(&indexBufDesc, &indexData, &indexBuf);
 	idxNum = idxSize / sizeof(uint32_t);
+
+#ifdef EDITOR
+	const int stride = strides[0];
+	if (stride == 0) {
+		// log error
+		return;
+	}
+	assert(vertSize % stride == 0);
+	const int vNum = vertSize / stride;
+	const char* srcVerts = static_cast<const char*>(vertData);
+	vertices.resize(vNum * 3);
+	for (int i = 0; i < vNum; ++i) {
+		const int offsetDst = 3 * i;
+		const int offsetSrc = stride * i;
+		memcpy(&vertices[offsetDst], &srcVerts[offsetSrc], sizeof(float) * 3);
+	}
+	assert(idxSize % sizeof(uint32_t) == 0);
+	const int idxNum = idxSize / sizeof(uint32_t);
+	indices.assign(idxData, idxData + idxNum);
+#endif //EDITOR
 }
 
 void GeometryData::Activate(ID3D11DeviceContext* context) const

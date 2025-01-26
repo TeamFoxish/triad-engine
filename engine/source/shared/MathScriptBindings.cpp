@@ -65,6 +65,7 @@ static void RegisterVector3()
 
 	// Register the type
 	r = engine->RegisterObjectType("Vector3", sizeof(Vector3), asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS_CAK | asOBJ_APP_CLASS_ALLFLOATS); assert(r >= 0);
+	typeIdVector3 = r;
 
 	// Register the object properties
 	r = engine->RegisterObjectProperty("Vector3", "float x", asOFFSET(Vector3, x)); assert(r >= 0);

@@ -17,6 +17,10 @@
 #include "game/Game.h"
 #include "components/ThirdPersonCamera.h"
 
+#ifdef EDITOR
+#include "navigation/NavMeshSystem.h"
+#endif
+
 __declspec(align(16))
 struct CBPS {
 	Math::Matrix inverseViewMatr;

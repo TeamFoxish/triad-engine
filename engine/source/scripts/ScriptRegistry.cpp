@@ -84,6 +84,18 @@ ENGINE_API void SaveScene(asIScriptObject* sceneRoot) {
     
 }
 
+ENGINE_API CScriptAny* CreateObject(const std::string& module, const std::string& classDeclaration) {
+    asITypeInfo* type = gScriptSys
+                            ->GetRawEngine()
+                            ->GetModule(module.c_str())
+                            ->GetTypeInfoByDecl(classDeclaration.c_str());
+    asIScriptObject* object =  static_cast<asIScriptObject*>(gScriptSys
+                            ->GetRawEngine()
+                            ->CreateScriptObject(type));
+    CScriptAny* res = new CScriptAny(object, type->GetTypeId(), gScriptSys->GetRawEngine());
+    return res;
+}
+
 bool ScriptRegistry::RegisterCustomFunctions(asIScriptEngine *engine)
 {
     int r;
@@ -188,6 +200,11 @@ bool ScriptRegistry::RegisterCustomFunctions(asIScriptEngine *engine)
         LOG_ERROR("Unrecoverable error while binding 'SetDestroyComponent' callback.");
         return false;
     }
+    r = engine->RegisterGlobalFunction("any@ CreateObject(const string &in module, const string &in classDeclaration)", asFUNCTION(CreateObject), asCALL_CDECL);
+    if (r < 0) {
+        LOG_ERROR("Unrecoverable error while binding 'CreateObject' callback.");
+        return false;
+    }
 
     return true;
 }
@@ -234,6 +251,9 @@ bool ScriptRegistry::RegisterStdLibrary(asIScriptEngine *engine)
 
     extern void RegisterPhysicsBindings();
     RegisterPhysicsBindings();
+
+    extern void RegisterNavigationBindings();
+    RegisterNavigationBindings();
 
     extern void RegisterGameBindings();
     RegisterGameBindings();

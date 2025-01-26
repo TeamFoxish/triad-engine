@@ -9,8 +9,9 @@
 #include "Jolt/Jolt.h"
 #include "Jolt/Physics/PhysicsSystem.h"
 #include "Jolt/Physics/Body/Body.h"
-#include "Jolt/Core/JobSystemThreadPool.h"
-#include "Jolt/Physics/Body/BodyCreationSettings.h"
+#include "jolt/Core/JobSystemThreadPool.h"
+
+#include "PhyDbgDraw.h"
 
 class PhySystem {
 public:
@@ -59,6 +60,8 @@ public:
 
     void AddEventToQueue(const PhyEvent& event) { pendingEvents.push_back(event); };
     void CallEventsFromQueue();
+    
+    void DebugDraw();
 
 private:
     void UpdateBodyTransforms();
@@ -71,6 +74,8 @@ private:
     JPH::TempAllocatorImpl* temp_allocator;
     JPH::JobSystemThreadPool* job_system;
 
+    std::unique_ptr<MyDebugDraw> mdd;
+    
     std::vector<PhyEvent> pendingEvents;
 
     std::unordered_map<JPH::BodyID, PhysicsHandle> bodyIdToHandle;

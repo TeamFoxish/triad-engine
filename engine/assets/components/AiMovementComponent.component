@@ -1,0 +1,4 @@
+content:
+  class: AIMovementComponent
+  module: Engine
+type: component

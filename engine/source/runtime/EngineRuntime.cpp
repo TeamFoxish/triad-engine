@@ -27,6 +27,8 @@
 
 #include "physics/PhySystem.h"
 
+#include "navigation/NavMeshSystem.h"
+
 #include "logs/Logs.h"
 
 
@@ -85,6 +87,10 @@ bool EngineRuntime::Init(const InitParams& params)
 		return false;
 	}
 
+	if (!InitNavigation(this)) {
+		return false;
+	}
+
 	globalInputDevice = new InputDevice(this);
 
 	gResourceSys->LoadResource(ToStrid(cfgInitResource.GetRef().data()));
@@ -109,9 +115,9 @@ void EngineRuntime::RunSingleFrame(FrameParams&& params)
 	if (params.simulationEnabled) {
 		UpdateSoundListener();
 		gSoundSys->Update(gTempGame->GetDeltaTime());
+		gPhySys->Update(gTempGame->GetDeltaTime());
+		gPhySys->ProceedPendingEvents();
 	}
-	gPhySys->Update(gTempGame->GetDeltaTime());
-	gPhySys->ProceedPendingEvents();
 	// TODO: replace with update input sys
 	gTempGame->UpdateFrame(); // TODO: move to simulation branch
 	isRunning = gTempGame->isRunning;
@@ -135,6 +141,7 @@ void EngineRuntime::Shutdown()
 	TermScript(this);
 	extern void TermSceneTree();
 	TermSceneTree();
+	TermNavigation(this);
 	TermPhysicsSystem();
 	TermSoundSystem();
 	TermResource(this);

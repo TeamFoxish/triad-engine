@@ -8,6 +8,7 @@ struct Renderable {
 	struct DrawParams {
 		bool isVisible = true;
 		bool castShadows = true;
+		bool isStatic = false;
 	};
 
 	Renderable(int32_t entityId, TransformStorage::Handle transform);

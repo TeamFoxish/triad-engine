@@ -1,0 +1,4 @@
+content:
+  source_file: ./assets/scripts/AI/PrimitiveTask.as
+  module: Engine
+type: script

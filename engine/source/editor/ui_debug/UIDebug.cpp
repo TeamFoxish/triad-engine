@@ -34,6 +34,8 @@
 #include "scripts/ScriptObject.h"
 #include "input/InputDevice.h"
 #include "resource/ResourceSystem.h"
+#include "navigation/NavMeshSystem.h"
+#include "navigation/NavMeshResources.h"
 
 #include "logs/Logs.h"
 #include "shared/Shared.h"
@@ -103,6 +105,8 @@ void UIDebug::StartNewFrame()
 
 // TODO: move somewhere
 static std::string bName = "Start";
+static float pos1[3] = {0, 0, 0};
+static float pos2[3] = {0, 0, 0};
 static ImGuizmo::OPERATION operation = ImGuizmo::OPERATION::TRANSLATE;
 
 void UIDebug::TestDraw()
@@ -323,6 +327,89 @@ void UIDebug::TestDraw()
             }
             ImGui::End();
         }
+
+        // Nav Mesh Generation
+        {
+            BuildConfig& config = gNavigation->GetBuilder().GetCurrentConfig();
+
+            ImGui::Begin("Navigation", nullptr, ImGuiWindowFlags_NoFocusOnAppearing);
+            ImGui::Text("Rasterization");
+            ImGui::SliderFloat("Cell Size", &config.rasterization.cellSize, 0.1f, 1.0f);
+            ImGui::SliderFloat("Cell Height", &config.rasterization.cellHeigth, 0.1f, 1.0f);
+
+            ImGui::Separator();
+
+            static bool isAgentLoaded = false;
+            static NavMeshAgent agent;
+            ImGui::Text("Agent");
+
+            static std::string resInp = "res://navmeshagent/Base.agent";
+            ImGui::InputText("Agent Resource", &resInp);
+            if (!resInp.empty()) {
+                ResTag agentTag = ToStrid(resInp);
+                if (!gResourceSys->IsResourceLoaded(agentTag)) {
+                    gResourceSys->LoadResource(agentTag);
+                }
+                const auto iter = NavMeshResources::Instance().agents.find(agentTag);
+                if (iter != NavMeshResources::Instance().agents.end()) {
+                    if (!isAgentLoaded) {
+                        agent = iter->second;
+                        isAgentLoaded = true;
+                    }
+                    ImGui::SliderFloat("Height", &agent.height, 0.1f, 5.0f);
+                    ImGui::SliderFloat("Radius", &agent.radius, 0.0f, 5.0f);
+                    ImGui::SliderFloat("Max Climb", &agent.maxClimb, 0.1f, 5.0f);
+                    ImGui::SliderFloat("Max Slope", &agent.maxSlope, 0.0f, 90.0f);
+                }
+            }
+
+            ImGui::Separator();
+            ImGui::Text("Region");
+            ImGui::SliderFloat("Min Region Size", &config.region.minRegionSize, 0.0f, 150.0f);
+            ImGui::SliderFloat("Merged Region Size", &config.region.mergedRegionSize, 0.0f, 150.0f);
+
+            // ImGui::Separator();
+            // ImGui::Text("Partitioning", nullptr);
+            // if (ImGui::Checkbox("Watershed", m_partitionType == SAMPLE_PARTITION_WATERSHED))
+            //     m_partitionType = SAMPLE_PARTITION_WATERSHED;
+            // if (ImGui::Checkbox("Monotone", m_partitionType == SAMPLE_PARTITION_MONOTONE))
+            //     m_partitionType = SAMPLE_PARTITION_MONOTONE;
+            // if (ImGui::Checkbox("Layers", m_partitionType == SAMPLE_PARTITION_LAYERS))
+            //     m_partitionType = SAMPLE_PARTITION_LAYERS;
+
+            ImGui::Separator();
+            ImGui::Text("Filtering");
+            ImGui::Checkbox("Low Hanging Obstacles", &config.filterLowHangingObstacles);
+            ImGui::Checkbox("Ledge Spans", &config.filterLedgeSpans);
+            ImGui::Checkbox("Walkable Low Height Spans", &config.filterWalkableLowHeightSpans);
+
+            ImGui::Separator();
+            ImGui::Text("Polygonization");
+            ImGui::SliderFloat("Max Edge Length", &config.polygonization.maxEdgeLength, 0.0f, 50.0f);
+            ImGui::SliderFloat("Max Edge Error", &config.polygonization.maxEdgeError, 0.1f, 3.0f);
+            ImGui::SliderFloat("Verts Per Poly", &config.polygonization.vertsPerPoly, 3.0f, 12.0f);		
+
+            ImGui::Separator();
+            ImGui::Text("Detail Mesh");
+            ImGui::SliderFloat("Sample Distance", &config.detail.sampleDistance, 0.0f, 16.0f);
+            ImGui::SliderFloat("Max Sample Error", &config.detail.maxSampleError, 0.0f, 16.0f);
+	
+	        ImGui::Separator();
+            if(ImGui::Button("Build"))
+            {
+                gNavigation->Build(config, &agent);
+            }
+            
+            ImGui::Separator();
+            ImGui::InputFloat3("Start Position", pos1);
+            ImGui::InputFloat3("End Position", pos2);
+            if(ImGui::Button("Test Path"))
+            {
+                gNavigation->GenerateTestPath(&agent, pos1, pos2);
+            }
+            ImGui::End();
+        }
+
 
         // Viewport in window
         {

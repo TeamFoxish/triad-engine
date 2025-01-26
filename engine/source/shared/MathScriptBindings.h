@@ -61,5 +61,9 @@ protected:
 	TransformStorage::Handle handle;
 };
 
+namespace Math {
+	inline int typeIdVector3 = -1;
+}
+
 bool MathScriptBindingsInit();
 void MathScriptBindingsTerm();
