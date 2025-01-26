@@ -40,6 +40,9 @@ content:
               renderObj:
                 material: res://materials/cheese.material
                 mesh: res://meshes/cheese.mesh
+              children:
+                $BoxColliderComponent_15:
+                  component: res://components/physics/BoxColliderComponent.component
     cheese1:
       prefab: res://prefabs/cheese.prefab
       overrides:
@@ -48,6 +51,9 @@ content:
             x: -4.14861536
             y: 0
             z: 1.06075692
+        children:
+          $BoxColliderComponent_14:
+            component: res://components/physics/BoxColliderComponent.component
     player:
       prefab: res://prefabs/player.prefab
 type: scene

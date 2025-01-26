@@ -251,7 +251,15 @@ void SceneLoader::RemoveEmptyOverrides(YAML::Node& scnNode)
 						const std::string& childTagStr = node["component"].Scalar();
 						if (!childTagStr.empty()) {
 							const YAML::Node& desc = ComponentLoader::GetComponentDesc(ToStrid(childTagStr));
-							if (desc && desc["children"] && !desc["children"][childCompName]) {
+							if (!desc) {
+								continue;
+							}
+							const YAML::Node& childrenNode = desc["children"];
+							if (!desc["children"]) {
+								continue;
+							}
+							const YAML::Node& origComp = desc["children"][childCompName];
+							if (!origComp) {
 								continue;
 							}
 						}
