@@ -18,7 +18,10 @@ project("Engine")
   
   filter("configurations:Release*")
     libdirs({ "libs/**/release" })
-	links({ "assimp-vc143-mt", "freetype", "argumentum", "yaml-cpp", "angelscript", "spdlog", "fmod_vc", "fmodstudio_vc", "DebugUtils", "Detour", "DetourCrowd", "DetourTileCache", "Recast" })
+	links({ "assimp-vc143-mt", "freetype", "argumentum", "yaml-cpp", "angelscript", "spdlog", "fmod_vc", "fmodstudio_vc", "Detour", "DetourCrowd", "DetourTileCache", "Recast" })
+    
+  filter("configurations:*Editor")
+    links({ "DebugUtils-d" })
   
   filter {  }
   
@@ -38,14 +41,12 @@ project("Engine")
    postbuildcommands {
     "{COPYFILE} " .. scriptDir .. "/assimp-vc143-mtd.dll %{cfg.targetdir}/assimp-vc143-mtd.dll",
     "{COPYFILE} " .. scriptDir .. "/fmodstudioL.dll %{cfg.targetdir}/fmodstudioL.dll",
-    "{COPYFILE} " .. scriptDir .. "/fmodL.dll %{cfg.targetdir}/fmodL.dll",
-    "{COPYFILE} " .. scriptDir .. "/SDL2.dll %{cfg.targetdir}/SDL2.dll"
+    "{COPYFILE} " .. scriptDir .. "/fmodL.dll %{cfg.targetdir}/fmodL.dll"
   }
   filter("configurations:Release*")
    postbuildcommands {
     "{COPYFILE} " .. scriptDir .. "/assimp-vc143-mt.dll %{cfg.targetdir}/assimp-vc143-mt.dll",
     "{COPYFILE} " .. scriptDir .. "/fmodstudio.dll %{cfg.targetdir}/fmodstudio.dll",
-    "{COPYFILE} " .. scriptDir .. "/fmod.dll %{cfg.targetdir}/fmod.dll",
-    "{COPYFILE} " .. scriptDir .. "/SDL2.dll %{cfg.targetdir}/SDL2.dll"
+    "{COPYFILE} " .. scriptDir .. "/fmod.dll %{cfg.targetdir}/fmod.dll"
   }
   

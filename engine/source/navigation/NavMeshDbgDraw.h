@@ -1,3 +1,5 @@
+#ifdef EDITOR
+
 #include "DebugDraw.h"
 
 #include "render/RenderContext.h"
@@ -34,3 +36,5 @@ private:
     float m_pointSize;
     bool m_depthEnabled;
 };
+
+#endif // EDITOR

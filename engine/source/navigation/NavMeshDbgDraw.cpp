@@ -1,3 +1,5 @@
+#ifdef EDITOR
+
 #include "NavMeshDbgDraw.h"
 
 #include "render/RenderSystem.h"
@@ -188,4 +190,4 @@ void NavMeshDbgDraw::texture(bool state) {
     // This implementation ignores texture states as they are unnecessary for basic debug rendering
 }
 
-
+#endif // EDITOR

@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef EDITOR
+
 #include "render/GeometryData.h"
 #include "render/Renderable.h"
 #include "NavMeshAgent.h"
@@ -99,3 +101,5 @@ class NavMeshBuilder {
     private:
 		BuildConfig currentConfig;
 };
+
+#endif // EDITOR

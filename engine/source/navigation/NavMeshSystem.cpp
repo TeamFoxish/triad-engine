@@ -1,20 +1,23 @@
 #include "NavMeshSystem.h"
-#include "DetourDebugDraw.h"
 #include "logs/Logs.h"
 #include <vector>
+
+#ifdef EDITOR
+#include "DetourDebugDraw.h"
+#endif // EDITOR
 
 std::unique_ptr<NavMeshSystem> gNavigation;
 
 bool NavMeshSystem::Init(RuntimeIface *runtime)
 {
-#ifdef EDITOR
-    dbgDraw = std::make_unique<NavMeshDbgDraw>();
-#endif // EDITOR
-
     extern void NavMeshResourcesInit();
     NavMeshResourcesInit();
 
+#ifdef EDITOR
+    dbgDraw = std::make_unique<NavMeshDbgDraw>();
     this->_builder = std::make_unique<NavMeshBuilder>();
+#endif // EDITOR
+
     return true;
 }
 
@@ -23,40 +26,10 @@ void NavMeshSystem::Term()
     extern void NavMeshResourcesTerm();
     NavMeshResourcesTerm();
 
-    _builder.reset();
 #ifdef EDITOR
+    _builder.reset();
     dbgDraw.reset();
 #endif // EDITOR
-}
-
-std::vector<const Renderable*> NavMeshSystem::CollectStaticObjects()
-{
-    std::vector<const Renderable*> staticObjs;
-
-    for (const Renderable& obj : RenderableStorage::Instance().GetStorage()) {
-        if (!obj.params.isStatic) {
-            continue;
-        }
-        staticObjs.push_back(&obj);
-    }
-
-    return staticObjs;
-}
-
-void NavMeshSystem::Build(BuildConfig config, NavMeshAgent *agent)
-{
-    std::unique_ptr<NavMesh> nav;
-    const std::vector<const Renderable*> staticObjs = CollectStaticObjects();
-    if (staticObjs.empty()) {
-        LOG_WARN("failed to build navmesh. no static object were found on scene");
-        return;
-    }
-    _builder->buildNavMesh(staticObjs, agent, config, std::vector<ConvexVolume> {}, nav);
-    if (!nav) {
-        return;
-    }
-    NavMesh& navRef = *(_navMeshes[*agent] = std::move(nav));
-    navRef.save(agent->name + ".bin");
 }
 
 const NavMesh* NavMeshSystem::GetNavMesh(const NavMeshAgent& agent) const
@@ -97,6 +70,36 @@ std::vector<float> NavMeshSystem::FindPath(const NavMeshAgent& agent, const floa
 }
 
 #ifdef EDITOR
+std::vector<const Renderable*> NavMeshSystem::CollectStaticObjects()
+{
+    std::vector<const Renderable*> staticObjs;
+
+    for (const Renderable& obj : RenderableStorage::Instance().GetStorage()) {
+        if (!obj.params.isStatic) {
+            continue;
+        }
+        staticObjs.push_back(&obj);
+    }
+
+    return staticObjs;
+}
+
+void NavMeshSystem::Build(BuildConfig config, NavMeshAgent *agent)
+{
+    std::unique_ptr<NavMesh> nav;
+    const std::vector<const Renderable*> staticObjs = CollectStaticObjects();
+    if (staticObjs.empty()) {
+        LOG_WARN("failed to build navmesh. no static object were found on scene");
+        return;
+    }
+    _builder->buildNavMesh(staticObjs, agent, config, std::vector<ConvexVolume> {}, nav);
+    if (!nav) {
+        return;
+    }
+    NavMesh& navRef = *(_navMeshes[*agent] = std::move(nav));
+    navRef.save(agent->name + ".bin");
+}
+
 void NavMeshSystem::GenerateTestPath(NavMeshAgent *agent, float *startPos, float *endPos)
 {
     _testPath.clear();

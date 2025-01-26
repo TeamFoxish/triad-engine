@@ -1,3 +1,5 @@
+#ifdef EDITOR
+
 #include "NavMeshBuilder.h"
 
 #include "logs/Logs.h"
@@ -473,3 +475,5 @@ bool NavMeshBuilder::buildNavMesh(
 
 	return true;
 }
+
+#endif // EDITOR
