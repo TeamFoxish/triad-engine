@@ -8,8 +8,8 @@ content:
     #      radius: 2.0
     #ColliderBox:
     #  component: res://components/physics/BoxColliderComponent.component
-    TaperedCylinder:
-      component: res://components/physics/TaperedCylinderColliderComponent.component
+    #TaperedCylinder:
+    #  component: res://components/physics/TaperedCylinderColliderComponent.component
     Orbiter:
       component: res://components/OrbiterComponent.component
       overrides:

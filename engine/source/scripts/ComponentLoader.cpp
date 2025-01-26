@@ -68,10 +68,11 @@ void ComponentLoader::AddComponentTag(const ScriptObject& obj, ResTag tag)
     cachedCompTags[obj.GetRaw()] = tag;
 }
 
-const YAML::Node* ComponentLoader::GetComponentDesc(ResTag tag)
+const YAML::Node& ComponentLoader::GetComponentDesc(ResTag tag)
 {
+    static YAML::Node emptyNode;
     const auto iter = _components.find(tag);
-    return iter != _components.end() ? &iter->second : nullptr;
+    return iter != _components.end() ? iter->second : emptyNode;
 }
 
 YAML::Node ComponentLoader::BuildCompYaml(SceneTree::Handle entHandle, const YAML::Node& origDesc)

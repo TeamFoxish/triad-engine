@@ -235,6 +235,28 @@ void SceneLoader::RemoveEmptyOverrides(YAML::Node& scnNode)
 					delKeys.push_back(childComp.first.Scalar());
 					continue;
 				}
+				assert(childComp.first.IsScalar());
+				if (childComp.first.Scalar().starts_with('$')) {
+					// avoid adding prefab/component reference with empty overrides if entity was already in original desc
+					const std::string& childCompName = childComp.first.Scalar();
+					if (node["prefab"]) {
+						const std::string& childTagStr = node["prefab"].Scalar();
+						if (!childTagStr.empty()) {
+							const YAML::Node& desc = PrefabLoader::GetPrefabDesc(ToStrid(childTagStr));
+							if (desc && desc["components"] && !desc["components"][std::string_view(childCompName).substr(1)]) {
+								continue;
+							}
+						}
+					} else if (node["component"]) {
+						const std::string& childTagStr = node["component"].Scalar();
+						if (!childTagStr.empty()) {
+							const YAML::Node& desc = ComponentLoader::GetComponentDesc(ToStrid(childTagStr));
+							if (desc && desc["children"] && !desc["children"][childCompName]) {
+								continue;
+							}
+						}
+					}
+				}
 				const YAML::Node& childOverrides = childComp.second["overrides"];
 				if (!childOverrides || childOverrides.IsNull() || childOverrides.size() == 0) {
 					delKeys.push_back(childComp.first.Scalar());

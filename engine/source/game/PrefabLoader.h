@@ -18,6 +18,8 @@ public:
 	void Load(ResTag tag, const YAML::Node& desc) override;
 	void Unload(ResTag tag) override {}
 
+	static const YAML::Node& GetPrefabDesc(ResTag tag);
+
 	// TODO: replace sceneRepr pointer with std::optional?
 	static ScriptObject* Create(ResTag tag, ScriptObject* parent = nullptr, YAML::Node* sceneRepr = nullptr);
 

@@ -45,6 +45,7 @@ void Triad::FileIO::IterateDirectory(const FPath &path, BiConsumer<YAML::Node, c
 
 void Triad::FileIO::IterateDirectory(const FPath &path, BiConsumer<YAML::Node, const FPath> fileFunction, bool recursive, const std::string& fileExtension)
 {
+    // TODO: just use recursive_directory_iterator here
     for (const auto& entry : directory_iterator(path)) {
         if (recursive && entry.is_directory()) {
             IterateDirectory(entry, fileFunction, recursive, fileExtension);

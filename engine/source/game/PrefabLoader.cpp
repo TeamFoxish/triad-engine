@@ -32,6 +32,13 @@ void PrefabLoader::Load(ResTag tag, const YAML::Node& desc)
 	LOG_INFO("Resource \"Prefab\" with tag \"{}\" was indexed", tag.string());
 }
 
+const YAML::Node& PrefabLoader::GetPrefabDesc(ResTag tag)
+{
+	static YAML::Node emptyNode;
+	const auto iter = _prefabs.find(tag);
+	return iter != _prefabs.end() ? iter->second : emptyNode;
+}
+
 ScriptObject* PrefabLoader::Create(ResTag tag, ScriptObject* parent, YAML::Node* sceneRepr)
 {
 	const YAML::Node desc = _prefabs[tag];

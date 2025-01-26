@@ -132,10 +132,10 @@ void EngineRuntime::Shutdown()
 	UIDebug::Destroy();
 	gTempGame->Shutdown();
 	// delete globalInputDevice; crushes
-	TermPhysicsSystem();
 	TermScript(this);
 	extern void TermSceneTree();
 	TermSceneTree();
+	TermPhysicsSystem();
 	TermSoundSystem();
 	TermResource(this);
 	TermRender(this);

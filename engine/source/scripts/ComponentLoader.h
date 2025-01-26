@@ -17,6 +17,8 @@ public:
 	void Load(ResTag tag, const YAML::Node& desc) override;
 	void Unload(ResTag tag) override {};
 
+	static const YAML::Node& GetComponentDesc(ResTag tag);
+
     static ScriptObject* CreateComponent(ResTag tag, ScriptObject* parent = nullptr, const YAML::Node* sceneRepr = nullptr);
 
     static std::unique_ptr<ResourceLoader> CreateInstance()
@@ -34,8 +36,6 @@ public:
 	static ResTag GetComponentTag(const ScriptObject& obj);
 
 	static void AddComponentTag(const ScriptObject& obj, ResTag tag);
-
-	static const YAML::Node* GetComponentDesc(ResTag tag);
 
 	static YAML::Node BuildCompYaml(SceneTree::Handle entHandle, const YAML::Node& origDesc);
 

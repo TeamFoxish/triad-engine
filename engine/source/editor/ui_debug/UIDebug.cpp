@@ -204,7 +204,7 @@ void UIDebug::TestDraw()
                                     }
                                 }
                             },
-                            ".component"
+                            true, ".component"
                         );
 
                         ImGui::EndMenu();
@@ -262,7 +262,7 @@ void UIDebug::TestDraw()
                                     }
                                 }
                             },
-                            ".prefab"
+                            true, ".prefab"
                         );
 
                         ImGui::EndMenu();
