@@ -1,0 +1,4 @@
+content:
+  class: TaperedCylinderColliderComponent
+  module: Engine
+type: component

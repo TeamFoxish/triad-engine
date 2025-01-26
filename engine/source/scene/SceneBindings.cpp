@@ -7,11 +7,6 @@
 
 #include <scripthandle.h>
 
-union EntityId {
-    SceneTree::Handle handle = {};
-    asQWORD id;
-};
-
 static constexpr EntityId InvalidEntityId = {};
 
 static std::unordered_map<const asIScriptObject*, SceneTree::Handle> objToEntity;
