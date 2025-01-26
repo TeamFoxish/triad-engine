@@ -6,7 +6,7 @@ class ScriptObject;
 namespace GameBindings {
     void SetDestroyComponentCB(asIScriptFunction* destroyCompCb);
 
-    void DestroyComponent(ScriptObject& comp);
+    void DestroyComponent(const ScriptObject& comp);
 }
 
 void RegisterGameBindings();

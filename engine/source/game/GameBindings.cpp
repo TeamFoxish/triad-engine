@@ -22,7 +22,7 @@ void SetDestroyComponentCB(asIScriptFunction* destroyCompCb)
     destroyComponentFunc = destroyCompCb;
 }
 
-void DestroyComponent(ScriptObject& comp)
+void DestroyComponent(const ScriptObject& comp)
 {
     if (!destroyComponentFunc) {
         LOG_ERROR("failed to destroy component with native call GameBindings::DestroyComponent. destroy component callback wasn't ever set");

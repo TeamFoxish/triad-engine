@@ -4,6 +4,7 @@
 
 #include "scripts/ScriptLoader.h"
 #include "scripts/ScriptSystem.h"
+#include "game/GameBindings.h"
 #include "shared/Shared.h"
 #include "logs/Logs.h"
 
@@ -463,6 +464,18 @@ void EditorInspector::Draw()
         }
         comp.Show(gSceneTree->Get(handle));
     }
+    for (int i = components.size() - 1; i >= 0; --i) {
+        if (!components[i].second.IsPendingRemove()) {
+            continue;
+        }
+        // TODO: check if able to remove component. only scene components (no prefab or composite) may be deleted here
+        SceneLoader::RemoveSpawnedComponent(components[i].first);
+        if (gSceneTree->IsValidHandle(components[i].first)) {
+            const SceneTree::Entity& entity = gSceneTree->Get(components[i].first);
+            GameBindings::DestroyComponent(entity.obj);
+        }
+        components.erase(components.begin() + i);
+    }
 }
 
 EditorInspector::Component::Component(const SceneTree::Entity& entity)
@@ -475,9 +488,17 @@ void EditorInspector::Component::Show(const SceneTree::Entity& entity) const
     if (!entity.obj.GetTypeInfo()) {
         return;
     }
+    ImGui::PushID(entity.name.c_str());
     const std::string headerName = std::format("{} : {}", entity.name, entity.obj.GetTypeInfo()->GetName());
     if (!ImGui::CollapsingHeader(headerName.c_str(), ImGuiTreeNodeFlags_DefaultOpen)) {
+        ImGui::PopID();
         return;
+    }
+    if (ImGui::BeginPopupContextWindow("Actions")) {
+        if (ImGui::MenuItem("Remove")) {
+            pendingRemove = true;
+        }
+        ImGui::EndPopup();
     }
     ImGui::Indent(INDENT);
     for (const auto& field : fields) {
@@ -492,6 +513,7 @@ void EditorInspector::Component::Show(const SceneTree::Entity& entity) const
         }
     }
     ImGui::Unindent(INDENT);
+    ImGui::PopID();
 }
 
 #endif // EDITOR

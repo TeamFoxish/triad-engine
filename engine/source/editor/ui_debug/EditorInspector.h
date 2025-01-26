@@ -50,8 +50,11 @@ private:
 
         void Show(const SceneTree::Entity& entity) const;
 
+        bool IsPendingRemove() const { return pendingRemove; }
+
     private:
         std::vector<std::unique_ptr<FieldBase>> fields;
+        mutable bool pendingRemove = false;
     };
 
     std::vector<std::pair<SceneTree::Handle, Component>> components;
