@@ -210,7 +210,8 @@ void GBufferPass::AddGeometryPass(RenderContext& ctx, FrameGraph& fg, FrameGraph
 			rtvDesc.Format = DXGI_FORMAT_R32_SINT;
 			rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 			RenderTarget* rtv = idsTexture.BindWrite(ctx, &rtvDesc, 3);
-			ctx->ClearRenderTargetView(rtv, clearColor);
+			const float entClearColor[4] = {-1.0f, -1.0f, -1.0f, -1.0f};
+			ctx->ClearRenderTargetView(rtv, entClearColor);
 
 			ctx.TEMP_UpdateRenderTargetsNum();
 			ctx->OMSetRenderTargets(ctx.activeRenderTargetNum, ctx.activeRenderTargets, ctx.activeDepthBuffuer);
@@ -263,5 +264,8 @@ void GBufferPass::QueryEntityUnderCursor(RenderContext& ctx, FrameGraphResources
 	D3D11_MAPPED_SUBRESOURCE destRes = {};
 	ctx->Map(idsCopy.tex, 0, D3D11_MAP_READ, 0, &destRes);
 	ctx.entityIdUnderCursor = static_cast<int32_t*>(destRes.pData)[0];
+	if (ctx.entityIdUnderCursor < 0) {
+		ctx.entityIdUnderCursor = -1;
+	}
 	ctx->Unmap(idsCopy.tex, 0);
 }

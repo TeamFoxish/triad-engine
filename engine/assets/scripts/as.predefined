@@ -362,6 +362,7 @@ namespace Scene {
 typedef uint64 EntityId;
 const EntityId EntityInvalidId; // handle id = -1, gen = -1
 bool IsValidEntity(EntityId id);
+EntityId GetEntityIdUnderCursor();
 
 class Entity{
 	ref@ entity;
