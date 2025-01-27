@@ -1,0 +1,7 @@
+content:
+  parent: res://materials/default_mesh.material
+  textures:
+    - key: diffuse_texture
+      tag: res://moon3ad/textures/surface.texture
+      slot: 0
+type: material

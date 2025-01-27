@@ -1,0 +1,33 @@
+content:
+  name: Moon3ad
+  objects:
+    dir_light:
+      prefab: res://prefabs/dir_light.prefab
+      overrides:
+        transform:
+          rotation:
+            x: 0.0
+            y: 45.0
+            z: -45.0
+    player:
+      prefab: res://prefabs/player.prefab
+    cube_3:
+      prefab: res://prefabs/cube.prefab
+      overrides:
+        transform:
+          position:
+            x: 0
+            y: -2
+            z: 0
+          scale:
+            x: 100
+            y: 1
+            z: 100
+        children:
+          $Mesh:
+            component: res://components/MeshComponent.component
+            overrides:
+              renderObj:
+                mesh: !<str> res://meshes/cube.mesh
+                material: !<str> res://moon3ad/materials/surface.material
+type: scene

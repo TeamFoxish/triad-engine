@@ -1,5 +1,6 @@
 content:
-  startup-scene: res://scenes/first_scene.scene
+  startup-scene: res://moon3ad/scene.scene
+  #startup-scene: res://scenes/first_scene.scene
   #startup-scene: res://test/pong/pong.scene
   #startup-scene: res://test/ai/ai_test.scene
   default-mesh-material: res://materials/default_mesh.material
