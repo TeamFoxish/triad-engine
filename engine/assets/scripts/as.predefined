@@ -504,6 +504,21 @@ bool IsKeyUp(Key key);
 void GetMousePosition(float &out x, float &out y);
 void GetMouseOffset(float &out x, float &out y);
 
+class UIElement {
+	UIElement();
+	UIElement @opAssign(const UIElement@);
+	string GetText() const;
+	void SetText(const string &in);
+	Math::Vector3 GetPosition() const;
+	void SetPosition(const Math::Vector3 &in);
+	Math::Vector3 GetScale() const;
+	void SetScale(const Math::Vector3 &in);
+	Math::Vector3 GetColor() const;
+	void SetColor(const Math::Vector3 &in);
+	float GetDepth() const;
+	void SetDepth(const float &in);
+}
+
 enum Key{
 	None,
 	LeftButton,

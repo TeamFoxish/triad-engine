@@ -41,7 +41,7 @@ class RobinHoodDomain : Domain {
     void Init(WorldState& state, ICompositer@ parent, ColliderComponent@ visionPerception) override {
 
         state.SetBool("isTrained", false);
-        state.SetBool("isRested", false);
+        state.SetBool("isRested", true);
         state.SetVector("TrainCamp", Math::Vector3(15.0f, 1.1f, 15.0f));
         state.SetVector("Bed", Math::Vector3(-12.0f, 1.1f, -15.0f));
 

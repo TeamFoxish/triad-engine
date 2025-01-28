@@ -154,6 +154,7 @@ bool Renderer::Initialize(Window* _window)
 	utils = std::make_unique<RenderUtils>();
 
 	deferredRenderer = std::make_unique<DeferredRenderer>(context);
+	uiPass = std::make_unique<UIPass>(context);
 
 	return true;
 }
@@ -229,6 +230,7 @@ void Renderer::TestFrameGraph()
 #ifdef EDITOR
 	DbgDrawPass::AddDbgDrawPass(context, fg, bboard);
 #endif
+	uiPass->AddUIPass(context, fg, bboard);
 
 	struct CompositionPassData {
 		FrameGraphResource target;

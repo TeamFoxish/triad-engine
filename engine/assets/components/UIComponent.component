@@ -1,0 +1,4 @@
+content:
+  class: UIComponent
+  module: Engine
+type: component
