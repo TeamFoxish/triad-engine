@@ -20,6 +20,7 @@
 #include <string>
 #include "misc/Strid.h"
 #include "game/GameBindings.h"
+#include "render/ui/UIBindings.h"
 #include "logs/Logs.h"
 
 
@@ -257,6 +258,9 @@ bool ScriptRegistry::RegisterStdLibrary(asIScriptEngine *engine)
 
     extern void RegisterGameBindings();
     RegisterGameBindings();
+
+    extern void RegisterUI();
+    RegisterUI();
 
     return RegisterCustomFunctions(engine);
 }

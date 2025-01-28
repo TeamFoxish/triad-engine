@@ -10,6 +10,7 @@
 #include "light/Lights.h"
 #include "mesh/Mesh.h" // TODO: forward declare
 #include "DeferredRenderer.h" // TODO: forward declare
+#include "passes/UIPass.h"
 
 class Window;
 class Light;
@@ -74,6 +75,8 @@ private:
 	Triad::Render::Api::RenderTarget* mainRtv = nullptr; // TEMP
 
 	std::unique_ptr<DeferredRenderer> deferredRenderer;
+	
+	std::unique_ptr<UIPass> uiPass;
 
 	float clearColor[4]{ 0.1f, 0.1f, 0.1f, 1.0f };
 };

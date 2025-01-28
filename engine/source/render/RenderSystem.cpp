@@ -3,6 +3,7 @@
 #include "Renderer.h"
 #include "runtime/EngineRuntime.h"
 #include "config/ConfigVar.h"
+#include "render/ui/UIStorage.h"
 
 static ConfigVar<std::vector<float>> cfgRenderClearColor("/Engine/Render/ClearColor", { 0.0f, 0.0f, 0.0f, 0.0f });
 
@@ -18,6 +19,8 @@ bool RenderSystem::Init(RuntimeIface* runtime)
 	InitLightsStorage();
 	extern bool InitRenderStorage();
 	InitRenderStorage();
+	extern bool InitUIStorage();
+	InitUIStorage();
 	cameraManager.Init();
 	rendererImpl = std::make_unique<Renderer>();
 	if (!rendererImpl->Initialize(runtime->GetWindow())) {
