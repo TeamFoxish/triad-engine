@@ -1,0 +1,4 @@
+content:
+  source_file: ./assets/scripts/moon3ad/RTSCamera.as
+  module: Engine
+type: script

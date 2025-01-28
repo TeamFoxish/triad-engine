@@ -43,6 +43,7 @@ void InputDevice::PrepareProceedInput()
 {
 	justPressed.clear();
 	justUnpressed.clear();
+	MouseOffset = Math::Vector2::Zero;
 }
 
 void InputDevice::OnKeyDown(KeyboardInputEventArgs args)
