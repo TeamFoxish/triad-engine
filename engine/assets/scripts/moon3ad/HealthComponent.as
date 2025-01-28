@@ -14,9 +14,11 @@ class HealthComponent : Component {
         startHealth = health;
     }
 
+    /*
     void Update(float dt) {
         AddHealth(-20.0 * dt);
     }
+    */
 
     float GetHealth() const { return health; }
 

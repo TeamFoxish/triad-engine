@@ -1,14 +1,20 @@
 class Moon3ad {
     array<BuildingFoundationComponent@> foundations;
     array<FactoryBuilding@> factories;
+    UIElement ui;
 
     private int credits = 100;
 
-    bool HasEnoughCredits(int amount) { return credits >= amount; }
+    bool HasEnoughCredits(int amount) const { return credits >= amount; }
     int GetCredits() const { return credits; }
     void AddCredits(int value) {
         credits += value;
         credits = Math::Max(credits, 0);
+        UpdateUI();
+    }
+
+    void UpdateUI() {
+        ui.SetText("Credits: " + credits);
     }
 }
 
@@ -36,6 +42,8 @@ class Moon3adComponent : Component {
     }
 
     void Init() {
+        state.ui.SetPosition(Math::Vector3(0.5f, 0.05f, 0.0f));
+        state.UpdateUI();
     }
 
     void OnDestroy() {
