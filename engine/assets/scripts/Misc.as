@@ -30,5 +30,15 @@ namespace Misc {
         void opCall(ref@ caller) {
             Broadcast(caller);
         }
+
+        Event& opAddAssign(EventHandler@ callback) {
+            Subscribe(callback);
+            return this;
+        }
+
+        Event& opSubAssign(EventHandler@ callback) {
+            Unsubscribe(callback);
+            return this;
+        }
     }
 }

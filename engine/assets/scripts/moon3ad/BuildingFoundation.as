@@ -15,4 +15,14 @@ class BuildingFoundationComponent : Component {
             Moon3ad::gameState.foundations.removeAt(idx);
         }
     }
+
+    void MakeBusy(HealthComponent@ comp) {
+        isBusy = true;
+        Misc::EventHandler@ callback = Misc::EventHandler(this.HandleOnBuildingDied);
+        comp.onDied += callback;
+    }
+
+    void HandleOnBuildingDied(ref@ caller) {
+        isBusy = false;
+    }
 };
