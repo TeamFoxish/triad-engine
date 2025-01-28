@@ -32,7 +32,7 @@ namespace Game {
     void Update(float deltaTime) {
         Component@ comp = Scene::GetComponentUnderCursor();
         if (comp !is null) {
-            log_debug("Component under cursor: " + comp.GetName());
+            //log_debug("Component under cursor: " + comp.GetName() + " id: " + comp.GetId());
         }
 
         array<uint> pendingDead;

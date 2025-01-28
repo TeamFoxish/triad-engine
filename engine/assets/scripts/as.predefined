@@ -496,6 +496,11 @@ namespace Impl{
 	ref@ SpawnPrefab(const ResourceHandle &in prefab, ref@ parent = null);
 	ref@ SpawnComponent(const ResourceHandle &in compRef, ref@ parent = null);
 }
+namespace Query{
+	class ComponentGetter<T>{
+		ref@ GetChildComponent(Scene::EntityId id) const;
+	}
+}
 }
 
 namespace Input{
