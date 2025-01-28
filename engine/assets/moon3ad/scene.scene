@@ -1,6 +1,8 @@
 content:
   name: Moon3ad
   objects:
+    moon3adGame:
+      prefab: res://moon3ad/prefabs/moon3ad.prefab
     dir_light:
       prefab: res://prefabs/dir_light.prefab
       overrides:
@@ -26,8 +28,8 @@ content:
             component: res://components/MeshComponent.component
             overrides:
               renderObj:
-                mesh: !<str> res://meshes/cube.mesh
-                material: !<str> res://moon3ad/materials/surface.material
+                mesh: res://meshes/cube.mesh
+                material: res://moon3ad/materials/surface.material
     static_camera_5:
       prefab: res://prefabs/static_camera.prefab
       overrides:
@@ -46,8 +48,8 @@ content:
             x: 0.968790293
             y: 7.02901793
             z: 19.981987
-    cube_4294967303:
-      prefab: res://prefabs/cube.prefab
+    foundation:
+      prefab: res://moon3ad/prefabs/foundation.prefab
       overrides:
         transform: ~
 type: scene

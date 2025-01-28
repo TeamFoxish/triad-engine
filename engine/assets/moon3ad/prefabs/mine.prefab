@@ -1,0 +1,8 @@
+content:
+  class: mine
+  components:
+    Health:
+      component: res://moon3ad/components/HealthComponent.component
+    Mesh:
+      component: res://components/MeshComponent.component
+type: prefab

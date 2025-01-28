@@ -1,0 +1,14 @@
+content:
+  class: foundation
+  components:
+    Foundation:
+      component: res://moon3ad/components/BuildingFoundation.component
+    Mesh:
+      component: res://components/MeshComponent.component
+      overrides:
+        transform:
+          scale:
+            x: 2.0
+            y: 0.2
+            z: 2.0
+type: prefab
