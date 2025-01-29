@@ -7,6 +7,6 @@ content:
       component: res://components/MeshComponent.component
       overrides:
         renderObj:
-          mesh: res://meshes/cube.mesh
+          mesh: res://moon3ad/art/foundation.mesh
           material: res://moon3ad/art/foundation.material
 type: prefab

@@ -12,6 +12,9 @@ class EnemySpawner : Component {
     private int needToSpawnCount = 0;
     private int radeSize = 1;
 
+    [Editable]
+    private string eventName;
+
 
     EnemySpawner(ICompositer@ parent = null) {
         super(parent);
@@ -31,6 +34,7 @@ class EnemySpawner : Component {
             currentRadeDelay = radeInterval + currentRadeDelay;
             needToSpawnCount += radeSize;
             radeSize++;
+            Sound::System::PlayEvent(eventName);
         }
 
         if (needToSpawnCount > 0 && currentSpawnDelay < 0) {

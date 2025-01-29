@@ -138,6 +138,7 @@ content:
             component: res://moon3ad/components/EnemySpawner.component
             overrides:
               radeInterval: 30
+              eventName: event:/Bubbles/Bubble2D
     ui:
       prefab: res://prefabs/moon3ad_ui.prefab
     minerSpawner:
