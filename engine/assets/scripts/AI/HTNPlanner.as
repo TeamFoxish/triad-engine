@@ -3,47 +3,47 @@ class HTNPlanner {
     // we need ony copy of state
     array<const PrimitiveTask@> GeneratePlan(WorldState workingState, const Domain &in domain) {
 
-        log_debug("=== NEW PLAN GENERATION ===");
+        //log_debug("=== NEW PLAN GENERATION ===");
         PlanGenerationContext context = PlanGenerationContext(workingState, domain.GetRoot());
 
         while(!context.unprocessedTasks.isEmpty()) {
             const Task@ currentTask = context.PopTask();
-            log_debug("Current task: " + currentTask.GetName());
+            //log_debug("Current task: " + currentTask.GetName());
             if (currentTask.isPrimitive()) {
-                log_debug("Task is primitive");
+                //log_debug("Task is primitive");
                 const PrimitiveTask@ primitiveTask = cast<const PrimitiveTask@>(currentTask);
                 if (primitiveTask.checkPrecondition(workingState)) {
                     primitiveTask.applyEffect(workingState);
                     context.finalPlan.insertLast(primitiveTask);
-                    log_debug("Primitive task added");
+                    //log_debug("Primitive task added");
                 } else {
-                    log_debug("Primitive task caused rollback");
+                    //log_debug("Primitive task caused rollback");
                     context.RestoreToLastDecomposedTask();
                 }
             } else {
-                log_debug("Task is compound");
+                //log_debug("Task is compound");
                 const CompoundTask@ compoundTask = cast<const CompoundTask@>(currentTask);
                 const Method@ method = compoundTask.FindSatisfyingMethod(workingState);
                 if (method !is null) {
-                    log_debug("Satisfied method found");
+                    //log_debug("Satisfied method found");
                     context.RecordCurrentState(compoundTask);
                     const array<Task@> subtasks = method.GetSubtasks();
                     for (uint i = 0; i < subtasks.length(); i++) {
-                        log_debug("Adding task to stack: " + subtasks[i].GetName());
+                        //log_debug("Adding task to stack: " + subtasks[i].GetName());
                         context.unprocessedTasks.insertLast(subtasks[i]);
                     }
                 } else {
-                    log_debug("Compound task caused rollback");
+                    //log_debug("Compound task caused rollback");
                     context.RestoreToLastDecomposedTask();
                 }
             }
         }
-        log_debug("Generated plan size: " + context.finalPlan.length());
-        log_debug("=== GENERATED PLAN ===");
-        for (uint i = 0; i < context.finalPlan.length(); i++) {
-            log_debug("  " + context.finalPlan[i].GetName());
-        }
-        log_debug("======================");
+        //log_debug("Generated plan size: " + context.finalPlan.length());
+        //log_debug("=== GENERATED PLAN ===");
+        //for (uint i = 0; i < context.finalPlan.length(); i++) {
+        //    log_debug("  " + context.finalPlan[i].GetName());
+        //}
+        //log_debug("======================");
         return context.finalPlan;
     }
 };

@@ -1,5 +1,6 @@
 class BuildingFoundationComponent : Component {
     bool isBusy = false;
+    bool isWorking = false;
 
     BuildingFoundationComponent(ICompositer@ parent = null) {
         super(@parent);
@@ -20,6 +21,14 @@ class BuildingFoundationComponent : Component {
         isBusy = true;
         Misc::EventHandler@ callback = Misc::EventHandler(this.HandleOnBuildingDied);
         comp.onDied += callback;
+    }
+
+    void SetWorking(bool isWorking) {
+        this.isWorking = isWorking;
+    }
+
+    bool IsWorking() {
+        return this.isWorking;
     }
 
     void HandleOnBuildingDied(ref@ caller) {

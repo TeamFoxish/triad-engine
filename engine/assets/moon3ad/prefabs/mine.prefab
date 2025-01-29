@@ -3,10 +3,12 @@ content:
   components:
     Health:
       component: res://moon3ad/components/HealthComponent.component
+      overrides:
+        isAlly: true
     Mesh:
       component: res://components/MeshComponent.component
       overrides:
         renderObj:
-          mesh: res://moon3ad/art/mine.mesh
-          material: res://moon3ad/art/mine.material
+          mesh: res://meshes/cube.mesh
+          material: res://materials/cheese.material
 type: prefab

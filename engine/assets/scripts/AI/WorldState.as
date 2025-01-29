@@ -65,6 +65,19 @@ class WorldState {
         }
     }
 
+    void SetRef(const string &in name, any@ value) {
+        state[name] = value;
+    }
+
+    any@ GetRef(const string &in name) const {
+        if (state.exists(name)) {
+            return cast<any@>(state[name]);
+        } else {
+            log_warn("Unexisting ref@ propery \"" + name + "\" acessed.");
+            return null;
+        }
+    }
+
     void SetFloat(const string &in name, float value) {
         state[name] = value;
     }

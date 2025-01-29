@@ -22,21 +22,43 @@ namespace AI {
         // TASKS
 
         AI::ExecutionResult GoToFactory(AIComponent@ controller, WorldState &inout state, float deltaTime, dictionary@ executionState) {
-            return AI::Drone::MoveTo(controller, state, state.GetVector("FactoryLocation"));
+            BuildingFoundationComponent@ factory;
+            if (!state.IsPropertyExists("factory")) {
+                @factory = @Moon3ad::gameState.findNearestFreeFactory(controller.parentTransform.GetPosition());
+                if (factory is null) {
+                    return AI::ExecutionResult::FAILED;
+                }
+                log_debug("Miner " + controller.GetParentName() + " found factory: " + factory.GetParentName());
+                factory.SetWorking(true);
+                state.SetRef("factory", @any(@factory));
+            } else {
+                state.GetRef("factory").retrieve(@factory);
+            }
+            if (factory is null) {
+                return AI::ExecutionResult::FAILED;
+            } else {
+                return AI::Drone::MoveTo(controller, state, factory.GetParent().GetTransform().GetPosition());
+            }
         }
 
         AI::ExecutionResult GoToStorage(AIComponent@ controller, WorldState &inout state, float deltaTime, dictionary@ executionState) {
-            return AI::Drone::MoveTo(controller, state, state.GetVector("StorageLocation"));
+            return AI::Drone::MoveTo(controller, state, Moon3ad::gameState.storageLocation);
         }
 
         AI::ExecutionResult Mine(AIComponent@ controller, WorldState &inout state, float deltaTime, dictionary@ executionState) {
-            return AI::Drone::Wait(state.GetFloat("WorkTime"), controller, state, deltaTime, executionState);
+            AI::ExecutionResult result = AI::Drone::Wait(state.GetFloat("WorkTime"), controller, state, deltaTime, executionState);
+            if (result == AI::ExecutionResult::FINISHED) {
+                BuildingFoundationComponent@ factory;
+                state.GetRef("factory").retrieve(@factory);
+                factory.SetWorking(false);
+            }
+            return result;
         }
 
         AI::ExecutionResult StoreMinerals(AIComponent@ controller, WorldState &inout state, float deltaTime, dictionary@ executionState) {
             AI::ExecutionResult result = AI::Drone::Wait(state.GetFloat("WorkTime"), controller, state, deltaTime, executionState);
             if (result == AI::ExecutionResult::FINISHED) {
-                Moon3ad::gameState.IncreaseMoney(state.GetFloat("MineralsAmount") * 5);
+                Moon3ad::gameState.AddCredits(int(state.GetFloat("MineralsAmount")) * 5);
             }
             return result;
         }
@@ -70,8 +92,6 @@ class MinerDroneDomain : Domain {
 
         // INITIAL STATE
 
-        state.SetVector("FactoryLocation", Math::Vector3(-15.0f, 0.0f, 15.0f));
-        state.SetVector("StorageLocation", Math::Vector3(10.0f, 0.0f, 10.0f));
         state.SetBool("IsNearFactory", false);
         state.SetFloat("WorkTime", 1.0f);
         state.SetFloat("MineralsAmount", 0.0f);

@@ -20,19 +20,23 @@ class AIComponent : Component {
     protected PlanRunner runner;
     protected HTNPlanner planner;
     BoxColliderComponent@ visionCollider;
+    float aiTimeInterval = 0.1;
+    float timeForAiEvaluation = 0.2;
 
     void Update(float deltaTime) {
         if (isMoving) {
             UpdatePos(deltaTime);
         }
-        if (state.IsDirty()) {
-            runner.SetPlan(planner.GeneratePlan(state, domain));
-        }
-        AI::ExecutionResult result = runner.run(this, state, deltaTime);
-        if (result == AI::ExecutionResult::FINISHED || result == AI::ExecutionResult::FAILED) {
-            log_critical("STORED: " + state.GetFloat("MineralsAmount"));
-            runner.SetPlan(planner.GeneratePlan(state, domain));
-            log_critical("STORED: " + state.GetFloat("MineralsAmount"));
+        timeForAiEvaluation -=deltaTime;
+        if (timeForAiEvaluation <= 0) {
+            if (state.IsDirty()) {
+                runner.SetPlan(planner.GeneratePlan(state, domain));
+            }
+            AI::ExecutionResult result = runner.run(this, state, aiTimeInterval - timeForAiEvaluation);
+            if (result == AI::ExecutionResult::FINISHED || result == AI::ExecutionResult::FAILED) {
+                runner.SetPlan(planner.GeneratePlan(state, domain));
+            }
+            timeForAiEvaluation += aiTimeInterval;
         }
     }
 
@@ -54,7 +58,7 @@ class AIComponent : Component {
     private bool isMoving = false;
     private bool isFinished = false;
     private Math::Vector3 currentMoveDir;
-    private Math::Transform@ parentTransform;
+    Math::Transform@ parentTransform;
 
     protected void UpdatePos(float deltaTime) {
         if (currentPath.isEmpty()) {

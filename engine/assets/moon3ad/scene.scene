@@ -59,6 +59,22 @@ content:
             x: 10
             y: 0
             z: 0
+    guardian:
+      prefab: res://moon3ad/prefabs/guardian.prefab
+      overrides:
+        transform:
+          position:
+            x: 15
+            y: 0
+            z: 15
+    vandal:
+      prefab: res://moon3ad/prefabs/vandal.prefab
+      overrides:
+        transform:
+          position:
+            x: -16
+            y: 0
+            z: 15
     ui:
       prefab: res://prefabs/moon3ad_ui.prefab
 type: scene

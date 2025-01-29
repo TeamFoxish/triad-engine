@@ -7,7 +7,7 @@ class Moon3adUI : Component {
     }
 
     void Update(float deltaTime) override {
-        money.SetText("Money: " + Moon3ad::gameState.GetMoney());
+        money.SetText("Money: " + Moon3ad::gameState.GetCredits());
     }
 
     void Init() {

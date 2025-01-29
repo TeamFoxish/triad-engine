@@ -1,15 +1,23 @@
 content:
-  class: MinerDrone
+  class: guardian
   components:
     Mesh:
       component: res://components/MeshComponent.component
       overrides:
+        transform:
+          rotation:
+            x: 90.0
         renderObj:
           mesh: res://meshes/cube.mesh
+          material: res://materials/flopa.material
     AI:
       component: res://components/AIComponent.component
       overrides:
-        domainName: MinerDroneDomain
+        domainName: GuardianDroneDomain
         agentProfile: res://navmeshagent/Base.agent
         moveSpeed: 20.0
+    Health:
+      component: res://moon3ad/components/HealthComponent.component
+      overrides:
+        isAlly: true
 type: prefab

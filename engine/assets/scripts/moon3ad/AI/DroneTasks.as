@@ -1,17 +1,17 @@
 namespace AI {
     namespace Drone {
 
-        AI::ExecutionResult MoveTo(AIComponent@ controller, WorldState &inout state, Math::Vector3 location) {
+        AI::ExecutionResult MoveTo(AIComponent@ controller, WorldState &inout state, Math::Vector3 location, bool force = false) {
             bool finish = controller.IsFinished();
-            if (finish) {
+            if (!force && finish) {
                 return AI::ExecutionResult::FINISHED;
             }
-            if (controller.IsMoving()) {
+            if (!force && controller.IsMoving()) {
                 return AI::ExecutionResult::CONTINUES;
             } else {
                 controller.MoveTo(location);
                 if (controller.IsMoving()) {
-                    return AI::ExecutionResult::CONTINUES;;
+                    return AI::ExecutionResult::CONTINUES;
                 } else {
                     return AI::ExecutionResult::FAILED;
                 }

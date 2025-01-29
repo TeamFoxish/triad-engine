@@ -59,6 +59,13 @@ abstract class Component {
         return cast<ICompositer@>(Scene::Tree::GetComponentById(parentId));
     }
 
+    const string GetParentName() const {
+        if (!HasValidParent()) {
+            return "Null";
+        }
+        return Scene::Tree::GetComponentById(parentId).GetName();
+    }
+
     bool HasValidParent() const {
         return parentId != Scene::EntityInvalidId && Scene::IsValidEntity(parentId);
     }
