@@ -4,8 +4,13 @@ class Moon3ad {
     array<HealthComponent@> enemies;
     // buildings and drones
     array<HealthComponent@> allies;
+    // damaged something
+    array<HealthComponent@> damagedConstructions;
+    // entites that will hide in storageLocation
+    array<WorldState@> hidingInStorage;
 
     Math::Vector3 storageLocation = Math::Vector3(10.0f, 0.0f, 10.0f);
+    bool alarmState;
 
     private int credits = 100;
 
@@ -43,19 +48,65 @@ class Moon3ad {
         }
     }
 
+    void AddDamagedConstruction(HealthComponent@ construction) {
+        damagedConstructions.insertLast(construction);
+    }
+
+    void RemoveDamagedConstruction(HealthComponent@ construction) {
+        const int idx = Moon3ad::gameState.damagedConstructions.findByRef(construction);
+        if (idx >= 0) {
+            Moon3ad::gameState.damagedConstructions.removeAt(idx);
+        }
+    }
+
+    void AddToAlarmSensetive(WorldState@ state) {
+        hidingInStorage.insertLast(@state);
+    }
+
     BuildingFoundationComponent@ findNearestFreeFactory(Math::Vector3 position) {
         BuildingFoundationComponent@ bestFactory = null;
         float currentDistance = 1000;
         for (uint i = 0; i < foundations.length(); i++) {
             BuildingFoundationComponent@ foundation = @foundations[i];
             float distance = Math::Vector3Distance(foundation.GetParent().GetTransform().GetPosition(), position);
-            if (foundation.isBusy && !foundation.isWorking 
+            if (foundation.isBusy 
+                && !foundation.isWorking 
+                && !foundation.IsMarkedForConstruction() 
+                && !foundation.IsUnderConstruction() 
                 && distance < currentDistance) {
                     @bestFactory = @foundation;
                     currentDistance = distance;
                 }
         }
         return bestFactory;
+    }
+
+    BuildingFoundationComponent@ findNearestConstructuinSite(Math::Vector3 position) {
+        BuildingFoundationComponent@ bestFactory = null;
+        float currentDistance = 1000;
+        for (uint i = 0; i < foundations.length(); i++) {
+            BuildingFoundationComponent@ foundation = @foundations[i];
+            float distance = Math::Vector3Distance(foundation.GetParent().GetTransform().GetPosition(), position);
+            if (foundation.IsMarkedForConstruction() && !foundation.IsUnderConstruction() && distance < currentDistance) {
+                    @bestFactory = @foundation;
+                    currentDistance = distance;
+                }
+        }
+        return bestFactory;
+    }
+
+    HealthComponent@ GetConstructionForRepairment(Math::Vector3 position) {
+        HealthComponent@ bestConstruction = null;
+        float currentDistance = 1000;
+        for (uint i = 0; i < damagedConstructions.length(); i++) {
+            HealthComponent@ damagedConstruction = @damagedConstructions[i];
+            float distance = Math::Vector3Distance(damagedConstruction.GetParent().GetTransform().GetPosition(), position);
+            if (damagedConstruction.IsAlive() && distance < currentDistance) {
+                    @bestConstruction = @damagedConstruction;
+                    currentDistance = distance;
+                }
+        }
+        return bestConstruction;
     }
 
     HealthComponent@ findNearestAlly(Math::Vector3 position) {
@@ -84,6 +135,13 @@ class Moon3ad {
                 }
         }
         return bestEnemy;
+    }
+
+    void SwitchAlarm() {
+        alarmState = !alarmState;
+        for (uint i = 0; i < hidingInStorage.length(); i++) {
+            hidingInStorage[i].SetBool("Alarm", alarmState);
+        }
     }
 }
 
@@ -122,6 +180,9 @@ class Moon3adComponent : Component {
     }
 
     void ProceedInput() {
+        if (Input::IsKeyDown(Input::Key::F)) {
+            Moon3ad::gameState.SwitchAlarm();
+        }
         if (!Input::IsKeyDown(Input::Key::LeftButton)) {
             return;
         }
@@ -145,15 +206,7 @@ class Moon3adComponent : Component {
                     return;
                 }
                 state.AddCredits(-Moon3ad::buildCost[Moon3ad::BUILDING_TYPE::MINE]);
-                Math::Transform trs;
-                trs.SetLocalPosition(parent.GetTransform().GetLocalPosition());
-                CompositeComponent@ spawnedMine = Game::SpawnPrefab(minePrefab, @trs);
-                Game::Query::ComponentGetter<HealthComponent> queryHealth;
-                HealthComponent@ healthComp = cast<HealthComponent@>(queryHealth.GetChildComponent(spawnedMine.GetId()));
-                if (healthComp !is null) {
-                    foundation.MakeBusy(healthComp);
-                    healthComp.onDied.Subscribe(HandleOnDied);
-                }
+                foundation.SetMarkedForConstruction(true);
             }
         }
     }

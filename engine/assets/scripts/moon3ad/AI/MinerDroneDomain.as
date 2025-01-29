@@ -19,6 +19,10 @@ namespace AI {
             return state.GetBool("IsNearStorage");
         }
 
+        bool IsAlarm(const WorldState &in state) {
+            return state.GetBool("Alarm");
+        }
+
         // TASKS
 
         AI::ExecutionResult GoToFactory(AIComponent@ controller, WorldState &inout state, float deltaTime, dictionary@ executionState) {
@@ -37,6 +41,10 @@ namespace AI {
             if (factory is null) {
                 return AI::ExecutionResult::FAILED;
             } else {
+                if (state.GetBool("Alarm")) {
+                    factory.SetWorking(false);
+                    return AI::ExecutionResult::FAILED;
+                }
                 return AI::Drone::MoveTo(controller, state, factory.GetParent().GetTransform().GetPosition());
             }
         }
@@ -46,20 +54,35 @@ namespace AI {
         }
 
         AI::ExecutionResult Mine(AIComponent@ controller, WorldState &inout state, float deltaTime, dictionary@ executionState) {
+            BuildingFoundationComponent@ factory;
+            state.GetRef("factory").retrieve(@factory);
+            if (state.GetBool("Alarm")) {
+                factory.SetWorking(false);
+                return AI::ExecutionResult::FAILED;
+            }
             AI::ExecutionResult result = AI::Drone::Wait(state.GetFloat("WorkTime"), controller, state, deltaTime, executionState);
             if (result == AI::ExecutionResult::FINISHED) {
-                BuildingFoundationComponent@ factory;
-                state.GetRef("factory").retrieve(@factory);
                 factory.SetWorking(false);
             }
             return result;
         }
 
         AI::ExecutionResult StoreMinerals(AIComponent@ controller, WorldState &inout state, float deltaTime, dictionary@ executionState) {
+            if (state.GetBool("Alarm")) {
+                return AI::ExecutionResult::FAILED;
+            }
             AI::ExecutionResult result = AI::Drone::Wait(state.GetFloat("WorkTime"), controller, state, deltaTime, executionState);
             if (result == AI::ExecutionResult::FINISHED) {
                 Moon3ad::gameState.AddCredits(int(state.GetFloat("MineralsAmount")) * 5);
             }
+            return result;
+        }
+
+        AI::ExecutionResult WaitForAlarmEnd(AIComponent@ controller, WorldState &inout state, float deltaTime, dictionary@ executionState) {
+            if (!state.GetBool("Alarm")) {
+                return AI::ExecutionResult::FINISHED;
+            }
+            AI::ExecutionResult result = AI::Drone::Wait(state.GetFloat("AlarmWait"), controller, state, deltaTime, executionState);
             return result;
         }
 
@@ -93,8 +116,11 @@ class MinerDroneDomain : Domain {
         // INITIAL STATE
 
         state.SetBool("IsNearFactory", false);
+        state.SetBool("IsNearStorage", false);
         state.SetFloat("WorkTime", 1.0f);
         state.SetFloat("MineralsAmount", 0.0f);
+        state.SetBool("Alarm", Moon3ad::gameState.alarmState);
+        state.SetFloat("AlarmWait", 1.0f);
 
         // DOMAIN
 
@@ -116,7 +142,6 @@ class MinerDroneDomain : Domain {
                 .effect(AI::MinerDrone::MiningComplete)
                 .end()
             .primitiveTask("GoToStorage")
-                .precondition(AI::MinerDrone::IsCarryingMinerals)
                 .operator(AI::MinerDrone::GoToStorage)
                 .effect(AI::MinerDrone::NowNearStorage)
                 .end()
@@ -125,6 +150,11 @@ class MinerDroneDomain : Domain {
                 .precondition(AI::MinerDrone::IsNearStorage)
                 .operator(AI::MinerDrone::StoreMinerals)
                 .effect(AI::MinerDrone::MineralsStored)
+                .end()
+            .primitiveTask("WaitAlarm")
+                .precondition(AI::BuilderDrone::IsNearStorage)
+                .precondition(AI::BuilderDrone::IsAlarm)
+                .operator(AI::BuilderDrone::WaitForAlarmEnd)
                 .end()
 
         // COMPOUND TASKS
@@ -141,10 +171,23 @@ class MinerDroneDomain : Domain {
                     .subtask("StoreMinerals")
                     .end()
                 .end()
+            .compoundTask("Alarm")
+                .method()
+                    .precondition(AI::MinerDrone::IsNearStorage)
+                    .subtask("WaitAlarm")
+                    .end()
+                .method()
+                    .subtask("GoToStorage")
+                    .end()
+                .end()
 
         // HIERARCHY
             
             .hierarchy("MinerDrone")
+                .method()
+                    .precondition(AI::MinerDrone::IsAlarm)
+                    .subtask("Alarm")
+                    .end()
                 .method()
                     .precondition(AI::MinerDrone::IsNotCarryingMinerals)
                     .subtask("Mining")
@@ -155,5 +198,7 @@ class MinerDroneDomain : Domain {
                     .end()
                 .end()
             .end();
+
+        Moon3ad::gameState.AddToAlarmSensetive(state);
     }
 };

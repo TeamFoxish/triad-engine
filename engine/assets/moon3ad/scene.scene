@@ -51,7 +51,47 @@ content:
             z: 19.981987
     foundation:
       prefab: res://moon3ad/prefabs/foundation.prefab
+    foundation2:
+      prefab: res://moon3ad/prefabs/foundation.prefab
+      overrides:
+        transform:
+          position:
+            x: 7
+            y: 0
+            z: 7
+    foundation3:
+      prefab: res://moon3ad/prefabs/foundation.prefab
+      overrides:
+        transform:
+          position:
+            x: 9
+            y: 0
+            z: 10
     worker:
+      prefab: res://moon3ad/prefabs/worker.prefab
+      overrides:
+        transform:
+          position:
+            x: 10
+            y: 0
+            z: 0
+    worker2:
+      prefab: res://moon3ad/prefabs/worker.prefab
+      overrides:
+        transform:
+          position:
+            x: 10
+            y: 0
+            z: 0
+    worker3:
+      prefab: res://moon3ad/prefabs/worker.prefab
+      overrides:
+        transform:
+          position:
+            x: 10
+            y: 0
+            z: 0
+    worker4:
       prefab: res://moon3ad/prefabs/worker.prefab
       overrides:
         transform:
@@ -65,6 +105,14 @@ content:
         transform:
           position:
             x: 15
+            y: 0
+            z: 15
+    builder:
+      prefab: res://moon3ad/prefabs/builder.prefab
+      overrides:
+        transform:
+          position:
+            x: 10
             y: 0
             z: 15
     enemy_spawner:

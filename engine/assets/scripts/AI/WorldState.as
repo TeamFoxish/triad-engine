@@ -95,4 +95,8 @@ class WorldState {
     bool IsDirty() const {
         return isDirty;
     }
+
+    void Remove(const string &in name) {
+        state.delete(name);
+    }
 }

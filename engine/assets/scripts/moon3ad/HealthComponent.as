@@ -1,5 +1,6 @@
 class HealthComponent : Component {
     Misc::Event onDied;
+    Misc::Event onDamaged;
 
     [Editable]
     private float health = 100.0f;
@@ -29,7 +30,9 @@ class HealthComponent : Component {
     float GetHealth() const { return health; }
 
     void AddHealth(float incr) {
-        log_critical("ATTACK");
+        if (incr < 0) {
+            onDamaged(@this);
+        }
         health += incr;
         health = Math::Clamp(health, 0.0f, 100.0f);
         if (health == 0.0f) {
