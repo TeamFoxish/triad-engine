@@ -25,7 +25,7 @@ namespace AI {
             BuildingFoundationComponent@ factory;
             if (!state.IsPropertyExists("constructionSite")) {
                 @factory = @Moon3ad::gameState.findNearestConstructuinSite(controller.parentTransform.GetPosition());
-                if (factory is null) {
+                if (factory is null || factory.GetParent() is null) {
                     return AI::ExecutionResult::FAILED;
                 }
                 log_debug("Builder " + controller.GetParentName() + " found constructuin site: " + factory.GetParentName());
@@ -35,7 +35,7 @@ namespace AI {
             } else {
                 state.GetRef("constructionSite").retrieve(@factory);
             }
-            if (factory is null) {
+            if (factory is null || factory.GetParent() is null) {
                 return AI::ExecutionResult::FAILED;
             } else {
                 if (state.GetBool("Alarm")) {
@@ -51,7 +51,7 @@ namespace AI {
             HealthComponent@ factory;
             if (!state.IsPropertyExists("repairementSite")) {
                 @factory = @Moon3ad::gameState.GetConstructionForRepairment(controller.parentTransform.GetPosition());
-                if (factory is null) {
+                if (factory is null || factory.GetParent() is null) {
                     return AI::ExecutionResult::FAILED;
                 }
                 log_debug("Builder " + controller.GetParentName() + " found repairment site: " + factory.GetParentName());
@@ -59,7 +59,7 @@ namespace AI {
             } else {
                 state.GetRef("repairementSite").retrieve(@factory);
             }
-            if (factory is null) {
+            if (factory is null || factory.GetParent() is null) {
                 return AI::ExecutionResult::FAILED;
             } else {
                 if (state.GetBool("Alarm")) {
@@ -81,7 +81,7 @@ namespace AI {
         AI::ExecutionResult Build(AIComponent@ controller, WorldState &inout state, float deltaTime, dictionary@ executionState) {
             BuildingFoundationComponent@ factory;
             state.GetRef("constructionSite").retrieve(@factory);
-            if (factory is null) {
+            if (factory is null || factory.GetParent() is null) {
                 return AI::ExecutionResult::FINISHED;
             }
             if (state.GetBool("Alarm")) {
@@ -101,7 +101,7 @@ namespace AI {
                     healthComp.onDied.Subscribe(HandleOnDied);
                 }
                 factory.SetIsUnderConstruction(false);
-                log_critical("BUILDED");
+                log_info("BUILDED");
             }
             return result;
         }
@@ -109,7 +109,7 @@ namespace AI {
         AI::ExecutionResult Repair(AIComponent@ controller, WorldState &inout state, float deltaTime, dictionary@ executionState) {
             HealthComponent@ factory;
             state.GetRef("repairementSite").retrieve(@factory);
-            if (factory is null) {
+            if (factory is null || factory.GetParent() is null) {
                 return AI::ExecutionResult::FINISHED;
             }
             if (state.GetBool("Alarm")) {

@@ -30,7 +30,7 @@ namespace AI {
             } else {
                 state.GetRef("Enemy").retrieve(@enemy);
             }
-            if (enemy !is null) {
+            if (enemy !is null && enemy.GetParent() !is null) {
                 float leftTimeToChangeDir = float(executionState["timeToChangeDir"]) - deltaTime;
                 bool needChangeDir = leftTimeToChangeDir < 0;
                 if (needChangeDir) {

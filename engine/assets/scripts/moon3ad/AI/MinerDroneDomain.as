@@ -100,6 +100,7 @@ namespace AI {
 
         void MiningComplete(WorldState &inout state) {
             state.SetFloat("MineralsAmount", 5.0f);
+            state.Remove("factory");
         }
 
         void MineralsStored(WorldState &inout state) {

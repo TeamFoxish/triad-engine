@@ -13,10 +13,10 @@ class BuildingFoundationComponent : Component {
     }
 
     void OnDestroy() {
-        const int idx = Moon3ad::gameState.foundations.findByRef(this);
-        if (idx >= 0) {
-            Moon3ad::gameState.foundations.removeAt(idx);
-        }
+        isBusy = false;
+        isWorking = false;
+        isMarkedForConstruction = false;
+        isUnderConstraction = false;
     }
 
     void MakeBusy(HealthComponent@ comp) {

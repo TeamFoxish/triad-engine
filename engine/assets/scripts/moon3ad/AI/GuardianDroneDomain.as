@@ -38,7 +38,7 @@ namespace AI {
             if (!executionState.exists("timeToChangeDir")) {
                 executionState["timeToChangeDir"] = 0.2f;
                 @enemy = @Moon3ad::gameState.findNearestEnemy(controller.parentTransform.GetPosition());
-                if (enemy is null) {
+                if (enemy is null || enemy.GetParent() is null) {
                     return AI::ExecutionResult::FAILED;
                 }
                 log_debug("Guardian " + controller.GetParentName() + " found target: " + enemy.GetParentName());
@@ -46,7 +46,7 @@ namespace AI {
             } else {
                 state.GetRef("Enemy").retrieve(@enemy);
             }
-            if (enemy !is null) {
+            if (enemy !is null && enemy.GetParent() !is null) {
                 float leftTimeToChangeDir = float(executionState["timeToChangeDir"]) - deltaTime;
                 bool needChangeDir = leftTimeToChangeDir < 0;
                 if (needChangeDir) {

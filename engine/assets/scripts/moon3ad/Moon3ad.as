@@ -100,6 +100,11 @@ class Moon3ad {
         float currentDistance = 1000;
         for (uint i = 0; i < damagedConstructions.length(); i++) {
             HealthComponent@ damagedConstruction = @damagedConstructions[i];
+            if (damagedConstruction is null || damagedConstruction.GetParent()is null) {
+                damagedConstructions.removeAt(i);
+                i--;
+                continue;
+            }
             float distance = Math::Vector3Distance(damagedConstruction.GetParent().GetTransform().GetPosition(), position);
             if (damagedConstruction.IsAlive() && distance < currentDistance) {
                     @bestConstruction = @damagedConstruction;
@@ -214,7 +219,7 @@ class Moon3adComponent : Component {
 
 void HandleOnDied(ref@ caller) {
     HealthComponent@ healthComp = cast<HealthComponent@>(caller);
-    if (healthComp is null) {
+    if (healthComp is null || healthComp.GetParent() is null) {
         return;
     }
     cast<CompositeComponent@>(healthComp.GetParent()).Destroy();

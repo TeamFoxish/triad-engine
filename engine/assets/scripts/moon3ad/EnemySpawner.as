@@ -5,8 +5,8 @@ class EnemySpawner : Component {
 
     private float spawnInterval = 0.5f;
     private float currentSpawnDelay = 0.5f;
-    private float radeInterval = 100.0f;
-    private float currentRadeDelay = 100.0f;
+    private float radeInterval = 10.0f;
+    private float currentRadeDelay = 1.0f;
     private int needToSpawnCount = 0;
     private int radeSize = 1;
 
