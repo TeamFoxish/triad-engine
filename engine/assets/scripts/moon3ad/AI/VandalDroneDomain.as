@@ -31,6 +31,9 @@ namespace AI {
                 state.GetRef("Enemy").retrieve(@enemy);
             }
             if (enemy !is null) {
+                if (controller is null) {
+                    return AI::ExecutionResult::FAILED;
+                }
                 float leftTimeToChangeDir = float(executionState["timeToChangeDir"]) - deltaTime;
                 bool needChangeDir = leftTimeToChangeDir < 0;
                 if (needChangeDir) {
