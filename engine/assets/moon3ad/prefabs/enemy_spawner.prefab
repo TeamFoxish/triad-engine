@@ -1,0 +1,14 @@
+content:
+  class: enemySpawner
+  components:
+    EnemySpawner:
+      component: res://moon3ad/components/EnemySpawner.component
+      overrides:
+        enemyPrefab: res://moon3ad/prefabs/vandal.prefab
+    Mesh:
+      component: res://components/MeshComponent.component
+      overrides:
+        renderObj:
+          mesh: res://meshes/cube.mesh
+          material: res://materials/blue.material
+type: prefab

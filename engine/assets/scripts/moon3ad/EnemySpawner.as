@@ -1,0 +1,38 @@
+class EnemySpawner : Component {
+
+    [Editable]
+    private ResourceHandle enemyPrefab;
+
+    private float spawnInterval = 0.5f;
+    private float currentSpawnDelay = 0.5f;
+    private float radeInterval = 10.0f;
+    private float currentRadeDelay = 1.0f;
+    private int needToSpawnCount = 0;
+    private int radeSize = 1;
+
+
+    EnemySpawner(ICompositer@ parent = null) {
+        super(parent);
+    }
+
+    void Update(float deltaTime) override {
+        currentSpawnDelay -= deltaTime;
+        currentRadeDelay -= deltaTime;
+
+        if (currentRadeDelay < 0) {
+            log_info("Rade of size " + radeSize + " has started.");
+            currentRadeDelay = radeInterval + currentRadeDelay;
+            needToSpawnCount += radeSize;
+            radeSize++;
+        }
+
+        if (needToSpawnCount > 0 && currentSpawnDelay < 0) {
+            currentSpawnDelay = spawnInterval + currentSpawnDelay;
+
+            Math::Transform transform;
+            transform.SetPosition(GetParent().GetTransform().GetPosition());
+            Game::SpawnPrefab(enemyPrefab, transform, cast<CompositeComponent>(GetParent()).GetParent());
+            needToSpawnCount--;
+        }
+    }
+}

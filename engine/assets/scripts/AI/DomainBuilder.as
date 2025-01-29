@@ -11,17 +11,17 @@ class DomainBuilder {
 
 
     HierarchyBuilder hierarchy(const string &in domainName) {
-        log_info("Hierarchy " + domainName);
+        //log_info("Hierarchy " + domainName);
         return HierarchyBuilder(domainName, this);
     }
 
     CompoundTaskBuilder compoundTask(const string &in name) {
-        log_info("Compound " + name);
+        //log_info("Compound " + name);
         return CompoundTaskBuilder(name, this);
     }
 
     PrimitiveTaskBuilder primitiveTask(const string &in name) {
-        log_info("Primitive " + name);
+        //log_info("Primitive " + name);
         return PrimitiveTaskBuilder(name, this);
     }
 
@@ -31,12 +31,12 @@ class DomainBuilder {
     }
 
     void AddPrimitiveTask(PrimitiveTask@ task) {
-        log_info("Adding task " + task.GetName() + " to domain");
+        //log_info("Adding task " + task.GetName() + " to domain");
         tasksRegistry.set(task.GetName(), @task);
     }
 
     void AddCompoundTask(CompoundTask@ task) {
-        log_info("Adding task " + task.GetName() + " to domain");
+        //log_info("Adding task " + task.GetName() + " to domain");
         tasksRegistry.set(task.GetName(), @task);
     }
 
@@ -45,7 +45,7 @@ class DomainBuilder {
     }
 
     void SetHierarchy(CompoundTask@ compoundTask) {
-        log_info("Setting root task." + compoundTask.GetName());
+        //log_info("Setting root task." + compoundTask.GetName());
         @this.hierarchyRoot = @compoundTask;
     }
 };
@@ -67,12 +67,12 @@ class CompoundTaskBuilder : MethodStorage {
     }
 
     MethodBuilder method() {
-        log_info("Creating method");
+        //log_info("Creating method");
         return MethodBuilder(domain, this);
     }
 
     DomainBuilder@ end() {
-        log_info("Creating method done");
+        //log_info("Creating method done");
         if (domain !is null) {
             cast<DomainBuilder@>(domain).AddCompoundTask(CompoundTask(name, methods));
         }
@@ -80,7 +80,7 @@ class CompoundTaskBuilder : MethodStorage {
     }
 
     void AddMethod(Method@ method) {
-        log_info("Adding method");
+        //log_info("Adding method");
         methods.insertLast(method);
     }
 };
@@ -96,12 +96,12 @@ class HierarchyBuilder : MethodStorage {
     }
 
     MethodBuilder method() {
-        log_info("Creating method");
+        //log_info("Creating method");
         return MethodBuilder(domain, this);
     }
 
     DomainBuilder@ end() {
-        log_info("Done creating hierarchy");
+        //log_info("Done creating hierarchy");
         if (domain !is null) {
             CompoundTask@ rootTask = CompoundTask(name, methods);
             domain.AddCompoundTask(rootTask);
@@ -111,7 +111,7 @@ class HierarchyBuilder : MethodStorage {
     }
 
     void AddMethod(Method@ method) {
-        log_info("Adding method");
+        //log_info("Adding method");
         methods.insertLast(method);
     }
 };
@@ -129,13 +129,13 @@ class MethodBuilder {
     }
 
     MethodBuilder& precondition(CHECK_PRECONDITION@ preconditionFunc) {
-        log_info("Adding precondition");
+        //log_info("Adding precondition");
         preconditions.insertLast(preconditionFunc);
         return this;
     }
 
     MethodBuilder& subtask(const string &in name) {
-        log_info("Adding subtask " + name);
+        //log_info("Adding subtask " + name);
         Task@ task = domain.GetTaskFromRegistry(name);
         if (task is null) {
             log_error("Task not found !");
@@ -145,7 +145,7 @@ class MethodBuilder {
     }
 
     MethodStorage@ end() {
-        log_info("Done creating method");
+        //log_info("Done creating method");
         if (parent !is null) {
             parent.AddMethod(Method(preconditions, subtasks));
         }
@@ -166,25 +166,25 @@ class PrimitiveTaskBuilder {
     }
 
     PrimitiveTaskBuilder& precondition(CHECK_PRECONDITION@ precondition) {
-        log_info("Adding precondition");
+        //log_info("Adding precondition");
         preconditions.insertLast(precondition);
         return this;
     }
 
     PrimitiveTaskBuilder& operator(EXECUTE_SUBTASK@ operator) {
-        log_info("Adding operator");
+        //log_info("Adding operator");
         @operatorImpl = @operator;
         return this;
     }
 
     PrimitiveTaskBuilder& effect(APPLY_EFFECT@ effect) {
-        log_info("Adding effect");
+        //log_info("Adding effect");
         effects.insertLast(effect);
         return this;
     }
 
     DomainBuilder@ end() {
-        log_info("Done creating primitive");
+        //log_info("Done creating primitive");
         domain.AddPrimitiveTask(PrimitiveTask(name, preconditions, operatorImpl, effects));
         return domain;
     }

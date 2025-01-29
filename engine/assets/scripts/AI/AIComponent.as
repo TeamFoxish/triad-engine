@@ -69,7 +69,7 @@ class AIComponent : Component {
         const Math::Vector3 target = currentPath[currentPath.length() - 1];
         Math::Vector3 pos = parentTransform.GetPosition();
         Math::Vector3 dir = target - pos;
-        if (dir.LengthSq() < 0.001 || dir.Dot(currentMoveDir) < 0.0) {
+        if (dir.LengthSq() < 0.1 || dir.Dot(currentMoveDir) < 0.0) {
             // next point
             currentPath.removeLast();
             return;

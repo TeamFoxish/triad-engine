@@ -1,0 +1,4 @@
+content:
+  class: EnemySpawner
+  module: Engine
+type: component
