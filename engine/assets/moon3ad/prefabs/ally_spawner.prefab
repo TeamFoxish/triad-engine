@@ -1,0 +1,15 @@
+content:
+  class: spawner
+  components:
+    Mesh:
+      component: res://components/MeshComponent.component
+      overrides:
+        transform:
+          rotation:
+            x: 90.0
+        renderObj:
+          mesh: res://meshes/cube.mesh
+          material: res://materials/red.material
+    Spawner:
+      component: res://moon3ad/components/AllySpawner.component
+type: prefab

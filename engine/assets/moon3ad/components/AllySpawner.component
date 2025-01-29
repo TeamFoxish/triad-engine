@@ -1,0 +1,4 @@
+content:
+  class: AllySpawner
+  module: Engine
+type: component

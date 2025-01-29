@@ -1,0 +1,11 @@
+content:
+  parent: res://materials/default_mesh.material
+  properties:
+    - key: diffuse_color
+      type: vector4
+      value:
+        - 0.5
+        - 1.0
+        - 0.5
+        - 1.0
+type: material

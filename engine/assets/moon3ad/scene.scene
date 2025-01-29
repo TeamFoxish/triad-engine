@@ -3,6 +3,10 @@ content:
   objects:
     moon3adGame:
       prefab: res://moon3ad/prefabs/moon3ad.prefab
+      overrides:
+        minerSpawner: "@minerSpawner"
+        guardianSpawner: "@guardianSpawner"
+        builderSpawner: "@builderSpawner"
     dir_light:
       prefab: res://prefabs/dir_light.prefab
       overrides:
@@ -136,4 +140,61 @@ content:
               radeInterval: 30
     ui:
       prefab: res://prefabs/moon3ad_ui.prefab
+    minerSpawner:
+      prefab: res://prefabs/ally_spawner.prefab
+      overrides:
+        transform:
+          position:
+            x: 12
+            y: 0
+            z: 12
+        children:
+          $Mesh:
+            component: res://components/MeshComponent.component
+            overrides:
+              renderObj:
+                material: res://materials/black.material
+          $Spawner:
+            component: res://moon3ad/components/AllySpawner.component
+            overrides:
+              allyType: res://moon3ad/prefabs/worker.prefab
+              type: "miner"
+    guardianSpawner:
+      prefab: res://prefabs/ally_spawner.prefab
+      overrides:
+        transform:
+          position:
+            x: 9
+            y: 0
+            z: 12
+        children:
+          $Mesh:
+            component: res://components/MeshComponent.component
+            overrides:
+              renderObj:
+                material: res://materials/white.material
+          $Spawner:
+            component: res://moon3ad/components/AllySpawner.component
+            overrides:
+              allyType: res://moon3ad/prefabs/guardian.prefab
+              type: "guardian"
+    builderSpawner:
+      prefab: res://prefabs/ally_spawner.prefab
+      overrides:
+        transform:
+          position:
+            x: 6
+            y: 0
+            z: 12
+        children:
+          $Mesh:
+            component: res://components/MeshComponent.component
+            overrides:
+              renderObj:
+                material: res://materials/violet.material
+          $Spawner:
+            component: res://moon3ad/components/AllySpawner.component
+            overrides:
+                allyType: res://moon3ad/prefabs/builder.prefab
+                type: "builder"
 type: scene

@@ -9,6 +9,12 @@ class Moon3ad {
     // entites that will hide in storageLocation
     array<WorldState@> hidingInStorage;
 
+    // change to array and indexing
+    AllySpawner@ minerSpawner;
+    AllySpawner@ builderSpawner;
+    AllySpawner@ guardianSpawner;
+
+
     Math::Vector3 storageLocation = Math::Vector3(10.0f, 0.0f, 10.0f);
     bool alarmState;
 
@@ -148,17 +154,35 @@ class Moon3ad {
             hidingInStorage[i].SetBool("Alarm", alarmState);
         }
     }
+
+    void SetAllyFactory(AllySpawner@ spawner, Moon3ad::BUILDING_TYPE type) {
+        if (type == Moon3ad::BUILDING_TYPE::MINER) {
+            @minerSpawner = @spawner;
+        }
+        if (type == Moon3ad::BUILDING_TYPE::GUARDIAN) {
+            @guardianSpawner = @spawner;
+        }
+        if (type == Moon3ad::BUILDING_TYPE::BUILDER) {
+            @builderSpawner = @spawner;
+        }
+    }
 }
 
 namespace Moon3ad {
     Moon3ad@ gameState;
 
     enum BUILDING_TYPE {
-        MINE
+        MINE = 0,
+        MINER = 1,
+        GUARDIAN = 2,
+        BUILDER = 3
     }
 
     const array<int> buildCost = {
-        50 // MINE
+        50, // MINE,
+        50,
+        100,
+        25
     };
 }
 
@@ -187,6 +211,15 @@ class Moon3adComponent : Component {
     void ProceedInput() {
         if (Input::IsKeyDown(Input::Key::F)) {
             Moon3ad::gameState.SwitchAlarm();
+        }
+        if (Input::IsKeyDown(Input::Key::Q)) {
+            state.minerSpawner.Spawn();
+        }
+        if (Input::IsKeyDown(Input::Key::W)) {
+            state.guardianSpawner.Spawn();
+        }
+        if (Input::IsKeyDown(Input::Key::E)) {
+            state.builderSpawner.Spawn();
         }
         if (!Input::IsKeyDown(Input::Key::LeftButton)) {
             return;
