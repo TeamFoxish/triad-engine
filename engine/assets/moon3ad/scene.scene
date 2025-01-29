@@ -30,7 +30,7 @@ content:
               renderObj:
                 mesh: res://meshes/cube.mesh
                 material: res://moon3ad/materials/surface.material
-              isStatic: true 
+              isStatic: true
     static_camera_5:
       prefab: res://prefabs/static_camera.prefab
       overrides:
@@ -51,22 +51,28 @@ content:
             z: 19.981987
     foundation:
       prefab: res://moon3ad/prefabs/foundation.prefab
+      overrides:
+        transform:
+          position:
+            x: -9.28090668
+            y: 0
+            z: 14.1042604
     foundation2:
       prefab: res://moon3ad/prefabs/foundation.prefab
       overrides:
         transform:
           position:
-            x: 7
+            x: -1.06971669
             y: 0
-            z: 7
+            z: 4.30174494
     foundation3:
       prefab: res://moon3ad/prefabs/foundation.prefab
       overrides:
         transform:
           position:
-            x: 9
+            x: 3.67364359
             y: 0
-            z: 10
+            z: 18.3709526
     worker:
       prefab: res://moon3ad/prefabs/worker.prefab
       overrides:
@@ -106,15 +112,15 @@ content:
           position:
             x: 15
             y: 0
-            z: 15
+            z: 15.6633167
     builder:
       prefab: res://moon3ad/prefabs/builder.prefab
       overrides:
         transform:
           position:
-            x: 10
+            x: 1.92529893
             y: 0
-            z: 15
+            z: 10.5963402
     enemy_spawner:
       prefab: res://moon3ad/prefabs/enemy_spawner.prefab
       overrides:
@@ -123,6 +129,11 @@ content:
             x: -15
             y: 0
             z: -15
+        children:
+          $EnemySpawner:
+            component: res://moon3ad/components/EnemySpawner.component
+            overrides:
+              radeInterval: 30
     ui:
       prefab: res://prefabs/moon3ad_ui.prefab
 type: scene

@@ -8,5 +8,5 @@ content:
       overrides:
         renderObj:
           mesh: res://meshes/cube.mesh
-          material: res://moon3ad/art/surface.material
+          material: res://moon3ad/art/foundation.material
 type: prefab
