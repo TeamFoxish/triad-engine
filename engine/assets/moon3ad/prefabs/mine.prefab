@@ -5,4 +5,8 @@ content:
       component: res://moon3ad/components/HealthComponent.component
     Mesh:
       component: res://components/MeshComponent.component
+      overrides:
+        renderObj:
+          mesh: res://moon3ad/art/mine.mesh
+          material: res://moon3ad/art/mine.material
 type: prefab

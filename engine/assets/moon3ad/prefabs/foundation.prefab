@@ -6,9 +6,7 @@ content:
     Mesh:
       component: res://components/MeshComponent.component
       overrides:
-        transform:
-          scale:
-            x: 2.0
-            y: 0.2
-            z: 2.0
+        renderObj:
+          mesh: res://moon3ad/art/foundation.mesh
+          material: res://moon3ad/art/foundation.material
 type: prefab

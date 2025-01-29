@@ -50,6 +50,12 @@ content:
             z: 19.981987
     foundation:
       prefab: res://moon3ad/prefabs/foundation.prefab
+    worker:
+      prefab: res://moon3ad/prefabs/worker.prefab
       overrides:
-        transform: ~
+        transform:
+          position:
+            x: 10
+            y: 0
+            z: 0
 type: scene
