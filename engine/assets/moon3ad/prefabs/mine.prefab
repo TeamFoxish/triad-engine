@@ -9,6 +9,6 @@ content:
       component: res://components/MeshComponent.component
       overrides:
         renderObj:
-          mesh: res://meshes/cube.mesh
-          material: res://materials/cheese.material
+          mesh: res://moon3ad/art/mine.mesh
+          material: res://moon3ad/art/mine.material
 type: prefab

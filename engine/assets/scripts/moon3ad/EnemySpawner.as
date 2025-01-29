@@ -3,10 +3,12 @@ class EnemySpawner : Component {
     [Editable]
     private ResourceHandle enemyPrefab;
 
+    [Editable]
     private float spawnInterval = 0.5f;
-    private float currentSpawnDelay = 0.5f;
+    private float currentSpawnDelay = spawnInterval;
+    [Editable]
     private float radeInterval = 100.0f;
-    private float currentRadeDelay = 100.0f;
+    private float currentRadeDelay = radeInterval;
     private int needToSpawnCount = 0;
     private int radeSize = 1;
 
@@ -15,9 +17,15 @@ class EnemySpawner : Component {
         super(parent);
     }
 
+    void Init() {
+        currentSpawnDelay = spawnInterval;
+        currentRadeDelay = radeInterval;
+    }
+
     void Update(float deltaTime) override {
         currentSpawnDelay -= deltaTime;
         currentRadeDelay -= deltaTime;
+        println("" + currentRadeDelay);
 
         if (currentRadeDelay < 0) {
             log_info("Rade of size " + radeSize + " has started.");
@@ -27,6 +35,7 @@ class EnemySpawner : Component {
         }
 
         if (needToSpawnCount > 0 && currentSpawnDelay < 0) {
+            println("SPAWN");
             currentSpawnDelay = spawnInterval + currentSpawnDelay;
 
             Math::Transform transform;

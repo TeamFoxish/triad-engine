@@ -6,10 +6,10 @@ content:
       overrides:
         transform:
           rotation:
-            x: 90.0
+            x: -90.0
         renderObj:
-          mesh: res://meshes/cube.mesh
-          material: res://materials/green.material
+          mesh: res://moon3ad/art/worker.mesh
+          material: res://moon3ad/art/worker.material
     AI:
       component: res://components/AIComponent.component
       overrides:
