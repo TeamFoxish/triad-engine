@@ -228,7 +228,9 @@ void Renderer::TestFrameGraph()
 
 	deferredRenderer->Draw(context, fg, bboard);
 #ifdef EDITOR
-	DbgDrawPass::AddDbgDrawPass(context, fg, bboard);
+	if (!UIDebug::start_simulation) {
+		DbgDrawPass::AddDbgDrawPass(context, fg, bboard);
+	}
 #endif
 	uiPass->AddUIPass(context, fg, bboard);
 

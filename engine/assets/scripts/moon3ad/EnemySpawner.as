@@ -25,7 +25,6 @@ class EnemySpawner : Component {
     void Update(float deltaTime) override {
         currentSpawnDelay -= deltaTime;
         currentRadeDelay -= deltaTime;
-        println("" + currentRadeDelay);
 
         if (currentRadeDelay < 0) {
             log_info("Rade of size " + radeSize + " has started.");
@@ -35,7 +34,6 @@ class EnemySpawner : Component {
         }
 
         if (needToSpawnCount > 0 && currentSpawnDelay < 0) {
-            println("SPAWN");
             currentSpawnDelay = spawnInterval + currentSpawnDelay;
 
             Math::Transform transform;
