@@ -34,7 +34,6 @@ class EnemySpawner : Component {
         }
 
         if (needToSpawnCount > 0 && currentSpawnDelay < 0) {
-            println("SPAWN");
             currentSpawnDelay = spawnInterval + currentSpawnDelay;
 
             Math::Transform transform;

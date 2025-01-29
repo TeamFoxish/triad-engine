@@ -8,8 +8,8 @@ content:
           rotation:
             x: 90.0
         renderObj:
-          mesh: res://meshes/cube.mesh
-          material: res://moon3ad/art/worker.material
+          mesh: res://moon3ad/art/enemy.mesh
+          material: res://moon3ad/art/enemy.material
     AI:
       component: res://components/AIComponent.component
       overrides:
