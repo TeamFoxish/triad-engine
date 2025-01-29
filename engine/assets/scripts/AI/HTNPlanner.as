@@ -8,29 +8,42 @@ class HTNPlanner {
 
         while(!context.unprocessedTasks.isEmpty()) {
             const Task@ currentTask = context.PopTask();
+            log_debug("Current task: " + currentTask.GetName());
             if (currentTask.isPrimitive()) {
+                log_debug("Task is primitive");
                 const PrimitiveTask@ primitiveTask = cast<const PrimitiveTask@>(currentTask);
                 if (primitiveTask.checkPrecondition(workingState)) {
                     primitiveTask.applyEffect(workingState);
                     context.finalPlan.insertLast(primitiveTask);
+                    log_debug("Primitive task added");
                 } else {
+                    log_debug("Primitive task caused rollback");
                     context.RestoreToLastDecomposedTask();
                 }
             } else {
+                log_debug("Task is compound");
                 const CompoundTask@ compoundTask = cast<const CompoundTask@>(currentTask);
                 const Method@ method = compoundTask.FindSatisfyingMethod(workingState);
                 if (method !is null) {
+                    log_debug("Satisfied method found");
                     context.RecordCurrentState(compoundTask);
                     const array<Task@> subtasks = method.GetSubtasks();
                     for (uint i = 0; i < subtasks.length(); i++) {
-                        context.unprocessedTasks.insertAt(0, subtasks[i]);
+                        log_debug("Adding task to stack: " + subtasks[i].GetName());
+                        context.unprocessedTasks.insertLast(subtasks[i]);
                     }
                 } else {
+                    log_debug("Compound task caused rollback");
                     context.RestoreToLastDecomposedTask();
                 }
             }
         }
-        log_info("Plan size " + context.finalPlan.length());
+        log_debug("Generated plan size: " + context.finalPlan.length());
+        log_debug("=== GENERATED PLAN ===");
+        for (uint i = 0; i < context.finalPlan.length(); i++) {
+            log_debug("  " + context.finalPlan[i].GetName());
+        }
+        log_debug("======================");
         return context.finalPlan;
     }
 };
@@ -64,6 +77,9 @@ class PlanGenerationContext {
     PlanGenerationContext() {}
 
     PlanGenerationContext(WorldState& _state, const CompoundTask@ root) {
+        if (root is null) {
+            log_critical("ROOT IS NULL");
+        }
         this.state = state;
         unprocessedTasks.insertLast(root);
     }

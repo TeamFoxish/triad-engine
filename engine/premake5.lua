@@ -34,6 +34,7 @@ project("Engine")
     "{COPYDIR} " .. scriptDir .. "/config %{cfg.targetdir}/config",
     "{COPYDIR} " .. scriptDir .. "/fonts %{cfg.targetdir}/fonts",
     "{COPYDIR} " .. scriptDir .. "/shaders %{cfg.targetdir}/shaders",
+    "{COPYDIR} " .. scriptDir .. "/templates %{cfg.targetdir}/templates",
     "{COPYFILE} " .. scriptDir .. "/DefaultImGuiSettings.ini %{cfg.targetdir}/DefaultImGuiSettings.ini"
    }
 

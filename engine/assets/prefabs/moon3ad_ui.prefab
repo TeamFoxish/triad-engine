@@ -1,0 +1,14 @@
+content:
+  class: UIComponent
+  components:
+    UI:
+      component: res://moon3ad/components/Moon3adUI.component
+      overrides:
+        money:
+          position:
+            x: 0.1
+            y: 0.1
+          scale:
+            x: 0.5
+            y: 0.5
+type: prefab

@@ -66,7 +66,7 @@ void CUIElement::ApplyOverrides(const YAML::Node &overrides)
 	if (const YAML::Node& textVal = overrides["text"]) {
         SetText(textVal.Scalar());
 	}
-	if (const YAML::Node& posVal = overrides["postition"]) {
+	if (const YAML::Node& posVal = overrides["position"]) {
         Math::Vector3 position;
 		position.x = posVal["x"] ? posVal["x"].as<float>() : position.x;
 		position.y = posVal["y"] ? posVal["y"].as<float>() : position.y;

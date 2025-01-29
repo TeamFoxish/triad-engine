@@ -28,6 +28,7 @@ content:
               renderObj:
                 mesh: !<str> res://meshes/cube.mesh
                 material: !<str> res://moon3ad/materials/surface.material
+              isStatic: true 
     static_camera_5:
       prefab: res://prefabs/static_camera.prefab
       overrides:
@@ -47,7 +48,9 @@ content:
             y: 7.02901793
             z: 19.981987
     cube_4294967303:
-      prefab: res://prefabs/cube.prefab
+      prefab: res://prefabs/miner_drone.prefab
       overrides:
         transform: ~
+    ui:
+      prefab: res://prefabs/moon3ad_ui.prefab
 type: scene

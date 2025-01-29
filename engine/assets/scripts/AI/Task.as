@@ -12,5 +12,5 @@ namespace AI {
 }
 
 funcdef bool CHECK_PRECONDITION(const WorldState &in state);
-funcdef AI::ExecutionResult EXECUTE_SUBTASK(AiController@ controller, WorldState& state, float deltaTime, dictionary@ executionState);
-funcdef void APPLY_EFFECT(WorldState& state);
+funcdef AI::ExecutionResult EXECUTE_SUBTASK(AIComponent@ controller, WorldState &inout state, float deltaTime, dictionary@ executionState);
+funcdef void APPLY_EFFECT(WorldState &inout state);

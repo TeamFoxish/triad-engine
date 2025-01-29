@@ -1,0 +1,4 @@
+content:
+  source_file: ./assets/scripts/moon3ad/UI/Moon3adUI.as
+  module: Engine
+type: script

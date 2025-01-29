@@ -26,11 +26,11 @@ class PrimitiveTask : Task {
         return true;
     }
 
-    AI::ExecutionResult execute(AiController@ controller, WorldState state, float deltaTime, dictionary@ executionState) const {
+    AI::ExecutionResult execute(AIComponent@ controller, WorldState &inout state, float deltaTime, dictionary@ executionState) const {
         return operator(controller, state, deltaTime, executionState);
     }
 
-    void applyEffect(WorldState &in state) const {
+    void applyEffect(WorldState &inout state) const {
         for (uint i = 0; i < effects.length(); i++) {
             effects[i](state);
         }

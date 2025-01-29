@@ -1,0 +1,4 @@
+content:
+  class: Moon3adUI
+  module: Engine
+type: component

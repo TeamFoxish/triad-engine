@@ -15,7 +15,6 @@ void log_warn(const string &in);
 void log_info(const string &in);
 void log_debug(const string &in);
 
-
 funcdef bool less(const ?&in a, const ?&in b);
 class array<T>{
 	array<T>& opAssign(const array<T>&in);

@@ -1,5 +1,3 @@
-
-
 class AIMovementComponent : Component {
     [Editable]
     private ResourceHandle agentProfile;

@@ -25,9 +25,10 @@ public:
         return Math::Vector3(pos.x, pos.y, 0.f); 
     }
 	void SetPosition(Math::Vector3 pos) {
-        Math::Vector2 position = GetElement().position;
+        Math::Vector2 position;
         position.x = pos.x;
         position.y = pos.y;
+        GetElement().position = position;
     }
 
 	Math::Vector3 GetScale() const {
@@ -36,9 +37,10 @@ public:
     }
 
 	void SetScale(Math::Vector3 scale) {
-        Math::Vector2 scl = GetElement().scale;
+        Math::Vector2 scl;
         scl.x = scale.x;
         scl.y = scale.y;
+        GetElement().scale = scl;
     }
 
 	Math::Vector3 GetColor() const {
@@ -46,11 +48,12 @@ public:
         return Math::Vector3(color.x, color.y, color.z);  
     }
 	void SetColor(Math::Vector3 color) {
-        Math::Vector4 clr = GetElement().color;
+        Math::Vector4 clr;
         clr.x = color.x;
         clr.y = color.y;
         clr.z = color.z;
         clr.w = 0.0f;
+        GetElement().color = clr;
     }
 
 	float GetDepth() const { return GetElement().depth; }

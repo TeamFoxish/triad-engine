@@ -1,0 +1,15 @@
+content:
+  class: MinerDrone
+  components:
+    Mesh:
+      component: res://components/MeshComponent.component
+      overrides:
+        renderObj:
+          mesh: res://meshes/cube.mesh
+    AI:
+      component: res://components/AIComponent.component
+      overrides:
+        domainName: MinerDroneDomain
+        agentProfile: res://navmeshagent/Base.agent
+        moveSpeed: 20.0
+type: prefab

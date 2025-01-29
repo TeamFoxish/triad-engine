@@ -6,6 +6,8 @@ namespace Game {
     SoftRef<ResourceHandle> sceneRef("resd://scenes/first_scene.scene");
     */
 
+    float gTime = 0;
+
     void Init() {
         for (uint i = 0; i < Private::scenes.length(); ++i) {
             Private::scenes[i].Init();
@@ -27,9 +29,11 @@ namespace Game {
         //println("LOAD");
         //TransitToScene(sceneRef.Load());
         //println("FINISH");
+        gTime = 0;
     }
 
     void Update(float deltaTime) {
+        gTime += deltaTime;
         Component@ comp = Scene::GetComponentUnderCursor();
         if (comp !is null) {
             //log_debug("Component under cursor: " + comp.GetName() + " id: " + comp.GetId());
@@ -154,4 +158,4 @@ namespace Game {
         }
     }
 
-}
+};

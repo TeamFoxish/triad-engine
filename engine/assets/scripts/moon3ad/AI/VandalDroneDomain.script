@@ -1,0 +1,4 @@
+content:
+  source_file: ./assets/scripts/moon3ad/AI/VandalDroneDomain.as
+  module: Engine
+type: script

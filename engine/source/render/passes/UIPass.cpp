@@ -61,7 +61,7 @@ void UIPass::DrawUI(RenderContext& ctx)
 			element.color,
 			0.f,
 			origin,
-			{1.f, 1.f},
+			element.scale,
 			DirectX::DX11::SpriteEffects_None,
 			element.depth
 		);
