@@ -1,4 +1,4 @@
 content:
-  class: Moon3adComponent
+  class: HealthComponent
   module: Engine
 type: component

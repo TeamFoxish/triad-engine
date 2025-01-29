@@ -1,0 +1,4 @@
+content:
+  source_file: ./assets/scripts/Misc.as
+  module: Engine
+type: script

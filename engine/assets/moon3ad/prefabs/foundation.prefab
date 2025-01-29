@@ -1,0 +1,12 @@
+content:
+  class: foundation
+  components:
+    Foundation:
+      component: res://moon3ad/components/BuildingFoundation.component
+    Mesh:
+      component: res://components/MeshComponent.component
+      overrides:
+        renderObj:
+          mesh: res://moon3ad/art/foundation.mesh
+          material: res://moon3ad/art/foundation.material
+type: prefab

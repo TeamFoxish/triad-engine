@@ -1,4 +1,4 @@
 content:
-  class: Moon3adComponent
+  class: BuildingFoundationComponent
   module: Engine
 type: component

@@ -1,0 +1,8 @@
+content:
+  class: moon3ad
+  components:
+    GameLogic:
+      component: res://moon3ad/components/Moon3ad.component
+      overrides:
+        minePrefab: res://moon3ad/prefabs/mine.prefab
+type: prefab

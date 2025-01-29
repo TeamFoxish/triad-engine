@@ -21,18 +21,17 @@ public:
     void SetText(const std::string& text);
 
 	Math::Vector3 GetPosition() const {
-        Math::Vector2 pos = GetElement().position;
+        const Math::Vector2 pos = GetElement().position;
         return Math::Vector3(pos.x, pos.y, 0.f); 
     }
 	void SetPosition(Math::Vector3 pos) {
-        Math::Vector2 position;
+        Math::Vector2& position = GetElement().position;
         position.x = pos.x;
         position.y = pos.y;
-        GetElement().position = position;
     }
 
 	Math::Vector3 GetScale() const {
-        Math::Vector2 scale = GetElement().scale;
+        const Math::Vector2 scale = GetElement().scale;
         return Math::Vector3(scale.x, scale.y, 0.f);  
     }
 

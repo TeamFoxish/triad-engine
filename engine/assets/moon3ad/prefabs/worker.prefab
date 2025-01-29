@@ -1,0 +1,13 @@
+content:
+  class: worker
+  components:
+    Mesh:
+      component: res://components/MeshComponent.component
+      overrides:
+        transform:
+          rotation:
+            x: 90.0
+        renderObj:
+          mesh: res://moon3ad/art/worker.mesh
+          material: res://moon3ad/art/worker.material
+type: prefab
