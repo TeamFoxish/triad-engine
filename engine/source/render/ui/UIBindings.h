@@ -4,7 +4,6 @@
 #include "UIElement.h"
 #include "shared/Shared.h"
 #include "shared/MathScriptBindings.h"
-#include "misc/StringUtils.h"
 #include <string>
 
 class CUIElement : public CRef<CUIElement>, public CNativeObject {
