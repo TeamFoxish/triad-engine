@@ -16,4 +16,9 @@ content:
       overrides:
         controller:
           domainName: RobinHoodDomain
+    UI:
+      component: res://components/UIComponent.component
+      overrides:
+        element:
+          text: HELLO
 type: prefab

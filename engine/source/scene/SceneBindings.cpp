@@ -3,6 +3,7 @@
 #include "scripts/ScriptSystem.h"
 #include "shared/MathScriptBindings.h"
 #include "scene/SceneLoader.h"
+#include "render/RenderSystem.h"
 #include "logs/Logs.h"
 
 #include <scripthandle.h>
@@ -101,6 +102,20 @@ CScriptHandle GetEntityById(EntityId id)
     return ref;
 }
 
+static EntityId GetEntityIdUnderCursor() 
+{
+    const int32_t id = gRenderSys->GetEntityIdUnderCursor();
+    if (id < 0) {
+        return InvalidEntityId;
+    }
+    EntityId resId;
+    resId.id = id;
+    if (!gSceneTree->IsValidHandle(resId.handle)) {
+        return InvalidEntityId;
+    }
+    return resId;
+}
+
 void RegisterSceneBindings()
 {
     auto engine = gScriptSys->GetRawEngine();
@@ -111,6 +126,7 @@ void RegisterSceneBindings()
     r = engine->RegisterTypedef("EntityId", "uint64"); assert(r >= 0);
     r = engine->RegisterGlobalProperty("const EntityId EntityInvalidId", const_cast<EntityId*>(&InvalidEntityId)); assert(r >= 0);
     r = engine->RegisterGlobalFunction("bool IsValidEntity(EntityId id)", asFUNCTION(IsValidEntity), asCALL_CDECL); assert(r >= 0);
+    r = engine->RegisterGlobalFunction("EntityId GetEntityIdUnderCursor()", asFUNCTION(GetEntityIdUnderCursor), asCALL_CDECL); assert(r >= 0);
 
     // Register the type
     r = engine->RegisterObjectType("Entity", sizeof(CEntityInfo), asOBJ_VALUE | asGetTypeTraits<CEntityInfo>()); assert(r >= 0);

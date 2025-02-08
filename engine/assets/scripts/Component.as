@@ -5,7 +5,7 @@ abstract class Component {
     private Scene::EntityId id;
     private bool isDead = false;
 
-    Component(ICompositer@ _parent = null) {
+    Component(ICompositer@ _parent = null) explicit {
         if (_parent !is null) {
             parentId = _parent.GetId();
             _parent.AddChild(this);

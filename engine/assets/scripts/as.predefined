@@ -362,6 +362,7 @@ namespace Scene {
 typedef uint64 EntityId;
 const EntityId EntityInvalidId; // handle id = -1, gen = -1
 bool IsValidEntity(EntityId id);
+EntityId GetEntityIdUnderCursor();
 
 class Entity{
 	ref@ entity;
@@ -495,6 +496,11 @@ namespace Impl{
 	ref@ SpawnPrefab(const ResourceHandle &in prefab, ref@ parent = null);
 	ref@ SpawnComponent(const ResourceHandle &in compRef, ref@ parent = null);
 }
+namespace Query{
+	class ComponentGetter<T>{
+		ref@ GetChildComponent(Scene::EntityId id) const;
+	}
+}
 }
 
 namespace Input{
@@ -504,6 +510,21 @@ bool IsKeyUp(Key key);
 
 void GetMousePosition(float &out x, float &out y);
 void GetMouseOffset(float &out x, float &out y);
+
+class UIElement {
+	UIElement();
+	UIElement @opAssign(const UIElement@);
+	string GetText() const;
+	void SetText(const string &in);
+	Math::Vector3 GetPosition() const;
+	void SetPosition(const Math::Vector3 &in);
+	Math::Vector3 GetScale() const;
+	void SetScale(const Math::Vector3 &in);
+	Math::Vector3 GetColor() const;
+	void SetColor(const Math::Vector3 &in);
+	float GetDepth() const;
+	void SetDepth(const float &in);
+}
 
 enum Key{
 	None,

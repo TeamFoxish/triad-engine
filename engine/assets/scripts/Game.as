@@ -1,42 +1,12 @@
 namespace Game {
-    /*
-    SoftRef<ResourceHandle> prefabRef("resd://prefabs/cheese.prefab");
-    SoftRef<ResourceHandle> compRef("resd://components/SingleSoundComponent.component");
-    SoftRef<ResourceHandle> meshCompRef("resd://components/MeshComponent.component");
-    SoftRef<ResourceHandle> sceneRef("resd://scenes/first_scene.scene");
-    */
-
-    SoftRef<ResourceHandle> mainAgent("resd://navmeshagent/Base.agent");
 
     void Init() {
         for (uint i = 0; i < Private::scenes.length(); ++i) {
             Private::scenes[i].Init();
         }
-
-        /*
-        Math::Transform@ trs = Math::Transform();
-        trs.SetLocalPosition(Math::Vector3(3.0f, 3.0f, 3.0f));
-        Game::SpawnPrefab(prefabRef.Load(), trs);
-        {
-            SingleSoundComponent@ soundComp = cast<SingleSoundComponent@>(Game::SpawnComponent(compRef.Load()));
-            soundComp.SetEvent("event:/Bubbles/Bubble3D");
-            soundComp.Play();
-        }
-        
-        Game::SpawnComposite(meshCompRef.Load());
-        */
-
-        //println("LOAD");
-        //TransitToScene(sceneRef.Load());
-        //println("FINISH");
     }
 
     void Update(float deltaTime) {
-        const array<Math::Vector3>@ path = Navigation::FindPath(mainAgent.Load(), Math::Vector3(-15.0f, 1.1f, -15.0f), Math::Vector3(15.0f, 1.1f, 15.0f));
-        // for (int i = 0; i < path.length(); ++i) {
-        //     log_info("path vec3: " + path[i].x + ", " + path[i].y + ", " + path[i].z);
-        // }
-
         array<uint> pendingDead;
         for (uint i = 0; i < Private::scenes.length(); ++i) {
             if (!Private::scenes[i].IsAlive()) {
