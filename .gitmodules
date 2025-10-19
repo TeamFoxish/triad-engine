@@ -1,0 +1,4 @@
+[submodule "engine/libs/string-id"]
+	path = engine/libs/string-id
+	url = https://github.com/newohrim/string_id.git
+	branch = vcpkg-test

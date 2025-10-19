@@ -448,6 +448,8 @@ imgui.ini
 # framegraph debug representation files
 *.dot
 
+**/vcpkg_installed/
+
 # any files in libs dir
 !**/libs/**
 
