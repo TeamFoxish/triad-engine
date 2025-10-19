@@ -1,4 +1,4 @@
-local scriptDir = path.getdirectory(_SCRIPT)  -- Gets the directory of the Premake script
+beginModule()
 
 project("Engine")
   targetname("Engine")
@@ -7,6 +7,23 @@ project("Engine")
   location("../build/Engine")
   language("C++")
   debugdir("")
+
+  -- local libsPath = "vcpkg_installed/" .. archTable["%{cfg.architecture}"] .. "-%{cfg.system}/"
+  -- local arch = "%{cfg.architecture}"
+  local arch = "x64" -- %{cfg.architecture} doesn't get resolved during premake execution and has x86_64 as default for x64
+  local sys = "%{cfg.system}"
+  local libsPath = string.format("vcpkg_installed/%s-%s/", arch, sys)
+  
+  includedirs({ "source" })
+    includedirs({ libsPath .. "include" })
+  
+  filter("configurations:Debug*")
+    libdirs({ libsPath .. "debug/lib" })
+    links({"fmtd"})
+  
+  filter("configurations:Release*")
+    libdirs({ libsPath .. "lib" })
+    links({"fmt"})
   
   includedirs({ "source" })
   includedirs({ "libs/**/include" })
@@ -29,24 +46,3 @@ project("Engine")
   
   files({ "source/**.h", "source/**.cpp", "source/**.hpp" })
 
-  postbuildcommands { 
-    "{COPYDIR} " .. scriptDir .. "/assets %{cfg.targetdir}/assets",
-    "{COPYDIR} " .. scriptDir .. "/config %{cfg.targetdir}/config",
-    "{COPYDIR} " .. scriptDir .. "/fonts %{cfg.targetdir}/fonts",
-    "{COPYDIR} " .. scriptDir .. "/shaders %{cfg.targetdir}/shaders",
-    "{COPYFILE} " .. scriptDir .. "/DefaultImGuiSettings.ini %{cfg.targetdir}/DefaultImGuiSettings.ini"
-   }
-
-  filter("configurations:Debug*")
-   postbuildcommands {
-    "{COPYFILE} " .. scriptDir .. "/assimp-vc143-mtd.dll %{cfg.targetdir}/assimp-vc143-mtd.dll",
-    "{COPYFILE} " .. scriptDir .. "/fmodstudioL.dll %{cfg.targetdir}/fmodstudioL.dll",
-    "{COPYFILE} " .. scriptDir .. "/fmodL.dll %{cfg.targetdir}/fmodL.dll"
-  }
-  filter("configurations:Release*")
-   postbuildcommands {
-    "{COPYFILE} " .. scriptDir .. "/assimp-vc143-mt.dll %{cfg.targetdir}/assimp-vc143-mt.dll",
-    "{COPYFILE} " .. scriptDir .. "/fmodstudio.dll %{cfg.targetdir}/fmodstudio.dll",
-    "{COPYFILE} " .. scriptDir .. "/fmod.dll %{cfg.targetdir}/fmod.dll"
-  }
-  

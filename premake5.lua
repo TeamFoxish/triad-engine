@@ -1,3 +1,15 @@
+newoption {
+   trigger = "install",
+   description = "Call vcpkg install before project files generation"
+}
+
+function beginModule()
+  if _OPTIONS["install"] then
+    print("Installing dependencies with vcpkg...")
+    os.execute("vcpkg install")
+  end
+end
+
 workspace("Triad")
   configurations({ "Debug", "DebugEditor", "Release", "ReleaseEditor" })
   platforms({ "Win32", "Win64" })
@@ -41,3 +53,4 @@ workspace("Triad")
   objdir("intermediate/%{cfg.buildcfg}")
   
   include("engine/premake5.lua")
+  
